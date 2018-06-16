@@ -20,6 +20,9 @@ class Scrapy(object):
         self.request_attempts = {}
         self._setup_proxies()
 
+    def __repr__(self):
+        return '<Scrapy Proxy:%s>' % self.proxies.get('http')
+
     def get(self, url, skip_ssl_verify=False):
         """
         Wrapper for the Requests python module, adds in extras such as headers and proxies where applicable.
@@ -33,8 +36,29 @@ class Scrapy(object):
         if skip_ssl_verify:
             ssl_verify = False
         headers = {'User-Agent': self._set_user_agent()}
-        response = self.make_get(url, ssl_verify, headers, 5)
+        response = self._make_get(url, ssl_verify, headers, 5)
         return response
+
+    def search(self, query, engine='duckduckgo'):
+        """
+        Runs a search query on a search engine with the current proxy, and returns a parsed result set.
+        Currently only engine supported is duckduckgo.
+
+        :param query: The query to run against the search engine.
+        :type query: str
+        :param engine: Search engine to use, default 'duckduckgo'.
+        :type engine: str
+        :returns: The results from the search engine.
+        :rtype: dict
+        """
+        search = self.get("https://duckduckgo.com/?q=%s&ia=web" % query)
+        results = ParseResponse(search.text).duckduckgo_results()
+        ret = {
+            'request': search,
+            'query': query,
+            'results': results
+        }
+        return ret
 
     def check_tor(self):
         """
@@ -67,7 +91,7 @@ class Scrapy(object):
         self.log.error('Could not get outbound ip address.')
         return False
 
-    def make_get(self, url, ssl_verify, headers, attempts):
+    def _make_get(self, url, ssl_verify, headers, attempts):
         """
         Makes the response.
 
@@ -91,7 +115,6 @@ class Scrapy(object):
 
         if response.status_code in [503]:
             print('we got an error')
-            return False
             return response
 
     def _request_attempts(self, url):
@@ -152,3 +175,5 @@ class Scrapy(object):
         logging.warning("""There was an error with the SSL cert, this happens a lot with LetsEncrypt certificates. Set the class
             var, self.skip_ssl_verify or use the skip_ssl_verify in the .get(url=url, skip_ssl_verify=True)""")
         return False
+
+# EndFile: scrapy/scrapy/scrapy.py
