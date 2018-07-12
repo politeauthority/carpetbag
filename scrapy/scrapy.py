@@ -6,7 +6,7 @@ import logging
 import requests
 import tld
 
-from parse_response import ParseResponse
+from .parse_response import ParseResponse
 
 
 class Scrapy(object):
@@ -25,10 +25,13 @@ class Scrapy(object):
 
     def get(self, url, skip_ssl_verify=False):
         """
-        Wrapper for the Requests python module, adds in extras such as headers and proxies where applicable.
+        Wrapper for the Requests python module's get method, adds in extras such as headers and proxies where
+        applicable.
 
         :param url: The url to fetch.
         :type: url: str
+        :param skip_ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified will continue.
+        :type skip_ssl_verify: bool
         :returns: A Requests module instance of the response.
         :rtype: <Requests.response> obj
         """
@@ -36,7 +39,28 @@ class Scrapy(object):
         if skip_ssl_verify:
             ssl_verify = False
         headers = {'User-Agent': self._set_user_agent()}
-        response = self._make_get(url, ssl_verify, headers, 5)
+        response = self._make_request(url, ssl_verify, headers, 5)
+        return response
+
+    def post(self, url, payload, skip_ssl_verify=False):
+        """
+        Wrapper for the Requests python module's get method, adds in extras such as headers and proxies where
+        applicable.
+
+        :param url: The url to fetch/ post to.
+        :type: url: str
+        :param payload: The data to be sent over POST.
+        :type payload: dict
+        :param skip_ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified will continue.
+        :type skip_ssl_verify: bool
+        :returns: A Requests module instance of the response.
+        :rtype: <Requests.response> obj
+        """
+        ssl_verify = True
+        if skip_ssl_verify:
+            ssl_verify = False
+        headers = {'User-Agent': self._set_user_agent()}
+        response = self._make_request(url, ssl_verify, headers, 5)
         return response
 
     def search(self, query, engine='duckduckgo'):
@@ -52,7 +76,7 @@ class Scrapy(object):
         :rtype: dict
         """
         search = self.get("https://duckduckgo.com/?q=%s&ia=web" % query)
-        results = ParseResponse(search.text).duckduckgo_results()
+        results = ParseResponse(search).duckduckgo_results()
         ret = {
             'request': search,
             'query': query,
@@ -62,12 +86,12 @@ class Scrapy(object):
 
     def check_tor(self):
         """
-        Checks the Tor Projects page to see if we're running through a tor proxy correctly, and exiting through an
-        actual exit node.
+        Checks the Tor Projects page "check.torproject.org" to see if we're running through a tor proxy correctly, and
+        exiting through an actual tor exit node.
 
         """
         response = self.get('https://check.torproject.org')
-        parsed = ParseResponse(response.text)
+        parsed = ParseResponse(response)
         return parsed.get_title()
 
     def get_outbound_ip(self):
@@ -91,30 +115,59 @@ class Scrapy(object):
         self.log.error('Could not get outbound ip address.')
         return False
 
-    def _make_get(self, url, ssl_verify, headers, attempts):
+    def _make_request(self, url, ssl_verify, headers, attempts, method="GET", payload=None):
         """
-        Makes the response.
+        Makes the response, over GET or POST.
 
+        :param url: The url to fetch/ post to.
+        :type: url: str
+        :param skip_ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified will continue.
+        :type skip_ssl_verify: bool
+        :param headers: Request headers to be sent, such as user agent and whatever else you got.
+        :type headers: dict
+        :param attempts: The number of attempts to try before giving up.
+        :type attempts: int
+        :param method: HTTP verb to use, defaults to GET, can alternatively be POST.
+        :type method: str
+        :param payload: The payload to be sent, if we're making a post request.
+        :type payload: dict
+        :returns: A Requests module instance of the response.
+        :rtype: <Requests.response> obj
         """
+        url = ParseResponse.add_missing_protocol(url)
         attempts = self._request_attempts(url)
         headers = self._set_headers(attempts)
-        try:
-            # Try to grab the url verifying the SSL certificate first.
-            response = requests.get(
-                url,
-                headers=headers,
-                proxies=self.proxies,
-                verify=ssl_verify)
-        except requests.exceptions.SSLError:
-            if self.skip_ssl_verify:
-                return self.get(url, skip_ssl_verify=True)
-            return self._handle_ssl_error()
+        if method == 'GET':
+            try:
+                # Try to grab the url verifying the SSL certificate first.
+                response = requests.get(
+                    url,
+                    headers=headers,
+                    proxies=self.proxies,
+                    verify=ssl_verify)
+            except requests.exceptions.SSLError:
+                if self.skip_ssl_verify:
+                    return self.get(url, skip_ssl_verify=True)
+                return self._handle_ssl_error()
+        elif method == 'POST':
+            try:
+                # Try to grab the url verifying the SSL certificate first.
+                response = requests.post(
+                    url,
+                    headers=headers,
+                    proxies=self.proxies,
+                    verify=ssl_verify,
+                    data=payload)
+            except requests.exceptions.SSLError:
+                if self.skip_ssl_verify:
+                    return self.post(url, payload, skip_ssl_verify=True)
+                return self._handle_ssl_error()
 
         if response.status_code == 200:
             return response
 
         if response.status_code in [503]:
-            print('we got an error')
+            print('we got an error')  # @todo log this.
             return response
 
     def _request_attempts(self, url):

@@ -1,11 +1,11 @@
-from scrapy import Scrapy
+from scrapy.scrapy import Scrapy
 
 scraper = Scrapy()
 
 """
 Set the proxies for Scrapy to use, in this example we're connecting over privoxy which is routing traffic through tor.
 """
-scraper.proxies = {"http": "localhost:8118", "https": "localhost:8118"}
+scraper.proxies = {"http": "172.18.0.6:8118", "https": "172.18.0.6:8118"}
 
 """
 I've had issues with certs from LetsEncrypt not passing cert checks.
