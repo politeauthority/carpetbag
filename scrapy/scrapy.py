@@ -2,6 +2,7 @@
 
 """
 import logging
+import os
 
 import requests
 import tld
@@ -15,6 +16,7 @@ class Scrapy(object):
         logging.getLogger(__name__)
         self.proxies = {}
         self.headers = {}
+        self.user_agent = None
         self.skip_ssl_verify = True
         self.outbound_ip = None
         self.request_attempts = {}
@@ -62,6 +64,38 @@ class Scrapy(object):
         headers = {'User-Agent': self._set_user_agent()}
         response = self._make_request(url, ssl_verify, headers, 5)
         return response
+
+    def save(self, url, destination, skip_ssl_verify=True):
+        """
+        Saves a file to a destination on the local drive. Good for quickly grabbing images from a remote site.
+        @todo: impelement the content size restriction.
+
+        :param url: The url to fetch.
+        :type: url: str
+        :param destination: Where on the local filestem to store the image.
+        :type: destination: str
+        :param skip_ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified will continue.
+        :type skip_ssl_verify: bool
+        """
+        h = requests.head(url, allow_redirects=True)
+        header = h.headers
+        content_type = header.get('content-type')
+        if 'text' in content_type.lower():
+            return False
+        if 'html' in content_type.lower():
+            return False
+
+        # content_length = header.get('content-length', None)
+        # if content_length and content_length > 2e8:  # 200 mb approx
+        #     return False
+
+        save_dir = self._find_destination(destination)
+        response = self.get(url, skip_ssl_verify=skip_ssl_verify)
+        phile_name = url[url.rfind('/') + 1:]
+        full_phile_name = os.path.join(save_dir, phile_name)
+        print(full_phile_name)
+        open(full_phile_name, 'wb').write(response.content)
+        return full_phile_name
 
     def search(self, query, engine='duckduckgo'):
         """
@@ -228,5 +262,12 @@ class Scrapy(object):
         logging.warning("""There was an error with the SSL cert, this happens a lot with LetsEncrypt certificates. Set the class
             var, self.skip_ssl_verify or use the skip_ssl_verify in the .get(url=url, skip_ssl_verify=True)""")
         return False
+
+    def _find_destination(self, destination):
+        if os.path.exists(os.path.isdir(destination)):
+            return destination
+        elif os.path.exists(destination):
+            print(destination)
+
 
 # EndFile: scrapy/scrapy/scrapy.py

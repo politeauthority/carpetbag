@@ -54,5 +54,5 @@ For best results, use Privoxy to connect to tor, using a docker container is a r
         The primary method of Scraper, grabs a url over a specified proxy, set by the self.poxies class var. If none specified will grab over the current servers internet connection.
     - **url**: _(str)_ The url to grab from the remote source.
     - **skip_ssl_verify** _(default: False)_: _(bool)_
-- Scrapper.**check_tor()**`
+- Scrapper.**check_tor()**
     Checks if the current client/ proxy is propperly configured for tor.

@@ -45,6 +45,8 @@ class ParseResponse(object):
             'remote': []
         }
         for anchor in anchors:
+            if not anchor.get('href'):
+                continue
             if local_site in anchor['href'] and anchor['href'] not in ret['local']:
                 ret['local'].append(anchor['href'])
             elif anchor['href'] not in ret['remote']:
@@ -104,8 +106,11 @@ class ParseResponse(object):
         Converts the self.content var into soup.
 
         """
-        if self.response:
-            self.content = self.response.text
+        if not self.response or not hasattr(self.response, 'text'):
+            return
+
+        self.content = self.response.text
+
         if not self.content:
             return None
         return BeautifulSoup(self.content, 'html.parser')
