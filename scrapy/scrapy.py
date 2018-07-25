@@ -1,13 +1,19 @@
 """Scrapy
 
 """
+from datetime import datetime
 import logging
 import os
+import time
+import warnings
 
 import requests
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import tld
 
+
 from .parse_response import ParseResponse
+from . import user_agent
 
 
 class Scrapy(object):
@@ -16,14 +22,22 @@ class Scrapy(object):
         logging.getLogger(__name__)
         self.proxies = {}
         self.headers = {}
-        self.user_agent = None
+        self.user_agent = ''
         self.skip_ssl_verify = True
+        self.change_user_agent_interval = 10
         self.outbound_ip = None
         self.request_attempts = {}
+        self.request_count = 0
+        self.request_total = 0
+        self.last_request = None
+        self.send_user_agent = ''
         self._setup_proxies()
 
     def __repr__(self):
-        return '<Scrapy Proxy:%s>' % self.proxies.get('http')
+        proxy = ''
+        if self.proxies.get('http'):
+            proxy = " Proxy:%s" % self.proxies.get('http')
+        return '<Scrapy%s>' % proxy
 
     def get(self, url, skip_ssl_verify=False):
         """
@@ -40,7 +54,7 @@ class Scrapy(object):
         ssl_verify = True
         if skip_ssl_verify:
             ssl_verify = False
-        headers = {'User-Agent': self._set_user_agent()}
+        headers = {}
         response = self._make_request(url, ssl_verify, headers, 5)
         return response
 
@@ -61,7 +75,7 @@ class Scrapy(object):
         ssl_verify = True
         if skip_ssl_verify:
             ssl_verify = False
-        headers = {'User-Agent': self._set_user_agent()}
+        headers = {}
         response = self._make_request(url, ssl_verify, headers, 5)
         return response
 
@@ -155,8 +169,9 @@ class Scrapy(object):
 
         :param url: The url to fetch/ post to.
         :type: url: str
-        :param skip_ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified will continue.
-        :type skip_ssl_verify: bool
+        :param ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified the request
+            will fail.
+        :type ssl_verify: bool
         :param headers: Request headers to be sent, such as user agent and whatever else you got.
         :type headers: dict
         :param attempts: The number of attempts to try before giving up.
@@ -168,12 +183,18 @@ class Scrapy(object):
         :returns: A Requests module instance of the response.
         :rtype: <Requests.response> obj
         """
+        ts_start = int(round(time.time() * 1000))
         url = ParseResponse.add_missing_protocol(url)
         attempts = self._request_attempts(url)
-        headers = self._set_headers(attempts)
+        headers = self._set_headers(attempts, headers)
+        requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+        self._increment_counters()
+
         if method == 'GET':
             try:
                 # Try to grab the url verifying the SSL certificate first.
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
                 response = requests.get(
                     url,
                     headers=headers,
@@ -186,6 +207,8 @@ class Scrapy(object):
         elif method == 'POST':
             try:
                 # Try to grab the url verifying the SSL certificate first.
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
                 response = requests.post(
                     url,
                     headers=headers,
@@ -197,12 +220,15 @@ class Scrapy(object):
                     return self.post(url, payload, skip_ssl_verify=True)
                 return self._handle_ssl_error()
 
-        if response.status_code == 200:
-            return response
+        ts_end = int(round(time.time() * 1000))
+        roundtrip = ts_end - ts_start
+        self.last_request = datetime.now()
+        response.roundtrip = roundtrip
 
         if response.status_code in [503]:
             print('we got an error')  # @todo log this.
-            return response
+
+        return response
 
     def _request_attempts(self, url):
         """
@@ -229,16 +255,23 @@ class Scrapy(object):
 
         return self.request_attempts[site_domain]
 
-    def _set_headers(self, attempts):
+    def _set_headers(self, attempts, headers={}):
         """
         Sets headers for the request, checks for user values in self.headers and then creates the rest.
 
+        :param attempts: The previous and current info on attempts being made to scrape a domain/url.
+        :type attemps: dict
+        :param headers: (optional) User/ method base headers to use.
+        :type headers: dict
+        :returns: The headers to be sent in the request.
+        :rtype: dict
         """
         send_headers = {}
+        self._set_user_agent()
         if 'User-Agent' in attempts:
             send_headers['User-Agent'] = attempts['User-Agent']
         else:
-            send_headers['User-Agent'] = self._set_user_agent()
+            send_headers['User-Agent'] = self.send_user_agent
 
         for key, value in self.headers.items():
             send_headers[key] = value
@@ -256,12 +289,40 @@ class Scrapy(object):
             self.proxies['https'] = self.proxies['http']
 
     def _set_user_agent(self):
-        return "Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7"
+        """
+        Sets a user agent to the class var if it is being used, otherwise if it's the 1st or 10th request, fetches a new
+        random user agent string.
+
+        :returns: The user agent string to be used in the request.
+        :rtype: str
+        """
+        if self.user_agent:
+            self.send_user_agent = self.user_agent
+            return
+
+        if not self.send_user_agent or self.request_count == self.change_user_agent_interval:
+            self.send_user_agent = user_agent.get_random_ua(self.send_user_agent)
+            logging.debug('Setting new UA: %s' % self.send_user_agent)
+            return
 
     def _handle_ssl_error(self):
+        """
+        Used to catch an SSL issue and allow scrapy to choose whether or not to try without SSL.
+
+        :returns: Negative, because we hit an error.
+        :rtype: bool
+        """
         logging.warning("""There was an error with the SSL cert, this happens a lot with LetsEncrypt certificates. Set the class
             var, self.skip_ssl_verify or use the skip_ssl_verify in the .get(url=url, skip_ssl_verify=True)""")
         return False
+
+    def _increment_counters(self):
+        """
+        Add one to each request counter after a request has been made.
+
+        """
+        self.request_count += 1
+        self.request_total += 1
 
     def _find_destination(self, destination):
         if os.path.exists(os.path.isdir(destination)):

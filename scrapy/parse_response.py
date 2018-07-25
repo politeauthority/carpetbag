@@ -1,5 +1,5 @@
 """Parse Response
-Handles parsing various html pages.
+Handles parsing various html pages. This module is pretty expiremental right now and may prove not necisarry later on.
 
 """
 from bs4 import BeautifulSoup
@@ -33,20 +33,25 @@ class ParseResponse(object):
             return ''
         return self.soup.title.string.strip()
 
-    def get_links(self):
+    def get_links(self, content=None):
         """
+        Grabs all anchor links for the content and orgainizes it by local or remote.
 
+        :param content: A partial piece of content, optional, otherwise scans the entire segment.
+        :type content: str
         """
+        if content:
+            soup = content
+        else:
+            soup = self.soup
         local_site = tld.get_tld(self.response.url)
-        anchors = self.soup.findAll("a")
+        anchors = soup.findAll("a")
 
         ret = {
             'local': [],
             'remote': []
         }
         for anchor in anchors:
-            if not anchor.get('href'):
-                continue
             if local_site in anchor['href'] and anchor['href'] not in ret['local']:
                 ret['local'].append(anchor['href'])
             elif anchor['href'] not in ret['remote']:
@@ -95,7 +100,6 @@ class ParseResponse(object):
         :returns: Safe url with protocal.
         :rtype: str
         """
-
         if url[:8] == 'https://' or url[:7] == 'http://':
             return url.replace('/')
         else:
@@ -106,11 +110,8 @@ class ParseResponse(object):
         Converts the self.content var into soup.
 
         """
-        if not self.response or not hasattr(self.response, 'text'):
-            return
-
-        self.content = self.response.text
-
+        if self.response:
+            self.content = self.response.text
         if not self.content:
             return None
         return BeautifulSoup(self.content, 'html.parser')
