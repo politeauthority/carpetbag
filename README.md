@@ -23,7 +23,8 @@ print(news.status_code)
 ```
 
 ## Tor Usage
-For best results, use Privoxy to connect to tor, using a docker container is a really easy way to accomplish this. Use project x to launch a docker container running tor with privoxy support already enabled.
+For best results, use Privoxy to connect to tor, using a docker container is a really easy way to accomplish this. I'm using zeta0/alpine-tor to launch a docker container running tor with privoxy support already enabled.
+
 - Tor via Docker
     ```bash
     docker run \
