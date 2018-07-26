@@ -28,7 +28,8 @@ class Scrapy(object):
         self.request_attempts = {}
         self.request_count = 0
         self.request_total = 0
-        self.last_request = None
+        self.last_request_time = None
+        self.last_response = None
         self.send_user_agent = ''
         self._setup_proxies()
 
@@ -123,12 +124,14 @@ class Scrapy(object):
         :returns: The results from the search engine.
         :rtype: dict
         """
-        search = self.get("https://duckduckgo.com/?q=%s&ia=web" % query)
-        results = ParseResponse(search).duckduckgo_results()
+        search = self.get("https://duckduckgo.com/html/?q=%s&ia=web" % query)
+        parsed = self.parse(search)
+        results = parsed.duckduckgo_results()
         ret = {
             'request': search,
             'query': query,
-            'results': results
+            'results': results,
+            'parsed': parsed,
         }
         return ret
 
@@ -139,8 +142,25 @@ class Scrapy(object):
 
         """
         response = self.get('https://check.torproject.org')
-        parsed = ParseResponse(response)
+        parsed = self.parse(response)
         return parsed.get_title()
+
+    def parse(self, content=None):
+        """
+        Parses a response from the scraper with the ParseResponse module which leverages Beautiful Soup.
+
+        :param content: Optional content to parse, or will use the last response.
+        :type content: Response obj
+        :returns: Parsed response, with bs4 parsed soup.
+        :type: ParsedResponse obj
+        """
+        if not self.last_response or not content:
+            logging.warning('No response to parse')
+            return
+        if content:
+            return ParseResponse(content)
+        else:
+            return ParseResponse(self.last_response)
 
     def get_outbound_ip(self):
         """
@@ -195,10 +215,10 @@ class Scrapy(object):
         elif method == 'POST':
             response = self._make_post(url, headers, ssl_verify, payload)
 
-
+        self.last_response = response
         ts_end = int(round(time.time() * 1000))
         roundtrip = ts_end - ts_start
-        self.last_request = datetime.now()
+        self.last_request_time = datetime.now()
         response.roundtrip = roundtrip
 
         if response.status_code >= 503 and response.status_code < 600:

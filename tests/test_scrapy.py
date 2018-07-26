@@ -23,7 +23,8 @@ class TestScrapy(object):
         s.request_attempts = {}
         s.request_count = 0
         s.request_total = 0
-        s.last_request = None
+        s.last_request_time = None
+        s.last_response = None
         s.send_user_agent = ''
 
     def test__request_attempts(self):

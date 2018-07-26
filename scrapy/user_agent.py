@@ -54,14 +54,9 @@ def get_random_ua(except_user_agent=''):
     :returns: A user agent string.
     :rtype: str
     """
-    possible_strings = []
-    for browser, uas in user_agents.items():
-        if except_user_agent:
-            try:
-                uas.remove(except_user_agent)
-            except ValueError:
-                pass
-        possible_strings = possible_strings + uas
+    possible_strings = get_flattened_uas()
+    if except_user_agent and except_user_agent in possible_strings:
+        possible_strings.remove(except_user_agent)
 
     return possible_strings[random.randint(0, len(possible_strings) - 1)]
 
