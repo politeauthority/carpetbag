@@ -124,11 +124,14 @@ class Scrapy(object):
         :returns: The results from the search engine.
         :rtype: dict
         """
-        search = self.get("https://duckduckgo.com/html/?q=%s&ia=web" % query)
-        parsed = self.parse(search)
+        response = self.get("https://duckduckgo.com/html/?q=%s&ia=web" % query)
+        if not response.text:
+            return {}
+
+        parsed = self.parse(response)
         results = parsed.duckduckgo_results()
         ret = {
-            'request': search,
+            'response': response,
             'query': query,
             'results': results,
             'parsed': parsed,
@@ -145,20 +148,21 @@ class Scrapy(object):
         parsed = self.parse(response)
         return parsed.get_title()
 
-    def parse(self, content=None):
+    def parse(self, response=None):
         """
         Parses a response from the scraper with the ParseResponse module which leverages Beautiful Soup.
 
-        :param content: Optional content to parse, or will use the last response.
-        :type content: Response obj
+        :param response: Optional content to parse, or will use the last response.
+        :type response: Response obj
         :returns: Parsed response, with bs4 parsed soup.
         :type: ParsedResponse obj
         """
-        if not self.last_response or not content:
-            logging.warning('No response to parse')
-            return
-        if content:
-            return ParseResponse(content)
+        # if not self.last_response and not response:
+        #     logging.warning('No response to parse')
+        #     return
+        if response:
+            x = ParseResponse(response)
+            return x
         else:
             return ParseResponse(self.last_response)
 
@@ -180,8 +184,18 @@ class Scrapy(object):
                 self.outbound_ip = response.text
             return self.outbound_ip
 
-        self.log.error('Could not get outbound ip address.')
+        logging.error('Could not get outbound ip address.')
         return False
+
+    @staticmethod
+    def url_concat(*args):
+        """
+        """
+        url = ''
+        for url_segment in args:
+            url += url_segment + '/'
+        url = url[:-1]
+        return url
 
     def _make_request(self, url, ssl_verify, headers, attempts, method="GET", payload=None):
         """
@@ -210,16 +224,22 @@ class Scrapy(object):
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
         self._increment_counters()
 
-        if method == 'GET':
-            response = self._make_get(url, headers, ssl_verify)
-        elif method == 'POST':
-            response = self._make_post(url, headers, ssl_verify, payload)
+        try:
+            if method == 'GET':
+                response = self._make_get(url, headers, ssl_verify)
+            elif method == 'POST':
+                response = self._make_post(url, headers, ssl_verify, payload)
+        except requests.exceptions.ProxyError:
+            logging.warning('Hit a proxy error, sleeping for %s and continuing.')
+            time.sleep(4)
+            return self._make_request(url, ssl_verify, headers, attempts, method="GET", payload=None)
 
         self.last_response = response
         ts_end = int(round(time.time() * 1000))
         roundtrip = ts_end - ts_start
         self.last_request_time = datetime.now()
         response.roundtrip = roundtrip
+        response.domain = tld.get_fld(url)
 
         if response.status_code >= 503 and response.status_code < 600:
             logging.warning('Recieved an error response %s' % response.status_code)
@@ -288,8 +308,8 @@ class Scrapy(object):
         Method to keep track of requests made to a domain and urls. This will likely be wiped everytime we change ips.
 
         """
-        # Handle the domain portion of requested_attempts.
         site_domain = tld.get_tld(url)
+        # Handle the domain portion of requested_attempts.
         if site_domain not in self.request_attempts:
             self.request_attempts[site_domain] = {
                 'urls': {},

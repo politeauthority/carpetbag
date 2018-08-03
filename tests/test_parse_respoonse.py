@@ -17,8 +17,12 @@ class TestParseResponse(object):
         r = Response()
         pr = ParseResponse(r)
         assert pr.response == r
+        assert pr.content
 
     def test__get_title(self):
         r = Response()
         pr = ParseResponse(r)
         assert pr.get_title() == "Here's a title"
+
+    def test__remove_protocol(self):
+        assert ParseResponse.remove_protocol('http://google.com') == 'google.com'

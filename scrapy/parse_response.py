@@ -16,7 +16,12 @@ class ParseResponse(object):
         :type response: <Requests>
         """
         self.response = response
+        self.content = None
+        self.domain = None
         self.soup = self._make_soup()
+
+    def __repr__(self):
+        return '<Parsed %s>' % self.response.url
 
     def get_title(self):
         """
@@ -44,7 +49,7 @@ class ParseResponse(object):
             soup = content
         else:
             soup = self.soup
-        local_site = tld.get_tld(self.response.url)
+
         anchors = soup.findAll("a")
 
         ret = {
@@ -52,11 +57,23 @@ class ParseResponse(object):
             'remote': []
         }
         for anchor in anchors:
-            if local_site in anchor['href'] and anchor['href'] not in ret['local']:
-                ret['local'].append(anchor['href'])
-            elif anchor['href'] not in ret['remote']:
-                ret['remote'].append(anchor['href'])
+            if not anchor.get('href'):
+                continue
+            if anchor['href'][0] == '#':
+                continue
+
+            if self._get_remote_links(anchor['href']):
+                if anchor['href'] not in ret['remote']:
+                    ret['remote'].append(anchor['href'])
+                    continue
+
+            ret['local'].append(anchor['href'])
         return ret
+
+    def _get_remote_links(self, anchor):
+        if anchor[:7] == 'http://' or anchor[:8] == 'https://':
+            return True
+        return False
 
     def duckduckgo_results(self):
         """
@@ -100,20 +117,20 @@ class ParseResponse(object):
         :returns: Safe url with protocal.
         :rtype: str
         """
-        if url[:8] == 'https://' or url[:7] == 'http://':
-            return url.replace('/')
-        else:
-            return '%s%s' % ('http://', url)
+        url = url.replace('https', '')
+        url = url.replace('http', '')
+        url = url.replace('://', '')
+        if '/' in url:
+            url = url[: url.find('/')]
+        return url
 
     def _make_soup(self):
         """
         Converts the self.content var into soup.
 
         """
-        if self.response:
-            self.content = self.response.text
-        if not self.content:
-            return None
+        self.content = self.response.text
+        self.domain = tld.get_tld(self.response.url)
         return BeautifulSoup(self.content, 'html.parser')
 
 # EndFile: scrapy/scrapy/parse_response.py
