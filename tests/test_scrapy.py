@@ -27,6 +27,10 @@ class TestScrapy(object):
         s.last_response = None
         s.send_user_agent = ''
 
+    def test_url_concat(self):
+        assert Scrapy.url_concat('www.google.com', 'news') == 'www.google.com/news'
+        assert Scrapy.url_concat('www.google.com', '/news') == 'www.google.com/news'
+
     def test__request_attempts(self):
         """
         Tests that the request_attempts method is adding values to manifest var.

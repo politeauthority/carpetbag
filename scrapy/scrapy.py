@@ -190,11 +190,19 @@ class Scrapy(object):
     @staticmethod
     def url_concat(*args):
         """
+        Concats all args with slashes as needed.
+        @note this will probably move to a utility class sometime in the near future.
+
+        :param args: All the url components to join.
+        :type args: list
+        :returns: Ready to use url.
+        :rtype: str
         """
         url = ''
         for url_segment in args:
-            url += url_segment + '/'
-        url = url[:-1]
+            if url and url[len(url) - 1] != '/' and url_segment[0] != '/':
+                url_segment = '/' + url_segment
+            url += url_segment
         return url
 
     def _make_request(self, url, ssl_verify, headers, attempts, method="GET", payload=None):

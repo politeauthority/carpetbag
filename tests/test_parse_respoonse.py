@@ -26,3 +26,5 @@ class TestParseResponse(object):
 
     def test__remove_protocol(self):
         assert ParseResponse.remove_protocol('http://google.com') == 'google.com'
+        assert ParseResponse.remove_protocol('https://google.com') == 'google.com'
+        assert ParseResponse.remove_protocol('http://www.google.com') == 'www.google.com'
