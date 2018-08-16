@@ -3,13 +3,13 @@
 """
 from datetime import datetime
 import logging
+import math
 import os
 import time
 
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import tld
-
 
 from .parse_response import ParseResponse
 from . import user_agent
@@ -31,6 +31,7 @@ class Scrapy(object):
         self.last_request_time = None
         self.last_response = None
         self.send_user_agent = ''
+        self.max_content_length = 200000000  # 200 MegaBytes
         self._setup_proxies()
 
     def __repr__(self):
@@ -83,7 +84,6 @@ class Scrapy(object):
     def save(self, url, destination, skip_ssl_verify=True):
         """
         Saves a file to a destination on the local drive. Good for quickly grabbing images from a remote site.
-        @todo: impelement the content size restriction.
 
         :param url: The url to fetch.
         :type: url: str
@@ -92,6 +92,7 @@ class Scrapy(object):
         :param skip_ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified will continue.
         :type skip_ssl_verify: bool
         """
+
         h = requests.head(url, allow_redirects=True)
         header = h.headers
         content_type = header.get('content-type')
@@ -100,16 +101,26 @@ class Scrapy(object):
         if 'html' in content_type.lower():
             return False
 
-        # content_length = header.get('content-length', None)
-        # if content_length and content_length > 2e8:  # 200 mb approx
-        #     return False
+        # Check content length
+        content_length = header.get('content-length', None)
+        if content_length.isdigit():
+            content_length = int(content_length)
+            if content_length > self.max_content_length:
+                logging.warning('Remote content-length: %s is greater then current max: %s')
+                return
 
-        save_dir = self._find_destination(destination)
+        # Get the file
         response = self.get(url, skip_ssl_verify=skip_ssl_verify)
-        phile_name = url[url.rfind('/') + 1:]
-        full_phile_name = os.path.join(save_dir, phile_name)
-        print(full_phile_name)
+
+        # Figure out where to save the file.
+        self._prep_destination(destination)
+        if os.path.isdir(destination):
+            phile_name = url[url.rfind('/') + 1:]
+            full_phile_name = os.path.join(destination, phile_name)
+        else:
+            full_phile_name = destination
         open(full_phile_name, 'wb').write(response.content)
+
         return full_phile_name
 
     def search(self, query, engine='duckduckgo'):
@@ -419,11 +430,39 @@ class Scrapy(object):
         self.request_count += 1
         self.request_total += 1
 
-    def _find_destination(self, destination):
-        if os.path.exists(os.path.isdir(destination)):
-            return destination
-        elif os.path.exists(destination):
-            print(destination)
+    def _prep_destination(self, destination):
+        """
+        Attempts to create the destintion directory path if needed.
+        @todo: create unit tests.
 
+        :param destination:
+        :type destination:
+        :returns: Success or failure of pepping destination.
+        :rtype: bool
+        """
+        if os.path.exists(os.path.isdir(destination)):
+            return True
+        elif os.path.exists(destination):
+            try:
+                os.makedirs(destination)
+                return True
+            except Exception:
+                logging.error('Could not create directory: %s' % destination)
+                return False
+
+    def _convert_size(self, size_bytes):
+        """
+        Converts bytes to human readable size.
+
+        :param size_bytes: Size in bytes to measure.
+        :type size_bytes: int
+        """
+        if size_bytes == 0:
+            return "0B"
+        size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
+        i = int(math.floor(math.log(size_bytes, 1024)))
+        p = math.pow(1024, i)
+        s = round(size_bytes / p, 2)
+        return "%s %s" % (s, size_name[i])
 
 # EndFile: scrapy/scrapy/scrapy.py

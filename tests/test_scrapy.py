@@ -26,6 +26,7 @@ class TestScrapy(object):
         s.last_request_time = None
         s.last_response = None
         s.send_user_agent = ''
+        s.max_content_length = 200000000
 
     def test_url_concat(self):
         assert Scrapy.url_concat('www.google.com', 'news') == 'www.google.com/news'
