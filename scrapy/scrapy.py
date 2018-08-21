@@ -192,7 +192,7 @@ class Scrapy(object):
                 continue
 
             if response.text != self.outbound_ip:
-                self.outbound_ip = response.text
+                self.outbound_ip = response.text.strip()
             return self.outbound_ip
 
         logging.error('Could not get outbound ip address.')
