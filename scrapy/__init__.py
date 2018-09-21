@@ -1,3 +1,11 @@
+"""Scrapy
+Multi faceted scraping utility. All the public methods of the Scrapy python module are in this file! For more
+information check out the README.md or https://www.github.com/politeauthority/scrapy
+
+Author: @politeauthority
+
+"""
+from datetime import datetime
 import logging
 import os
 
@@ -8,6 +16,43 @@ from .parse_response import ParseResponse
 
 
 class Scrapy(BaseScrapy):
+
+    def __init(self):
+        """
+        """
+        super().__init__()
+        self.headers = {}
+        self.user_agent = ''
+        self.skip_ssl_verify = True
+        self.mininum_wait_time = 0  # Sets the minumum wait time per domain to make a new request in seconds.
+        self.wait_and_retry_on_connection_error = 0
+        self.max_content_length = 200000000  # Sets the maximum downloard size, default 200 MegaBytes, in bytes.
+        self.proxies = {}
+        self.username = None
+        self.password = None
+        self.auth_type = None
+        self.change_user_agent_interval = 10
+
+    def request(self, method, url, payload={}, skip_ssl_verify=False):
+        """
+        Wrapper for the Requests python module's get method, adds in extras such as headers and proxies where
+        applicable.
+
+        :param method: The method for the request action to use. "GET", "POST", "PUT", "DELETE"
+        :type method: string
+        :param url: The url to fetch.
+        :type: url: str
+        :param skip_ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified will continue.
+        :type skip_ssl_verify: bool
+        :returns: A Requests module instance of the response.
+        :rtype: <Requests.response> obj
+        """
+        ssl_verify = True
+        if skip_ssl_verify:
+            ssl_verify = False
+        response = self._make_request(method, url, payload, ssl_verify)
+
+        return response
 
     def get(self, url, payload={}, skip_ssl_verify=False):
         """
@@ -24,7 +69,7 @@ class Scrapy(BaseScrapy):
         ssl_verify = True
         if skip_ssl_verify:
             ssl_verify = False
-        response = self._make_request(url, ssl_verify, 5, payload=payload)
+        response = self._make_request('GET', url, payload, ssl_verify)
 
         return response
 
@@ -45,7 +90,7 @@ class Scrapy(BaseScrapy):
         ssl_verify = True
         if skip_ssl_verify:
             ssl_verify = False
-        response = self._make_request(url, ssl_verify, 5, method="POST", payload=payload)
+        response = self._make_request('POST', url, payload, ssl_verify)
         return response
 
     def put(self, url, payload={}, skip_ssl_verify=False):
@@ -65,7 +110,27 @@ class Scrapy(BaseScrapy):
         ssl_verify = True
         if skip_ssl_verify:
             ssl_verify = False
-        response = self._make_request(url, ssl_verify, 5, method="PUT", payload=payload)
+        response = self._make_request('PUT', url, payload, ssl_verify)
+        return response
+
+    def delete(self, url, payload={}, skip_ssl_verify=False):
+        """
+        Wrapper for the Requests python module's DELETE method, adds in extras such as headers and proxies where
+        applicable.
+
+        :param url: The url to fetch/ post to.
+        :type: url: str
+        :param payload: The data to be sent over POST.
+        :type payload: dict
+        :param skip_ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified will continue.
+        :type skip_ssl_verify: bool
+        :returns: A Requests module instance of the response.
+        :rtype: <Requests.response> obj
+        """
+        ssl_verify = True
+        if skip_ssl_verify:
+            ssl_verify = False
+        response = self._make_request('DELETE', url, payload, ssl_verify)
         return response
 
     def save(self, url, destination, payload={}, skip_ssl_verify=True):
@@ -204,3 +269,21 @@ class Scrapy(BaseScrapy):
                 url_segment = '/' + url_segment
             url += url_segment
         return url
+
+    @staticmethod
+    def json_date(the_date=None):
+        """
+        Concats all args with slashes as needed.
+        @note this will probably move to a utility class sometime in the near future.
+
+        :param the_date: Datetime to convert, or if None, will use now.
+        :type the_date: <DateTime> or None
+        :returns: Jsonable date time string
+        :rtype: str
+        """
+        if not the_date:
+            the_date = datetime.now()
+        ret = the_date.strftime("%Y-%m-%d %H:%M:%S")
+        return ret
+
+# End File: scrapy/__init__.py

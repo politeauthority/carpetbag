@@ -1,4 +1,4 @@
-"""Scrapy
+"""BaseScrapy
 
 """
 from datetime import datetime
@@ -20,10 +20,16 @@ class BaseScrapy(object):
 
     def __init__(self):
         logging.getLogger(__name__)
-        self.proxies = {}
         self.headers = {}
         self.user_agent = ''
         self.skip_ssl_verify = True
+        self.mininum_wait_time = 0  # Sets the minumum wait time per domain to make a new request in seconds.
+        self.wait_and_retry_on_connection_error = 0
+        self.max_content_length = 200000000  # Sets the maximum downloard size, default 200 MegaBytes, in bytes.
+        self.proxies = {}
+        self.username = None
+        self.password = None
+        self.auth_type = None
         self.change_user_agent_interval = 10
         self.outbound_ip = None
         self.request_attempts = {}
@@ -31,10 +37,9 @@ class BaseScrapy(object):
         self.request_total = 0
         self.last_request_time = None
         self.last_response = None
-        self.send_user_agent = ''
-        self.max_content_length = 200000000  # Sets the maximum downloard size, default 200 MegaBytes, in bytes.
-        self.mininum_wait_time = 0  # Sets the minumum wait time per domain to make a new request in seconds.
+
         self._setup_proxies()
+        self.send_user_agent = ''
 
     def __repr__(self):
         proxy = ''
@@ -42,43 +47,32 @@ class BaseScrapy(object):
             proxy = " Proxy:%s" % self.proxies.get('http')
         return '<Scrapy%s>' % proxy
 
-    def _make_request(self, url, ssl_verify, attempts, method="GET", payload={}):
+    def _make_request(self, method, url, payload={}, ssl_verify=True):
         """
         Makes the response, over GET, POST or PUT.
 
+        :param method: The method for the request action to use. "GET", "POST", "PUT", "DELETE"
+        :type method: string
         :param url: The url to fetch/ post to.
         :type: url: str
+        :param payload: The payload to be sent, if we're making a post request.
+        :type payload: dict
         :param ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified the request
             will fail.
         :type ssl_verify: bool
-        :param attempts: The number of attempts to try before giving up.
-        :type attempts: int
-        :param method: HTTP verb to use, defaults to GET, can alternatively be POST.
-        :type method: str
-        :param payload: The payload to be sent, if we're making a post request.
-        :type payload: dict
         :returns: A Requests module instance of the response.
         :rtype: <Requests.response> obj
         """
+        if self.skip_ssl_verify:
+            ssl_verify = False
         ts_start = int(round(time.time() * 1000))
         url = ParseResponse.add_missing_protocol(url)
-        attempts = self._request_attempts(url)
-        headers = self._set_headers(attempts)
+        headers = self._get_headers()
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
         self._increment_counters()
         self._handle_sleep(url)
 
-        try:
-            if method == 'GET':
-                response = self._make_get(url, headers, payload, ssl_verify)
-            elif method == 'POST':
-                response = self._make_post(url, headers, payload, ssl_verify)
-            elif method == 'PUT':
-                response = self._make_put(url, headers, payload, ssl_verify)
-        except requests.exceptions.ProxyError:
-            logging.warning('Hit a proxy error, sleeping for %s and continuing.')
-            time.sleep(4)
-            return self._make_request(url, ssl_verify, attempts, method="GET", payload=None)
+        response = self._make(method, url, headers, payload, ssl_verify)
 
         self.last_response = response
         ts_end = int(round(time.time() * 1000))
@@ -91,99 +85,6 @@ class BaseScrapy(object):
             logging.warning('Recieved an error response %s' % response.status_code)
 
         logging.debug('Repsonse took %s for %s' % (roundtrip, url))
-
-        return response
-
-    def _make_get(self, url, headers, payload, ssl_verify):
-        """
-        Makes the GET request and handles different errors that may come about.
-
-        :param url: The url to fetch/ post to.
-        :type: url: str
-        :param headers: The headers to be sent on the request.
-        :type: headers: dict
-        :param payload: The data to be sent over the POST request.
-        :type payload: dict
-        :param ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified the request
-            will fail.
-        :type ssl_verify: bool
-
-        :returns: A Requests module instance of the response.
-        :rtype: <Requests.response> obj
-        """
-        try:
-            response = requests.get(
-                url,
-                headers=headers,
-                params=payload,
-                proxies=self.proxies,
-                verify=ssl_verify)
-        except requests.exceptions.SSLError:
-            logging.warning('Recieved an SSLError from %s' % url)
-            if self.skip_ssl_verify:
-                logging.warning('Re-running request without SSL cert verification.')
-                return self.get(url, skip_ssl_verify=True)
-            return self._handle_ssl_error(url, 'GET')
-        except requests.exceptions.ConnectionError:
-            logging.error('Unabled to connect to: %s' % url)
-            raise requests.exceptions.ConnectionError
-        return response
-
-    def _make_post(self, url, headers, payload, ssl_verify):
-        """
-        Makes the POST request and handles different errors that may come about.
-
-        :param url: The url to fetch/ post to.
-        :type: url: str
-        :param headers: The headers to be sent on the request.
-        :type: headers: dict
-        :param payload: The data to be sent over the POST request.
-        :type payload: dict
-        :param ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified the request
-            will fail.
-        :type ssl_verify: bool
-
-        :returns: A Requests module instance of the response.
-        :rtype: <Requests.response> obj
-        """
-        try:
-            response = requests.post(
-                url,
-                headers=headers,
-                proxies=self.proxies,
-                verify=ssl_verify,
-                data=payload)
-        except requests.exceptions.SSLError:
-            return self._handle_ssl_error(url, 'POST', payload)
-
-        return response
-
-    def _make_put(self, url, headers, payload, ssl_verify):
-        """
-        Makes the PUT request and handles different errors that may come about.
-
-        :param url: The url to fetch/ post to.
-        :type: url: str
-        :param headers: The headers to be sent on the request.
-        :type: headers: dict
-        :param payload: The data to be sent over the POST request.
-        :type payload: dict
-        :param ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified the request
-            will fail.
-        :type ssl_verify: bool
-
-        :returns: A Requests module instance of the response.
-        :rtype: <Requests.response> obj
-        """
-        try:
-            response = requests.put(
-                url,
-                headers=headers,
-                proxies=self.proxies,
-                verify=ssl_verify,
-                data=payload)
-        except requests.exceptions.SSLError:
-            return self._handle_ssl_error(url, 'PUT', payload)
 
         return response
 
@@ -264,14 +165,10 @@ class BaseScrapy(object):
             logging.warning('Could not determin domain for %s' % url)
             return ''
 
-    def _set_headers(self, attempts):
+    def _get_headers(self):
         """
-        Sets headers for the request, checks for user values in self.headers and then creates the rest.
+        Gets headers for the request, checks for user values in self.headers and then creates the rest.
 
-        :param attempts: The previous and current info on attempts being made to scrape a domain/url.
-        :type attemps: dict
-        :param headers: (optional) User/ method base headers to use.
-        :type headers: dict
         :returns: The headers to be sent in the request.
         :rtype: dict
         """
@@ -312,28 +209,122 @@ class BaseScrapy(object):
             logging.debug('Setting new UA: %s' % self.send_user_agent)
             return
 
-    def _handle_ssl_error(self, url, method, payload):
+    def _make(self, method, url, headers, payload, ssl_verify, retry=0):
+        """
+        Makes the request and handles different errors that may come about.
+
+        self.wait_and_retry_on_connection_error can be set to add a wait and retry in seconds.
+
+        :param url: The url to fetch/ post to.
+        :type: url: str
+        :param headers: The headers to be sent on the request.
+        :type: headers: dict
+        :param payload: The data to be sent over the POST request.
+        :type payload: dict
+        :param ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified the request
+            will fail.
+        :type ssl_verify: bool
+        :returns: A Requests module instance of the response.
+        :rtype: <Requests.response> obj
+        """
+        request_args = {
+            'method': method,
+            'url': url,
+            'headers': headers,
+            'proxies': self.proxies,
+            'verify': ssl_verify
+        }
+        if method == 'GET':
+            request_args['params'] = payload
+        elif method in ['PUT', 'POST']:
+            request_args['data'] = payload
+
+        try:
+            response = requests.request(**request_args)
+
+        # Catch an SSLError, seems to crop up with LetsEncypt certs.
+        except requests.exceptions.SSLError:
+            logging.warning('Recieved an SSLError from %s' % url)
+            if self.skip_ssl_verify:
+                logging.warning('Re-running request without SSL cert verification.')
+                return self._make(method, url, headers, payload, True, retry)
+
+            return self._handle_ssl_error(method, url, headers, payload, retry)
+
+        # Catch the server unavailble exception, and potentially retry if needed.
+        except requests.exceptions.ConnectionError:
+            response = self._handle_connection_error(method, url, headers, payload, ssl_verify, retry)
+            if response:
+                return response
+            raise requests.exceptions.ConnectionError
+
+        # Catch an error with the connection to the Proxy
+        except requests.exceptions.ProxyError:
+            logging.warning('Hit a proxy error, sleeping for %s and continuing.' % 5)
+            time.sleep(5)
+            return self._make(method, url, headers, payload, ssl_verify, retry)
+
+        return response
+
+    def _handle_connection_error(self, method, url, headers, payload, ssl_verify, retry):
+        """
+        Handles a connection error. If self.wait_and_retry_on_connection_error has a value other than 0 we will wait
+        that long until attempting to retry the url again.
+
+        :param url: The url to fetch/ post to.
+        :type: url: str
+        :param headers: The headers to be sent on the request.
+        :type: headers: dict
+        :param payload: The data to be sent over the POST request.
+        :type payload: dict
+        :param ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified the request
+            will fail.
+        :type ssl_verify: bool
+        :param retry: Number of attempts that have already been performed for this request.
+        :type ssl_verify: int
+        :returns: A Requests module instance of the response.
+        :rtype: <Requests.response> obj or None
+        """
+        logging.error('Unabled to connect to: %s' % url)
+
+        if self.wait_and_retry_on_connection_error:
+            total_retries = 5
+            retry += 1
+            if retry > total_retries:
+                return None
+            logging.warning(
+                'Attempt %s of %s. Sleeping and retrying url in %s seconds.' % (
+                    str(retry),
+                    total_retries,
+                    self.wait_and_retry_on_connection_error))
+            time.sleep(self.wait_and_retry_on_connection_error)
+            return self._make(method, url, headers, payload, ssl_verify, retry)
+
+        return None
+
+    def _handle_ssl_error(self, method, url, headers, payload, ssl_verify, retry):
         """
         Used to catch an SSL issue and allow scrapy to choose whether or not to try without SSL.
 
         :param url: The url to fetch/ post to.
         :type: url: str
-        :param method: HTTP verb to use, only supporting GET and POST currently.
+        :param headers: The headers to be sent on the request.
+        :type: headers: dict
         :param payload: The data to be sent over the POST request.
         :type payload: dict
+        :param ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified the request
+            will fail.
+        :type ssl_verify: bool
+        :param retry: Number of attempts that have already been performed for this request.
+        :type ssl_verify: int
         :returns: A Requests module instance of the response.
-        :rtype: <Requests.response> obj or False
+        :rtype: <Requests.response> obj or None
         """
         logging.warning("""There was an error with the SSL cert, this happens a lot with LetsEncrypt certificates. Set the class
             var, self.skip_ssl_verify or use the skip_ssl_verify in the .get(url=url, skip_ssl_verify=True)""")
         if self.skip_ssl_verify:
             logging.warning('Re-running request without SSL cert verification.')
-            if method == 'GET':
-                return self.get(url, payload, skip_ssl_verify=True)
-            elif method == 'POST':
-                return self.post(url, payload, skip_ssl_verify=True)
-            elif method == 'PUT':
-                return self.put(url, payload, skip_ssl_verify=True)
+            return self._make(method, url, headers, payload, ssl_verify, retry)
         return False
 
     def _increment_counters(self):

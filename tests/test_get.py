@@ -24,7 +24,7 @@ class TestGet(object):
 
         """
         scraper = Scrapy()
-        with vcr.use_cassette(os.path.join(CASSET_DIR, 'bad_actor_get.yaml')):
+        with vcr.use_cassette(os.path.join(CASSET_DIR, 'get_standard.yaml')):
             response = scraper.get('http://www.bad-actor.services/api/symbols/1')
             assert response.status_code == 200
 
@@ -35,7 +35,7 @@ class TestGet(object):
         """
         scraper = Scrapy()
         scraper.user_agent = 'Some-User-Agent'
-        with vcr.use_cassette(os.path.join(CASSET_DIR, 'bad_actor_get_user_agent.yaml')):
+        with vcr.use_cassette(os.path.join(CASSET_DIR, 'get_user_agent.yaml')):
             response = scraper.get('http://www.bad-actor.services/api/symbols/1')
             assert response.status_code == 200
             assert scraper.send_user_agent == 'Some-User-Agent'
@@ -57,7 +57,7 @@ class TestGet(object):
         #         'total_requests': 1
         #     }
         # }
-        with vcr.use_cassette(os.path.join(CASSET_DIR, 'bad_actor_get.yaml')):
+        with vcr.use_cassette(os.path.join(CASSET_DIR, 'get_last_response.yaml')):
             response = scraper.get('http://www.bad-actor.services/api/symbols/1')
             assert response.status_code == 200
             assert scraper.last_response.status_code == 200
@@ -73,7 +73,7 @@ class TestGet(object):
         """
         scraper = Scrapy()
         scraper.user_agent = 'Some-User-Agent'
-        with vcr.use_cassette(os.path.join(CASSET_DIR, 'bad_actor_get_404.yaml')):
+        with vcr.use_cassette(os.path.join(CASSET_DIR, 'get_404.yaml')):
             response = scraper.get('http://www.bad-actor.services/api/symbol/1')
             assert response.status_code == 404
 
@@ -84,7 +84,7 @@ class TestGet(object):
         """
         scraper = Scrapy()
         scraper.user_agent = 'Some-User-Agent'
-        with vcr.use_cassette(os.path.join(CASSET_DIR, 'bad_actor_get_unknown.yaml')):
+        with vcr.use_cassette(os.path.join(CASSET_DIR, 'get_cant_find_host.yaml')):
             with pytest.raises(requests.exceptions.ConnectionError):
                 scraper.get('http://www.12345151dfsdf.com/api/symbol/1')
 
@@ -105,7 +105,7 @@ class TestGet(object):
         """
         scraper = Scrapy()
         tor = scraper.check_tor()
-        with vcr.use_cassette(os.path.join(CASSET_DIR, 'check_tor_fail.yaml')):
+        with vcr.use_cassette(os.path.join(CASSET_DIR, 'get_check_tor_fail.yaml')):
             assert tor == 'Sorry. You are not using Tor.'
 
     def test_get_outbound_ip(self):
@@ -114,8 +114,8 @@ class TestGet(object):
 
         """
         scraper = Scrapy()
-        ip = scraper.get_outbound_ip()
         with vcr.use_cassette(os.path.join(CASSET_DIR, 'get_outbound_ip.yaml')):
-            assert ip == '73.203.37.237'
+            ip = scraper.get_outbound_ip()
+            assert ip == '206.144.98.178'
 
 # End File scrapy/tests/test_get.py
