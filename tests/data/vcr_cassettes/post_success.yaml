@@ -1,0 +1,29 @@
+interactions:
+- request:
+    body: '{"symbol": "DEMO-DEL5", "exchange": "nasdaq", "name": "DEMO DELETE5", "sector":
+      "Technology", "industry": "Technology Industry"}'
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      Content-Length: ['128']
+      Content-Type: [application/json]
+      User-Agent: ['Mozilla/5.0 (Windows NT 6.1; WOW64; rv:31.0) Gecko/20130401 Firefox/31.0']
+    method: POST
+    uri: http://www.bad-actor.services/api/symbols
+  response:
+    body: {string: "{\n  \"id\": 6584, \n  \"name\": \"DEMO DELETE5\", \n  \"quotes_daily\"\
+        : [], \n  \"symbol\": \"DEMO-DEL5\", \n  \"ts_updated\": \"2018-09-21T18:03:00.921300\"\
+        \n}\n"}
+    headers:
+      Connection: [keep-alive]
+      Content-Length: ['140']
+      Content-Type: [application/json]
+      Date: ['Fri, 21 Sep 2018 18:03:00 GMT']
+      Location: ['http://www.bad-actor.services/api/symbols/6584']
+      Server: [nginx/1.13.12]
+      Set-Cookie: ['session=f534deb8-81f0-486f-92db-0165fe299142; Expires=Mon, 22-Oct-2018
+          18:03:00 GMT; HttpOnly; Path=/']
+      Vary: [Accept]
+    status: {code: 201, message: CREATED}
+version: 1

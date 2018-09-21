@@ -118,9 +118,9 @@ interactions:
       Connection: [keep-alive]
       Content-Length: ['7621']
       Content-Type: [text/html; charset=utf-8]
-      Date: ['Fri, 21 Sep 2018 01:10:30 GMT']
+      Date: ['Fri, 21 Sep 2018 18:02:58 GMT']
       Server: [nginx/1.13.12]
-      Set-Cookie: ['session=dce80ad2-5fd5-49b3-80f3-eaa4d19daa7e; Expires=Mon, 22-Oct-2018
-          01:10:30 GMT; HttpOnly; Path=/']
+      Set-Cookie: ['session=f8965e46-8bbc-4f9c-ab11-79b5d11830a5; Expires=Mon, 22-Oct-2018
+          18:02:58 GMT; HttpOnly; Path=/']
     status: {code: 404, message: NOT FOUND}
 version: 1
