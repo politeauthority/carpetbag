@@ -1,4 +1,6 @@
 bs4==0.0.1
+flake8==3.5.0
 pytest==3.7.1
 requests==2.18.1
 tld==0.9.1
+vcrpy==2.0.0

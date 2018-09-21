@@ -2,6 +2,7 @@
 Run by using "pytest ." in the project root.
 
 """
+
 from scrapy.scrapy import Scrapy
 from scrapy import user_agent
 
@@ -27,8 +28,13 @@ class TestScrapy(object):
         s.last_response = None
         s.send_user_agent = ''
         s.max_content_length = 200000000
+        s.mininum_wait_time = 0
 
     def test_url_concat(self):
+        """
+        Tests the url_concat method, to make sure we're not adding any extra slashes or making weird urls.
+
+        """
         assert Scrapy.url_concat('www.google.com', 'news') == 'www.google.com/news'
         assert Scrapy.url_concat('www.google.com', '/news') == 'www.google.com/news'
 
@@ -48,12 +54,8 @@ class TestScrapy(object):
 
         """
         s = Scrapy()
-        set_headers = s._set_headers({}, {'Content-Type': 'application/json'})
-        assert set_headers['Content-Type'] == 'application/json'
-
-        s = Scrapy()
         s.headers = {'Content-Type': 'application/html'}
-        set_headers = s._set_headers({}, {})
+        set_headers = s._set_headers(attempts={})
         assert set_headers['Content-Type'] == 'application/html'
 
     def test__setup_proxies(self):
@@ -113,3 +115,17 @@ class TestScrapy(object):
         s._increment_counters()
         assert s.request_count == 2
         assert s.request_total == 2
+
+    def test__get_domain(self):
+        """
+        Tests the increment_counters method to make sure they increment!
+        @todo: Fix the ip fetching portion of this domain.
+
+        """
+        scraper = Scrapy()
+        assert scraper._get_domain('http://www.google.com') == 'google.com'
+        assert scraper._get_domain('http://localhost') == 'localhost'
+        # assert scraper._get_domain('http://192.168.50.137:5000') == '192.168.50.137'
+
+
+# End File scrapy/tests/test_scrapy.py

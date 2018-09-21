@@ -6,6 +6,7 @@ import logging
 import math
 import os
 import time
+import re
 
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -31,7 +32,8 @@ class Scrapy(object):
         self.last_request_time = None
         self.last_response = None
         self.send_user_agent = ''
-        self.max_content_length = 200000000  # 200 MegaBytes
+        self.max_content_length = 200000000  # Sets the maximum downloard size, default 200 MegaBytes, in bytes.
+        self.mininum_wait_time = 0  # Sets the minumum wait time per domain to make a new request in seconds.
         self._setup_proxies()
 
     def __repr__(self):
@@ -40,7 +42,7 @@ class Scrapy(object):
             proxy = " Proxy:%s" % self.proxies.get('http')
         return '<Scrapy%s>' % proxy
 
-    def get(self, url, skip_ssl_verify=False):
+    def get(self, url, payload={}, skip_ssl_verify=False):
         """
         Wrapper for the Requests python module's get method, adds in extras such as headers and proxies where
         applicable.
@@ -55,14 +57,13 @@ class Scrapy(object):
         ssl_verify = True
         if skip_ssl_verify:
             ssl_verify = False
-        headers = {}
-        response = self._make_request(url, ssl_verify, headers, 5)
+        response = self._make_request(url, ssl_verify, 5, payload=payload)
 
         return response
 
-    def post(self, url, payload, skip_ssl_verify=False):
+    def post(self, url, payload={}, skip_ssl_verify=False):
         """
-        Wrapper for the Requests python module's get method, adds in extras such as headers and proxies where
+        Wrapper for the Requests python module's post method, adds in extras such as headers and proxies where
         applicable.
 
         :param url: The url to fetch/ post to.
@@ -77,11 +78,30 @@ class Scrapy(object):
         ssl_verify = True
         if skip_ssl_verify:
             ssl_verify = False
-        headers = {}
-        response = self._make_request(url, ssl_verify, headers, 5)
+        response = self._make_request(url, ssl_verify, 5, method="POST", payload=payload)
         return response
 
-    def save(self, url, destination, skip_ssl_verify=True):
+    def put(self, url, payload={}, skip_ssl_verify=False):
+        """
+        Wrapper for the Requests python module's put method, adds in extras such as headers and proxies where
+        applicable.
+
+        :param url: The url to fetch/ post to.
+        :type: url: str
+        :param payload: The data to be sent over POST.
+        :type payload: dict
+        :param skip_ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified will continue.
+        :type skip_ssl_verify: bool
+        :returns: A Requests module instance of the response.
+        :rtype: <Requests.response> obj
+        """
+        ssl_verify = True
+        if skip_ssl_verify:
+            ssl_verify = False
+        response = self._make_request(url, ssl_verify, 5, method="PUT", payload=payload)
+        return response
+
+    def save(self, url, destination, payload={}, skip_ssl_verify=True):
         """
         Saves a file to a destination on the local drive. Good for quickly grabbing images from a remote site.
 
@@ -89,6 +109,8 @@ class Scrapy(object):
         :type: url: str
         :param destination: Where on the local filestem to store the image.
         :type: destination: str
+        :param payload: The data to be sent over GET.
+        :type payload: dict
         :param skip_ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified will continue.
         :type skip_ssl_verify: bool
         """
@@ -110,7 +132,7 @@ class Scrapy(object):
                 return
 
         # Get the file
-        response = self.get(url, skip_ssl_verify=skip_ssl_verify)
+        response = self.get(url, payload=payload, skip_ssl_verify=skip_ssl_verify)
 
         # Figure out where to save the file.
         self._prep_destination(destination)
@@ -216,17 +238,15 @@ class Scrapy(object):
             url += url_segment
         return url
 
-    def _make_request(self, url, ssl_verify, headers, attempts, method="GET", payload=None):
+    def _make_request(self, url, ssl_verify, attempts, method="GET", payload=None):
         """
-        Makes the response, over GET or POST.
+        Makes the response, over GET, POST or PUT.
 
         :param url: The url to fetch/ post to.
         :type: url: str
         :param ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified the request
             will fail.
         :type ssl_verify: bool
-        :param headers: Request headers to be sent, such as user agent and whatever else you got.
-        :type headers: dict
         :param attempts: The number of attempts to try before giving up.
         :type attempts: int
         :param method: HTTP verb to use, defaults to GET, can alternatively be POST.
@@ -239,26 +259,29 @@ class Scrapy(object):
         ts_start = int(round(time.time() * 1000))
         url = ParseResponse.add_missing_protocol(url)
         attempts = self._request_attempts(url)
-        headers = self._set_headers(attempts, headers)
+        headers = self._set_headers(attempts)
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
         self._increment_counters()
+        self._handle_sleep(url)
 
         try:
             if method == 'GET':
-                response = self._make_get(url, headers, ssl_verify)
+                response = self._make_get(url, headers, payload, ssl_verify)
             elif method == 'POST':
-                response = self._make_post(url, headers, ssl_verify, payload)
+                response = self._make_post(url, headers, payload, ssl_verify)
+            elif method == 'PUT':
+                response = self._make_put(url, headers, payload, ssl_verify)
         except requests.exceptions.ProxyError:
             logging.warning('Hit a proxy error, sleeping for %s and continuing.')
             time.sleep(4)
-            return self._make_request(url, ssl_verify, headers, attempts, method="GET", payload=None)
+            return self._make_request(url, ssl_verify, attempts, method="GET", payload=None)
 
         self.last_response = response
         ts_end = int(round(time.time() * 1000))
         roundtrip = ts_end - ts_start
         self.last_request_time = datetime.now()
         response.roundtrip = roundtrip
-        response.domain = tld.get_fld(url)
+        response.domain = self._get_domain(url)
 
         if response.status_code >= 503 and response.status_code < 600:
             logging.warning('Recieved an error response %s' % response.status_code)
@@ -267,16 +290,20 @@ class Scrapy(object):
 
         return response
 
-    def _make_get(self, url, headers, ssl_verify):
+    def _make_get(self, url, headers, payload, ssl_verify):
         """
+        Makes the GET request and handles different errors that may come about.
 
         :param url: The url to fetch/ post to.
         :type: url: str
-        :param headers: Request headers to be sent, such as user agent and whatever else you got.
-        :type headers: dict
+        :param headers: The headers to be sent on the request.
+        :type: headers: dict
+        :param payload: The data to be sent over the POST request.
+        :type payload: dict
         :param ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified the request
             will fail.
         :type ssl_verify: bool
+
         :returns: A Requests module instance of the response.
         :rtype: <Requests.response> obj
         """
@@ -284,6 +311,7 @@ class Scrapy(object):
             response = requests.get(
                 url,
                 headers=headers,
+                params=payload,
                 proxies=self.proxies,
                 verify=ssl_verify)
         except requests.exceptions.SSLError:
@@ -292,21 +320,25 @@ class Scrapy(object):
                 logging.warning('Re-running request without SSL cert verification.')
                 return self.get(url, skip_ssl_verify=True)
             return self._handle_ssl_error(url, 'GET')
-
+        except requests.exceptions.ConnectionError:
+            logging.error('Unabled to connect to: %s' % url)
+            raise requests.exceptions.ConnectionError
         return response
 
-    def _make_post(self, url, headers, ssl_verify, payload):
+    def _make_post(self, url, headers, payload, ssl_verify):
         """
+        Makes the POST request and handles different errors that may come about.
 
         :param url: The url to fetch/ post to.
         :type: url: str
-        :param headers: Request headers to be sent, such as user agent and whatever else you got.
-        :type headers: dict
+        :param headers: The headers to be sent on the request.
+        :type: headers: dict
+        :param payload: The data to be sent over the POST request.
+        :type payload: dict
         :param ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified the request
             will fail.
         :type ssl_verify: bool
-        :param payload: The data to be sent over the POST request.
-        :type payload: dict
+
         :returns: A Requests module instance of the response.
         :rtype: <Requests.response> obj
         """
@@ -322,12 +354,68 @@ class Scrapy(object):
 
         return response
 
+    def _make_put(self, url, headers, payload, ssl_verify):
+        """
+        Makes the PUT request and handles different errors that may come about.
+
+        :param url: The url to fetch/ post to.
+        :type: url: str
+        :param headers: The headers to be sent on the request.
+        :type: headers: dict
+        :param payload: The data to be sent over the POST request.
+        :type payload: dict
+        :param ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified the request
+            will fail.
+        :type ssl_verify: bool
+
+        :returns: A Requests module instance of the response.
+        :rtype: <Requests.response> obj
+        """
+        try:
+            response = requests.put(
+                url,
+                headers=headers,
+                proxies=self.proxies,
+                verify=ssl_verify,
+                data=payload)
+        except requests.exceptions.SSLError:
+            return self._handle_ssl_error(url, 'PUT', payload)
+
+        return response
+
+    def _handle_sleep(self, url):
+        """
+        Sets scrapy to sleep if we are making a request to the same server in less time then the value of
+        self.mininum_wait_time allows for.
+
+        :param url: The url being requested.
+        :type url: str
+        """
+        if not self.mininum_wait_time:
+            return
+
+        if not self.last_response:
+            return
+
+        if tld.get_fld(self.last_response.url) != tld.get_fld(url):
+            return
+
+        if not self.last_request_time:
+            return
+
+        diff_time = datetime.now() - self.last_request_time
+        if diff_time.seconds < self.mininum_wait_time:
+            sleep_time = self.mininum_wait_time - diff_time.seconds
+            logging.debug('Sleeping %s seconds before next request.')
+            time.sleep(sleep_time)
+
     def _request_attempts(self, url):
         """
         Method to keep track of requests made to a domain and urls. This will likely be wiped everytime we change ips.
 
         """
-        site_domain = tld.get_tld(url)
+        site_domain = self._get_domain(url)
+
         # Handle the domain portion of requested_attempts.
         if site_domain not in self.request_attempts:
             self.request_attempts[site_domain] = {
@@ -347,7 +435,32 @@ class Scrapy(object):
 
         return self.request_attempts[site_domain]
 
-    def _set_headers(self, attempts, headers={}):
+    def _get_domain(self, url):
+        """
+        Tries to get the domain/ip and port from the url we are requesting to.
+        @tod: There looks to be an issue with getting an ip address from the url.
+
+        :param url:
+        :type urls: str
+        :returns: The domain/ip of the server being requested to.
+        :rtype: str
+        """
+        ip_check = re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}([:]\d{2,4})?", url)
+
+        try:
+            return ip_check.group()
+        except AttributeError:
+                pass
+        if '//localhost' in url:
+            return 'localhost'
+
+        try:
+            return tld.get_fld(url)
+        except tld.exceptions.TldDomainNotFound:
+            logging.warning('Could not determin domain for %s' % url)
+            return ''
+
+    def _set_headers(self, attempts):
         """
         Sets headers for the request, checks for user values in self.headers and then creates the rest.
 
@@ -360,13 +473,8 @@ class Scrapy(object):
         """
         send_headers = {}
         self._set_user_agent()
-        if 'User-Agent' in attempts:
-            send_headers['User-Agent'] = attempts['User-Agent']
-        else:
+        if self.send_user_agent:
             send_headers['User-Agent'] = self.send_user_agent
-
-        for key, value in headers.items():
-            send_headers[key] = value
 
         for key, value in self.headers.items():
             send_headers[key] = value
@@ -420,6 +528,8 @@ class Scrapy(object):
                 return self.get(url, payload, skip_ssl_verify=True)
             elif method == 'POST':
                 return self.post(url, payload, skip_ssl_verify=True)
+            elif method == 'PUT':
+                return self.put(url, payload, skip_ssl_verify=True)
         return False
 
     def _increment_counters(self):

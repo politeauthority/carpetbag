@@ -1,0 +1,25 @@
+interactions:
+- request:
+    body: '{"symbol": "MSFTS", "exchange": "nasdaq", "name": "Microsoft", "sector":
+      "Technology", "industry": "Technology Industry"}'
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      Content-Length: ['121']
+      Content-Type: [application/json]
+      User-Agent: ['Mozilla/5.0 (X11; Linux i586; rv:31.0) Gecko/20100101 Firefox/31.0']
+    method: POST
+    uri: http://192.168.50.137:5000/api/symbols
+  response:
+    body: {string: "{\n  \"message\": \"ProgrammingError\"\n}\n"}
+    headers:
+      Content-Length: ['36']
+      Content-Type: [application/json, application/json]
+      Date: ['Fri, 21 Sep 2018 01:10:32 GMT']
+      Server: [Werkzeug/0.12.2 Python/3.6.5]
+      Set-Cookie: ['session=5c8ebcaf-0d2b-43f8-bf24-761a733e89da; Expires=Mon, 22-Oct-2018
+          01:10:32 GMT; HttpOnly; Path=/']
+      Vary: [Accept]
+    status: {code: 400, message: BAD REQUEST}
+version: 1
