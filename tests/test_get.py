@@ -9,7 +9,7 @@ import requests
 import pytest
 import vcr
 
-from scrapy.scrapy import Scrapy
+from scrapy import Scrapy
 
 CASSET_DIR = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),

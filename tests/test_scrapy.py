@@ -3,7 +3,7 @@ Run by using "pytest ." in the project root.
 
 """
 
-from scrapy.scrapy import Scrapy
+from scrapy import Scrapy
 from scrapy import user_agent
 
 
