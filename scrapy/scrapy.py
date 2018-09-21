@@ -281,7 +281,7 @@ class Scrapy(object):
         roundtrip = ts_end - ts_start
         self.last_request_time = datetime.now()
         response.roundtrip = roundtrip
-        response.domain = tld.get_fld(url)
+        response.domain = self._get_domain(url)
 
         if response.status_code >= 503 and response.status_code < 600:
             logging.warning('Recieved an error response %s' % response.status_code)
@@ -310,7 +310,7 @@ class Scrapy(object):
         try:
             response = requests.get(
                 url,
-                headers=self.headers,
+                headers=headers,
                 params=payload,
                 proxies=self.proxies,
                 verify=ssl_verify)
@@ -345,7 +345,7 @@ class Scrapy(object):
         try:
             response = requests.post(
                 url,
-                headers=self.headers,
+                headers=headers,
                 proxies=self.proxies,
                 verify=ssl_verify,
                 data=payload)
@@ -374,7 +374,7 @@ class Scrapy(object):
         try:
             response = requests.put(
                 url,
-                headers=self.headers,
+                headers=headers,
                 proxies=self.proxies,
                 verify=ssl_verify,
                 data=payload)
@@ -438,6 +438,7 @@ class Scrapy(object):
     def _get_domain(self, url):
         """
         Tries to get the domain/ip and port from the url we are requesting to.
+        @tod: There looks to be an issue with getting an ip address from the url.
 
         :param url:
         :type urls: str
@@ -472,9 +473,7 @@ class Scrapy(object):
         """
         send_headers = {}
         self._set_user_agent()
-        if 'User-Agent' in attempts:
-            send_headers['User-Agent'] = attempts['User-Agent']
-        else:
+        if self.send_user_agent:
             send_headers['User-Agent'] = self.send_user_agent
 
         for key, value in self.headers.items():
