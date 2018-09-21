@@ -42,7 +42,7 @@ class BaseScrapy(object):
             proxy = " Proxy:%s" % self.proxies.get('http')
         return '<Scrapy%s>' % proxy
 
-    def _make_request(self, url, ssl_verify, attempts, method="GET", payload=None):
+    def _make_request(self, url, ssl_verify, attempts, method="GET", payload={}):
         """
         Makes the response, over GET, POST or PUT.
 

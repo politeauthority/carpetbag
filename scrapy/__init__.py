@@ -6,6 +6,7 @@ import requests
 from .base_scrapy import BaseScrapy
 from .parse_response import ParseResponse
 
+
 class Scrapy(BaseScrapy):
 
     def get(self, url, payload={}, skip_ssl_verify=False):
