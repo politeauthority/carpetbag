@@ -35,7 +35,7 @@ class TestGet(object):
         """
         scraper = Scrapy()
         scraper.user_agent = 'Some-User-Agent'
-        with vcr.use_cassette(os.path.join(CASSET_DIR, 'bad_actor_get.yaml')):
+        with vcr.use_cassette(os.path.join(CASSET_DIR, 'bad_actor_get_user_agent.yaml')):
             response = scraper.get('http://www.bad-actor.services/api/symbols/1')
             assert response.status_code == 200
             assert scraper.send_user_agent == 'Some-User-Agent'

@@ -5,8 +5,7 @@ interactions:
       Accept: ['*/*']
       Accept-Encoding: ['gzip, deflate']
       Connection: [keep-alive]
-      User-Agent: ['Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML,
-          like Gecko) Chrome/41.0.2225.0 Safari/537.36']
+      User-Agent: [Some-User-Agent]
     method: GET
     uri: http://www.bad-actor.services/api/symbols/1
   response:
@@ -36,10 +35,10 @@ interactions:
       Connection: [keep-alive]
       Content-Length: ['1432']
       Content-Type: [application/json]
-      Date: ['Fri, 21 Sep 2018 04:10:21 GMT']
+      Date: ['Fri, 21 Sep 2018 04:10:22 GMT']
       Server: [nginx/1.13.12]
-      Set-Cookie: ['session=e729648f-b45c-4a89-93e1-63aaba0ae057; Expires=Mon, 22-Oct-2018
-          04:10:21 GMT; HttpOnly; Path=/']
+      Set-Cookie: ['session=3bfdb3da-04d1-49f8-a358-31a280fdf9e7; Expires=Mon, 22-Oct-2018
+          04:10:22 GMT; HttpOnly; Path=/']
       Vary: [Accept]
     status: {code: 200, message: OK}
 version: 1
