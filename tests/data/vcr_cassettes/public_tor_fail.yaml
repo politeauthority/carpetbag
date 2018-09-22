@@ -1,0 +1,83 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept: ['*/*']
+      Accept-Encoding: ['gzip, deflate']
+      Connection: [keep-alive]
+      User-Agent: ['Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like
+          Gecko) Chrome/41.0.2227.0 Safari/537.36']
+    method: GET
+    uri: https://check.torproject.org/
+  response:
+    body:
+      string: !!binary |
+        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
+        dh8AAA==
+    headers:
+      Connection: [Keep-Alive]
+      Content-Encoding: [gzip]
+      Content-Length: ['2797']
+      Content-Type: [text/html; charset=utf-8]
+      Date: ['Sat, 22 Sep 2018 01:00:29 GMT']
+      Keep-Alive: ['timeout=5, max=100']
+      Public-Key-Pins: [pin-sha256="8sAfltZvuAIt90J3HFkuB5T6GieB5gJzdokwgcIYBxY=";
+          pin-sha256="MPTzsPOJHxg3eVF2PQg+0H4Gzk/CgeON/y7oNBdTBds="; max-age=5184000]
+      Referrer-Policy: [no-referrer]
+      Server: [Apache]
+      Strict-Transport-Security: [max-age=15768000; preload]
+      Vary: [Accept-Encoding]
+      Via: [1.1 check.torproject.org]
+      X-Content-Type-Options: [nosniff]
+      X-Frame-Options: [sameorigin]
+      X-Xss-Protection: ['1']
+    status: {code: 200, message: OK}
+version: 1

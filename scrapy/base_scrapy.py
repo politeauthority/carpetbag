@@ -25,6 +25,7 @@ class BaseScrapy(object):
         self.skip_ssl_verify = True
         self.mininum_wait_time = 0  # Sets the minumum wait time per domain to make a new request in seconds.
         self.wait_and_retry_on_connection_error = 0
+        self.retries_on_connection_failure = 5
         self.max_content_length = 200000000  # Sets the maximum downloard size, default 200 MegaBytes, in bytes.
         self.proxies = {}
         self.username = None
@@ -287,8 +288,8 @@ class BaseScrapy(object):
         """
         logging.error('Unabled to connect to: %s' % url)
 
-        if self.wait_and_retry_on_connection_error:
-            total_retries = 5
+        if self.retries_on_connection_failure:
+            total_retries = self.retries_on_connection_failure
             retry += 1
             if retry > total_retries:
                 return None
@@ -297,7 +298,8 @@ class BaseScrapy(object):
                     str(retry),
                     total_retries,
                     self.wait_and_retry_on_connection_error))
-            time.sleep(self.wait_and_retry_on_connection_error)
+            if self.wait_and_retry_on_connection_error:
+                time.sleep(self.wait_and_retry_on_connection_error)
             return self._make(method, url, headers, payload, ssl_verify, retry)
 
         return None

@@ -13,6 +13,7 @@ import requests
 
 from .base_scrapy import BaseScrapy
 from .parse_response import ParseResponse
+from . import user_agent
 
 
 class Scrapy(BaseScrapy):
@@ -26,6 +27,7 @@ class Scrapy(BaseScrapy):
         self.skip_ssl_verify = True
         self.mininum_wait_time = 0  # Sets the minumum wait time per domain to make a new request in seconds.
         self.wait_and_retry_on_connection_error = 0
+        self.retries_on_connection_failure = 5
         self.max_content_length = 200000000  # Sets the maximum downloard size, default 200 MegaBytes, in bytes.
         self.proxies = {}
         self.username = None
@@ -133,6 +135,13 @@ class Scrapy(BaseScrapy):
         response = self._make_request('DELETE', url, payload, ssl_verify)
         return response
 
+    def random_user_agent(self):
+        """
+        Sets a random, common browser's User Agent string as our own.
+
+        """
+        self.user_agent = user_agent.get_random_ua()
+
     def save(self, url, destination, payload={}, skip_ssl_verify=True):
         """
         Saves a file to a destination on the local drive. Good for quickly grabbing images from a remote site.
@@ -207,11 +216,19 @@ class Scrapy(BaseScrapy):
         """
         Checks the Tor Projects page "check.torproject.org" to see if we're running through a tor proxy correctly, and
         exiting through an actual tor exit node.
+        @todo: Need to run this successfull to get the tor success page!!
 
+        :returns: Whether or not your proxy is using Tor and Scrapy is connected to it.
+        :params: bool
         """
         response = self.get('https://check.torproject.org')
         parsed = self.parse(response)
-        return parsed.get_title()
+        title = parsed.get_title()
+        if title == 'Sorry. You are not using Tor.':
+            return False
+        elif title == 'yeah':
+            return True
+        return None
 
     def parse(self, response=None):
         """
