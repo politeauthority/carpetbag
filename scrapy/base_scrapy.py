@@ -38,6 +38,7 @@ class BaseScrapy(object):
         self.request_total = 0
         self.last_request_time = None
         self.last_response = None
+        self.ts_start = None
 
         self._setup_proxies()
         self.send_user_agent = ''
@@ -66,7 +67,7 @@ class BaseScrapy(object):
         """
         if self.skip_ssl_verify:
             ssl_verify = False
-        ts_start = int(round(time.time() * 1000))
+        self.ts_start = int(round(time.time() * 1000))
         url = ParseResponse.add_missing_protocol(url)
         headers = self._get_headers()
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
@@ -75,12 +76,7 @@ class BaseScrapy(object):
 
         response = self._make(method, url, headers, payload, ssl_verify)
 
-        self.last_response = response
-        ts_end = int(round(time.time() * 1000))
-        roundtrip = ts_end - ts_start
-        self.last_request_time = datetime.now()
-        response.roundtrip = roundtrip
-        response.domain = self._get_domain(url)
+        roundtrip = self._after_request(response)
 
         if response.status_code >= 503 and response.status_code < 600:
             logging.warning('Recieved an error response %s' % response.status_code)
@@ -115,32 +111,6 @@ class BaseScrapy(object):
             logging.debug('Sleeping %s seconds before next request.')
             time.sleep(sleep_time)
 
-    def _request_attempts(self, url):
-        """
-        Method to keep track of requests made to a domain and urls. This will likely be wiped everytime we change ips.
-
-        """
-        site_domain = self._get_domain(url)
-
-        # Handle the domain portion of requested_attempts.
-        if site_domain not in self.request_attempts:
-            self.request_attempts[site_domain] = {
-                'urls': {},
-                'total_requests': 1,
-            }
-        else:
-            self.request_attempts[site_domain]['total_requests'] += 1
-
-        # Handle the URL portion of requested_attemps.
-        if url not in self.request_attempts[site_domain]['urls']:
-            self.request_attempts[site_domain]['urls'][url] = {
-                'count': 1
-            }
-        else:
-            self.request_attempts[site_domain]['urls'][url]['count'] += 1
-
-        return self.request_attempts[site_domain]
-
     def _get_domain(self, url):
         """
         Tries to get the domain/ip and port from the url we are requesting to.
@@ -151,12 +121,14 @@ class BaseScrapy(object):
         :returns: The domain/ip of the server being requested to.
         :rtype: str
         """
-        ip_check = re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}([:]\d{2,4})?", url)
-
-        try:
-            return ip_check.group()
-        except AttributeError:
+        regex = r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"
+        matches = re.finditer(regex, url)
+        for matchNum, match in enumerate(matches):
+            try:
+                return match.group()
+            except AttributeError:
                 pass
+
         if '//localhost' in url:
             return 'localhost'
 
@@ -222,6 +194,7 @@ class BaseScrapy(object):
         :type: headers: dict
         :param payload: The data to be sent over the POST request.
         :type payload: dict
+
         :param ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified the request
             will fail.
         :type ssl_verify: bool
@@ -249,7 +222,6 @@ class BaseScrapy(object):
             if self.skip_ssl_verify:
                 logging.warning('Re-running request without SSL cert verification.')
                 return self._make(method, url, headers, payload, True, retry)
-
             return self._handle_ssl_error(method, url, headers, payload, retry)
 
         # Catch the server unavailble exception, and potentially retry if needed.
@@ -257,6 +229,8 @@ class BaseScrapy(object):
             response = self._handle_connection_error(method, url, headers, payload, ssl_verify, retry)
             if response:
                 return response
+
+            self._after_request(url)
             raise requests.exceptions.ConnectionError
 
         # Catch an error with the connection to the Proxy
@@ -328,6 +302,28 @@ class BaseScrapy(object):
             logging.warning('Re-running request without SSL cert verification.')
             return self._make(method, url, headers, payload, ssl_verify, retry)
         return False
+
+    def _after_request(self, url, response=None):
+        """
+        Runs after request opperations, sets counters and run times. This Should be called before any raised known
+        execption.
+
+        :param url: The url being requested.
+        :type url: str
+        :param response: The <Response> object from <Requests>
+        :type response: <Response> object
+        :returns: The round trip time from the request in milliseconds.
+        :type: float
+        """
+        self.last_response = response
+        ts_end = int(round(time.time() * 1000))
+        roundtrip = ts_end - self.ts_start
+        self.last_request_time = datetime.now()
+        if response:
+            response.roundtrip = roundtrip
+            response.domain = self._get_domain(url)
+        self.ts_start = None
+        return roundtrip
 
     def _increment_counters(self):
         """

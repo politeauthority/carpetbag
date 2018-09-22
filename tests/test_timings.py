@@ -18,7 +18,7 @@ CASSET_DIR = os.path.join(
 
 class TestTimings(object):
 
-    def test_get_successful(self):
+    def test_minimum_wait(self):
         """
         Tests Scrapy's main public method to make sure we're getting the responses we expect.
 
@@ -27,13 +27,14 @@ class TestTimings(object):
 
         scraper = Scrapy()
         scraper.mininum_wait_time = 3
-        with vcr.use_cassette(os.path.join(CASSET_DIR, 'timings_1.yaml')):
+        with vcr.use_cassette(os.path.join(CASSET_DIR, 'timings_minimum_wait.yaml')):
             scraper.get('http://www.bad-actor.services/api/symbols/1')
             scraper.get('http://www.bad-actor.services/api/symbols/2')
+            scraper.get('http://www.bad-actor.services/api/something-wont-work/1')
 
         end = datetime.now()
         run_time = (end - start).seconds
-        assert run_time >= scraper.mininum_wait_time
+        assert run_time >= scraper.mininum_wait_time * 3
 
     def test_retry_on_bad_connection(self):
         """
