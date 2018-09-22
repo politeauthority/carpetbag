@@ -1,8 +1,6 @@
-"""Test Scrapy
-Run by using "pytest ." in the project root.
+"""Test Base Scrapy. Tests for the private methods of scrapy.
 
 """
-from datetime import datetime
 import os
 
 from scrapy import Scrapy
@@ -43,37 +41,13 @@ class TestBaseScrapy(object):
         assert not s.password
         assert not s.auth_type
 
-    def test_json_date(self):
-        """
-        Tests the JSON date method to try and convert the information to JSON friendly output.
-
-        """
-        the_date = datetime(2018, 10, 13, 12, 12, 12)
-        assert Scrapy.json_date(the_date) == '2018-10-13 12:12:12'
-        assert isinstance(Scrapy.json_date(), str)
-
-    def test_url_concat(self):
-        """
-        Tests the url_concat method, to make sure we're not adding any extra slashes or making weird urls.
-
-        """
-        assert Scrapy.url_concat('www.google.com', 'news') == 'www.google.com/news'
-        assert Scrapy.url_concat('www.google.com', '/news') == 'www.google.com/news'
-
     def test__make_request(self):
         scraper = Scrapy()
         with vcr.use_cassette(os.path.join(CASSET_DIR, 'test__make_request.yaml')):
-            scraper._make_request('GET', 'http://www.google.com/news')
-
-    # def test__request_attempts(self):
-    #     """
-    #     Tests that the request_attempts method is adding values to manifest var.
-
-    #     """
-    #     s = Scrapy()
-    #     ret = s._request_attempts('http://google.com/news')
-    #     assert 'http://google.com/news' in ret['urls']
-    #     assert ret['urls']['http://google.com/news']['count'] == 1
+            request = scraper._make_request('GET', 'http://www.google.com/news')
+        assert request
+        assert request.text
+        assert request.status_code == 200
 
     def test__get_headers(self):
         """
@@ -94,10 +68,10 @@ class TestBaseScrapy(object):
         """
         s = Scrapy()
         assert not s.proxies
-        s.proxies = {'http': 'localhost'}
+        s.proxies = {'http': 'localhost:8118'}
         s._setup_proxies()
-        assert s.proxies['https'] == 'localhost'
-        assert s.proxies['http'] == 'localhost'
+        assert s.proxies['https'] == 'localhost:8118'
+        assert s.proxies['http'] == 'localhost:8118'
 
     def test__set_user_agent_auto(self):
         """

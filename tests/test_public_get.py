@@ -98,24 +98,4 @@ class TestGet(object):
             response = scraper.search('learn python')
             assert response['results'][0]['title'] == 'Learn Python | Udemy.com\nAd'
 
-    def test_check_tor_fail(self):
-        """
-        Tests the method Scrapy().check_tor(), this test mocks out a failure of connecting to tor.
-
-        """
-        scraper = Scrapy()
-        tor = scraper.check_tor()
-        with vcr.use_cassette(os.path.join(CASSET_DIR, 'get_check_tor_fail.yaml')):
-            assert tor == 'Sorry. You are not using Tor.'
-
-    def test_get_outbound_ip(self):
-        """
-        Tests the Scrapy().get_outbound_ip method to make sure we get and parse the outbound IP correctly.
-
-        """
-        scraper = Scrapy()
-        with vcr.use_cassette(os.path.join(CASSET_DIR, 'get_outbound_ip.yaml')):
-            ip = scraper.get_outbound_ip()
-            assert ip == '206.144.98.178'
-
 # End File scrapy/tests/test_get.py
