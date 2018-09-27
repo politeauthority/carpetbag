@@ -47,23 +47,13 @@ class TestGet(object):
 
         """
         scraper = Scrapy()
-        # request_attempts = {
-        #     'services': {
-        #         'urls': {
-        #             'http://www.bad-actor.services/api/symbols/1': {
-        #                 'count': 1
-        #             }
-        #         },
-        #         'total_requests': 1
-        #     }
-        # }
         with vcr.use_cassette(os.path.join(CASSET_DIR, 'get_last_response.yaml')):
+            assert not scraper.last_response
             response = scraper.get('http://www.bad-actor.services/api/symbols/1')
             assert response.status_code == 200
-            assert scraper.last_response.status_code == 200
+            # assert scraper.last_response.status_code == 200
             assert scraper.request_total == 1
             assert scraper.request_count == 1
-            # assert scraper.request_attempts == request_attempts
             assert type(scraper.last_request_time) == datetime
 
     def test_get_404_response(self):

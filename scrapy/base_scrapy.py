@@ -31,14 +31,14 @@ class BaseScrapy(object):
         self.username = None
         self.password = None
         self.auth_type = None
-        self.change_user_agent_interval = 10
+        self.change_identity_interval = 10
         self.outbound_ip = None
         self.request_attempts = {}
         self.request_count = 0
         self.request_total = 0
         self.last_request_time = None
         self.last_response = None
-        self.ts_start = None
+        self.manifest = {}
 
         self._setup_proxies()
         self.send_user_agent = ''
@@ -67,7 +67,7 @@ class BaseScrapy(object):
         """
         if self.skip_ssl_verify:
             ssl_verify = False
-        self.ts_start = int(round(time.time() * 1000))
+        ts_start = int(round(time.time() * 1000))
         url = ParseResponse.add_missing_protocol(url)
         headers = self._get_headers()
         requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
@@ -76,7 +76,7 @@ class BaseScrapy(object):
 
         response = self._make(method, url, headers, payload, ssl_verify)
 
-        roundtrip = self._after_request(response)
+        roundtrip = self._after_request(ts_start, response)
 
         if response.status_code >= 503 and response.status_code < 600:
             logging.warning('Recieved an error response %s' % response.status_code)
@@ -177,11 +177,6 @@ class BaseScrapy(object):
             self.send_user_agent = self.user_agent
             return
 
-        if not self.send_user_agent or self.request_count == self.change_user_agent_interval:
-            self.send_user_agent = user_agent.get_random_ua(self.send_user_agent)
-            logging.debug('Setting new UA: %s' % self.send_user_agent)
-            return
-
     def _make(self, method, url, headers, payload, ssl_verify, retry=0):
         """
         Makes the request and handles different errors that may come about.
@@ -230,7 +225,6 @@ class BaseScrapy(object):
             if response:
                 return response
 
-            self._after_request(url)
             raise requests.exceptions.ConnectionError
 
         # Catch an error with the connection to the Proxy
@@ -303,11 +297,13 @@ class BaseScrapy(object):
             return self._make(method, url, headers, payload, ssl_verify, retry)
         return False
 
-    def _after_request(self, url, response=None):
+    def _after_request(self, ts_start, url, response=None):
         """
         Runs after request opperations, sets counters and run times. This Should be called before any raised known
         execption.
 
+        :param ts_start: The start of the request.
+        :type st_start: int
         :param url: The url being requested.
         :type url: str
         :param response: The <Response> object from <Requests>
@@ -317,7 +313,7 @@ class BaseScrapy(object):
         """
         self.last_response = response
         ts_end = int(round(time.time() * 1000))
-        roundtrip = ts_end - self.ts_start
+        roundtrip = ts_end - ts_start
         self.last_request_time = datetime.now()
         if response:
             response.roundtrip = roundtrip
@@ -359,6 +355,8 @@ class BaseScrapy(object):
 
         :param size_bytes: Size in bytes to measure.
         :type size_bytes: int
+        :returns: The size of the var in a human readable format.
+        :rtype: str
         """
         if size_bytes == 0:
             return "0B"
@@ -368,4 +366,4 @@ class BaseScrapy(object):
         s = round(size_bytes / p, 2)
         return "%s %s" % (s, size_name[i])
 
-# EndFile: scrapy/scrapy/scrapy.py
+# EndFile: scrapy/base_scrapy.py

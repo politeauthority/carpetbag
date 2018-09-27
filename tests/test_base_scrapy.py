@@ -26,7 +26,7 @@ class TestBaseScrapy(object):
         assert s.headers == {}
         assert s.user_agent == ''
         assert s.skip_ssl_verify
-        assert s.change_user_agent_interval == 10
+        assert s.change_identity_interval == 10
         assert not s.outbound_ip
         assert s.request_attempts == {}
         assert s.request_count == 0
@@ -40,6 +40,7 @@ class TestBaseScrapy(object):
         assert not s.username
         assert not s.password
         assert not s.auth_type
+        assert s.manifest == {}
 
     def test__make_request(self):
         scraper = Scrapy()
@@ -72,22 +73,6 @@ class TestBaseScrapy(object):
         s._setup_proxies()
         assert s.proxies['https'] == 'localhost:8118'
         assert s.proxies['http'] == 'localhost:8118'
-
-    def test__set_user_agent_auto(self):
-        """
-        Tests to make sure user agents are auto assigned, and rotated when the interval is reached.
-
-        """
-        s = Scrapy()
-        s._set_user_agent()
-        all_user_agents = user_agent.get_flattened_uas()
-        first_assigned_user_agent = s.send_user_agent
-        assert s.send_user_agent in all_user_agents
-        s.request_count = 2
-        s.change_user_agent_interval = 2
-        s._set_user_agent()
-        assert s.send_user_agent
-        assert s.send_user_agent != first_assigned_user_agent
 
     def test__set_user_agent_manual(self):
         """

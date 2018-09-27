@@ -20,7 +20,7 @@ class TestTimings(object):
 
     def test_minimum_wait(self):
         """
-        Tests Scrapy's main public method to make sure we're getting the responses we expect.
+        Tests Scrapy's main public method to make sure we're waiting when the minim
 
         """
         start = datetime.now()
@@ -34,7 +34,8 @@ class TestTimings(object):
 
         end = datetime.now()
         run_time = (end - start).seconds
-        assert run_time >= scraper.mininum_wait_time * 3
+        assert run_time >= scraper.mininum_wait_time * 2
+        assert scraper.mininum_wait_time == 3
 
     def test_retry_on_bad_connection(self):
         """

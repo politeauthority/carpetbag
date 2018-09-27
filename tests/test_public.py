@@ -32,8 +32,10 @@ class TestPublic(object):
         Tests the url_concat method, to make sure we're not adding any extra slashes or making weird urls.
 
         """
-        assert Scrapy.url_concat('www.google.com', 'news') == 'www.google.com/news'
-        assert Scrapy.url_concat('www.google.com', '/news') == 'www.google.com/news'
+        assert Scrapy.url_concat('http://www.google.com', 'news') == 'http://www.google.com/news'
+        assert Scrapy.url_concat('http://www.google.com', '/news') == 'http://www.google.com/news'
+        assert Scrapy.url_concat('http://www.google.com/', '/') == 'http://www.google.com/'
+        assert Scrapy.url_concat('http://www.google.com', '/') == 'http://www.google.com/'
 
     def test_random_user_agent(self):
         """
