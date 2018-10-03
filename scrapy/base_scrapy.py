@@ -19,6 +19,50 @@ from . import user_agent
 class BaseScrapy(object):
 
     def __init__(self):
+        """
+        Scrapy constructor. Here we set the default, user changable class vars.
+
+        :class param headers: Any extra headers to add to the response. This can be maniuplated at any time and applied
+            just before each request made.
+        :class type headers: dict
+
+        :class param user_agent: User setable User Agent to send on every request. This can be updated at any time.
+        :class type user_agent: str
+
+        :class param skip_ssl_verify: Skips the SSL cert verification. Sometimes this is needed when hitting certs
+            given out by LetsEncrypt.
+        :class type skip_ssl_verify: bool
+
+        :class param mininum_wait_time: Minimum ammount of time to wait before allowing the next request to go out.
+        :class type mininum_wait_time: int
+
+        :class param wait_and_retry_on_connection_error: Time to wait and then retry when a connection error has been
+            hit.
+        :class type wait_and_retry_on_connection_error: int
+
+        :class param retries_on_connection_failure: Ammount of retry attemps to make when a connection_error has been
+            hit.
+        :class type retries_on_connection_failure: int
+
+        :class param max_content_length: The maximum content length to download with the Scrapy 'save' method, with
+            raise as exception if it has surpassed that limit. (@todo This needs to be done still.)
+        :class type max_content_length: int
+
+        :class param proxies: Set of proxies to be used for the connection.
+        :class type proxies: dict
+
+        Everything below is still to be implemented!
+        :class param change_user_interval: Changes identity every x requests. @todo: Implement the changing.
+
+        :class param username: User name to use when needing to authenticate a request. @todo Authentication needs to
+            be implemented.
+
+        :class param password: Password to use when needing to authenticate a request. @todo Authentication needs to
+            be implemented.
+
+        :class param auth_type: Authentication class to use when needing to authenticate a request. @todo
+            Authentication needs to be implemented.
+        """
         logging.getLogger(__name__)
         self.headers = {}
         self.user_agent = ''
@@ -39,7 +83,8 @@ class BaseScrapy(object):
         self.last_request_time = None
         self.last_response = None
         self.manifest = {}
-
+        self.proxy_bag = []
+        self.use_proxy_bag = False
         self._setup_proxies()
         self.send_user_agent = ''
 
@@ -328,6 +373,18 @@ class BaseScrapy(object):
         """
         self.request_count += 1
         self.request_total += 1
+
+    def _get_proxies(self):
+        """
+        Gets list of free public proxies and loads them into a list.
+
+        :returns: The proxies to be used.
+        :rtype: list
+        """
+        proxies_url = "https://free-proxy-list.net/"
+        response = self.get(proxies_url)
+        proxies = ParseResponse(response).freeproxylistdotnet()
+        return proxies
 
     def _prep_destination(self, destination):
         """

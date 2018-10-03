@@ -60,8 +60,8 @@ class Scrapy(BaseScrapy):
         :class param password: Password to use when needing to authenticate a request. @todo Authentication needs to
             be implemented.
 
-        :class param auth_type: Authentication class to use when needing to authenticate a request. @todo Authentication needs to
-            be implemented.
+        :class param auth_type: Authentication class to use when needing to authenticate a request. @todo
+            Authentication needs to be implemented.
         """
         self.headers = {}
         self.user_agent = ''
@@ -184,6 +184,15 @@ class Scrapy(BaseScrapy):
 
         """
         self.user_agent = user_agent.get_random_ua()
+
+    def use_random_public_proxy(self):
+        """
+        Gets proxies from free-proxy-list.net and loads them into the self.proxy_bag.
+
+        """
+        self.proxy_bag = self._get_proxies()
+        self.use_proxy_bag = True
+        self.proxy = {'http': self.proxy_bag[0]}
 
     def save(self, url, destination, payload={}, skip_ssl_verify=True):
         """
