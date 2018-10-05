@@ -51,7 +51,9 @@ class Scrapy(BaseScrapy):
         :class param proxies: Set of proxies to be used for the connection.
         :class type proxies: dict
 
-        Everything below is still to be implemented!
+        **************************************************
+        *  Everything below is still to be implemented!  *
+
         :class param change_user_interval: Changes identity every x requests. @todo: Implement the changing.
 
         :class param username: User name to use when needing to authenticate a request. @todo Authentication needs to
@@ -76,6 +78,7 @@ class Scrapy(BaseScrapy):
         self.username = None
         self.password = None
         self.auth_type = None
+        logging.getLogger(__name__)
         super().__init__()
 
     def request(self, method, url, payload={}, skip_ssl_verify=False):
@@ -178,21 +181,34 @@ class Scrapy(BaseScrapy):
         response = self._make_request('DELETE', url, payload, ssl_verify)
         return response
 
-    def random_user_agent(self):
+    def use_random_user_agent(self):
         """
         Sets a random, common browser's User Agent string as our own.
 
         """
         self.user_agent = user_agent.get_random_ua()
 
-    def use_random_public_proxy(self):
+    def use_random_public_proxy(self, test_proxy=True):
         """
-        Gets proxies from free-proxy-list.net and loads them into the self.proxy_bag.
+        Gets proxies from free-proxy-list.net and loads them into the self.proxy_bag. The first element in the
+        proxy_bag is the currently used proxy.
 
+        :param test_proxy: Tests the proxy to see if it's up and working.
+        :type test_proxy: bool
         """
+        logging.debug('Filling proxy bag')
         self.proxy_bag = self._get_proxies()
         self.use_proxy_bag = True
-        self.proxy = {'http': self.proxy_bag[0]}
+        self.proxies = {'http': self.proxy_bag[0]['ip']}
+
+        if not test_proxy:
+            return
+
+        logging.info('Testing Proxy: %s (%s)' % (self.proxy_bag[0]['ip'], self.proxy_bag[0]['location']))
+        proxy_test_urls = ['http://www.google.com', 'http://1.1.1.1']
+        for url in proxy_test_urls:
+            self.get(url)
+        logging.debug('Registered Proxy %s (%s)' % (self.proxy_bag[0]['ip'], self.proxy_bag[0]['location']))
 
     def save(self, url, destination, payload={}, skip_ssl_verify=True):
         """
@@ -207,7 +223,6 @@ class Scrapy(BaseScrapy):
         :param skip_ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified will continue.
         :type skip_ssl_verify: bool
         """
-
         h = requests.head(url, allow_redirects=True)
         header = h.headers
         content_type = header.get('content-type')

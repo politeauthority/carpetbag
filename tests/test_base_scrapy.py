@@ -26,7 +26,7 @@ class TestBaseScrapy(object):
         assert s.headers == {}
         assert s.user_agent == ''
         assert s.skip_ssl_verify
-        assert s.change_identity_interval == 10
+        assert s.change_identity_interval == 0
         assert not s.outbound_ip
         assert s.request_attempts == {}
         assert s.request_count == 0
@@ -40,6 +40,8 @@ class TestBaseScrapy(object):
         assert not s.username
         assert not s.password
         assert not s.auth_type
+        assert not s.use_proxy_bag
+        assert s.proxy_bag == []
         assert s.manifest == {}
 
     def test__make_request(self):

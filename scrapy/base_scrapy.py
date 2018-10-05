@@ -7,13 +7,13 @@ import math
 import os
 import time
 import re
+import urllib3
 
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 import tld
 
 from .parse_response import ParseResponse
-from . import user_agent
 
 
 class BaseScrapy(object):
@@ -75,7 +75,9 @@ class BaseScrapy(object):
         self.username = None
         self.password = None
         self.auth_type = None
-        self.change_identity_interval = 10
+        self.change_identity_interval = 0
+
+        # These are private reserved class vars, don't use these!
         self.outbound_ip = None
         self.request_attempts = {}
         self.request_count = 0
@@ -85,8 +87,8 @@ class BaseScrapy(object):
         self.manifest = {}
         self.proxy_bag = []
         self.use_proxy_bag = False
-        self._setup_proxies()
         self.send_user_agent = ''
+        self._setup_proxies()
 
     def __repr__(self):
         proxy = ''
@@ -144,12 +146,14 @@ class BaseScrapy(object):
         if not self.last_response:
             return
 
+        # Checks that the next server we're making a request to is the same as the previous request.
         if tld.get_fld(self.last_response.url) != tld.get_fld(url):
             return
 
         if not self.last_request_time:
             return
 
+        # Checks the time of the last request and sets the sleep timer for the difference.
         diff_time = datetime.now() - self.last_request_time
         if diff_time.seconds < self.mininum_wait_time:
             sleep_time = self.mininum_wait_time - diff_time.seconds
@@ -234,13 +238,13 @@ class BaseScrapy(object):
         :type: headers: dict
         :param payload: The data to be sent over the POST request.
         :type payload: dict
-
         :param ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified the request
             will fail.
         :type ssl_verify: bool
         :returns: A Requests module instance of the response.
         :rtype: <Requests.response> obj
         """
+        logging.debug('Making request: %s' % url)
         request_args = {
             'method': method,
             'url': url,
@@ -255,6 +259,14 @@ class BaseScrapy(object):
 
         try:
             response = requests.request(**request_args)
+
+        # Catch Connection Refused Error. This is probably happening because of a bad proxy.
+        # Catch an error with the connection to the Proxy
+        except requests.exceptions.ProxyError:
+            logging.warning('Hit a proxy error, sleeping for %s and continuing.' % 5)
+            time.sleep(5)
+            exit()
+            return self._make(method, url, headers, payload, ssl_verify, retry)
 
         # Catch an SSLError, seems to crop up with LetsEncypt certs.
         except requests.exceptions.SSLError:
@@ -271,12 +283,6 @@ class BaseScrapy(object):
                 return response
 
             raise requests.exceptions.ConnectionError
-
-        # Catch an error with the connection to the Proxy
-        except requests.exceptions.ProxyError:
-            logging.warning('Hit a proxy error, sleeping for %s and continuing.' % 5)
-            time.sleep(5)
-            return self._make(method, url, headers, payload, ssl_verify, retry)
 
         return response
 
@@ -301,11 +307,15 @@ class BaseScrapy(object):
         """
         logging.error('Unabled to connect to: %s' % url)
 
+        total_retries = self.retries_on_connection_failure
+        retry += 1
+        if retry > total_retries:
+            return None
+
+        # if self.proxies and self.proxy_bag:
+        #     self._reset_proxy_from_bag()
+
         if self.retries_on_connection_failure:
-            total_retries = self.retries_on_connection_failure
-            retry += 1
-            if retry > total_retries:
-                return None
             logging.warning(
                 'Attempt %s of %s. Sleeping and retrying url in %s seconds.' % (
                     str(retry),
@@ -316,6 +326,18 @@ class BaseScrapy(object):
             return self._make(method, url, headers, payload, ssl_verify, retry)
 
         return None
+
+    def reset_proxy_from_bag(self):
+        """
+        Changes the proxy, assuming the current one is no good, it removes it from the proxy bag and loads up the next
+        one.
+
+        """
+        if not self.proxy_bag:
+            return
+        logging.debug('Changing proxy')
+        self.proxy_bag.pop(0)
+        self.proxy['http'] = self.proxy_bag[0]['ip']
 
     def _handle_ssl_error(self, method, url, headers, payload, ssl_verify, retry):
         """

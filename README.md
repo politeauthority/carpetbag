@@ -5,7 +5,7 @@ A multi faceted scraping utility, built on top of the python [Requests](http://d
 - Scrapy can rate limit outbound requests by setting the ```mininum_wait_time``` var. This makes sure to wait at least as long as this value, but if the time has already ellapsed (due to processing on your end etc.) the request will run.
 - Can set a longer wait on connection failures before retry using the ```wait_and_retry_on_connection_error``` var.
 - Can set more retry attemps on connection failure by setting the ```retries_on_connection_failure``` var.
-- Set a random common browser user agent string for the session by using the ```random_user_agent()``` method.
+- Set a random common browser user agent string for the session by using the ```use_random_user_agent()``` method.
 
 ## What will it do
 - Change Identity - Reset the tor exit node and cycle User Agent strings.
@@ -18,7 +18,7 @@ from scrapy import Scrapy
 
 scraper = Scrapy()
 scraper.proxies = {"http": "localhost:8118", "https": "localhost:8118"}
-scraper.random_user_agent()
+scraper.use_random_user_agent()
 news = scraper.get('https://www.google.com/news/')
 print(news.text)
 print(news.status_code)
