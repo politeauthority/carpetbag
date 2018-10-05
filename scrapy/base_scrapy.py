@@ -263,8 +263,14 @@ class BaseScrapy(object):
         # Catch Connection Refused Error. This is probably happening because of a bad proxy.
         # Catch an error with the connection to the Proxy
         except requests.exceptions.ProxyError:
-            logging.warning('Hit a proxy error, sleeping for %s and continuing.' % 5)
-            time.sleep(5)
+            if self.use_proxy_bag:
+                logging.warning('Hit a proxy error, sleeping for %s and continuing.' % 5)
+
+                self.reset_proxy_from_bag()
+            else:
+                logging.warning('Hit a proxy error, sleeping for %s and continuing.' % 5)
+                time.sleep(5)
+
             return self._make(method, url, headers, payload, ssl_verify, retry)
 
         # Catch an SSLError, seems to crop up with LetsEncypt certs.

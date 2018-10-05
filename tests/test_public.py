@@ -76,9 +76,11 @@ class TestPublic(object):
 
         """
         scrapy = Scrapy()
+        assert not scraoy.use_proxy_bag
         with vcr.use_cassette(os.path.join(CASSET_DIR, 'public_use_random_public_proxy.yaml')):
             scrapy.use_random_public_proxy()
         assert scrapy.proxies['http'] == '196.32.106.169:34685'
         assert len(scrapy.proxy_bag) > 100
+        assert scrapy.use_proxy_bag
 
 # End File scrapy/tests/test_public.py
