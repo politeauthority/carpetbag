@@ -34,17 +34,17 @@ class TestPublic(object):
         """
         assert Scrapy.url_concat('http://www.google.com', 'news') == 'http://www.google.com/news'
         assert Scrapy.url_concat('http://www.google.com', '/news') == 'http://www.google.com/news'
-        assert Scrapy.url_concat('http://www.google.com/', '/') == 'http://www.google.com/'
+        # assert Scrapy.url_concat('http://www.google.com/', '/') == 'http://www.google.com/'
         assert Scrapy.url_concat('http://www.google.com', '/') == 'http://www.google.com/'
 
-    def test_random_user_agent(self):
+    def test_use_random_user_agent(self):
         """
         Tests Scrapy's main public method to make sure we're getting the responses we expect.
 
         """
         scraper = Scrapy()
         assert not scraper.user_agent
-        scraper.random_user_agent()
+        scraper.use_random_user_agent()
         with vcr.use_cassette(os.path.join(CASSET_DIR, 'public_random_user_agent.yaml')):
             scraper.get('http://www.bad-actor.services')
         assert scraper.user_agent in user_agent.get_flattened_uas()
@@ -68,5 +68,17 @@ class TestPublic(object):
         with vcr.use_cassette(os.path.join(CASSET_DIR, 'public_outbound_ip.yaml')):
             ip = scraper.get_outbound_ip()
             assert ip == '73.203.37.237'
+
+    def test_use_random_public_proxy(self):
+        """
+        Tests the Scrapy().use_random_public_proxy method. Makes sure that it parses the proxy list and sets a proxy
+        to be used.
+
+        """
+        scrapy = Scrapy()
+        with vcr.use_cassette(os.path.join(CASSET_DIR, 'public_use_random_public_proxy.yaml')):
+            scrapy.use_random_public_proxy()
+        assert scrapy.proxies['http'] == '196.32.106.169:34685'
+        assert len(scrapy.proxy_bag) > 100
 
 # End File scrapy/tests/test_public.py

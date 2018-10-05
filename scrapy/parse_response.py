@@ -71,6 +71,12 @@ class ParseResponse(object):
         return ret
 
     def _get_remote_links(self, anchor):
+        """
+        Looks for anchors that are linking to other sites.
+
+        :param anchor: Url to inspect for local or remote url.
+        :type anchor: str
+        """
         if anchor[:7] == 'http://' or anchor[:8] == 'https://':
             return True
         return False
@@ -91,6 +97,27 @@ class ParseResponse(object):
                 }
             )
         return results
+
+    def freeproxylistdotnet(self):
+        """
+        Parses the proxies available from free-proxy-list.net
+
+        :returns: List of Proxies and related info.
+        :rtype: list
+        """
+        proxies = []
+        for prx in self.soup.findAll('tr')[1:]:
+            row = prx.findAll('td')
+            if len(row) < 6:
+                continue
+            proxy = {}
+            proxy['ip'] = "%s:%s" % (row[0].text, row[1].text)
+            proxy['location'] = row[3].text
+            proxy['ssl'] = False
+            if row[6].text == 'yes':
+                proxy['ssl'] = True
+            proxies.append(proxy)
+        return proxies
 
     @staticmethod
     def add_missing_protocol(url):
