@@ -265,7 +265,6 @@ class BaseScrapy(object):
         except requests.exceptions.ProxyError:
             logging.warning('Hit a proxy error, sleeping for %s and continuing.' % 5)
             time.sleep(5)
-            exit()
             return self._make(method, url, headers, payload, ssl_verify, retry)
 
         # Catch an SSLError, seems to crop up with LetsEncypt certs.
