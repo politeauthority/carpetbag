@@ -264,8 +264,7 @@ class BaseScrapy(object):
         # Catch an error with the connection to the Proxy
         except requests.exceptions.ProxyError:
             if self.use_proxy_bag:
-                logging.warning('Hit a proxy error, sleeping for %s and continuing.' % 5)
-
+                logging.warning('Hit a proxy error, picking a new one from proxy bag and continuing.')
                 self.reset_proxy_from_bag()
             else:
                 logging.warning('Hit a proxy error, sleeping for %s and continuing.' % 5)
@@ -283,6 +282,9 @@ class BaseScrapy(object):
 
         # Catch the server unavailble exception, and potentially retry if needed.
         except requests.exceptions.ConnectionError:
+            if retry == 0 and self.use_proxy_bag:
+                self.reset_proxy_from_bag()
+
             response = self._handle_connection_error(method, url, headers, payload, ssl_verify, retry)
             if response:
                 return response
@@ -338,11 +340,12 @@ class BaseScrapy(object):
         one.
 
         """
+        print('resetting proxy')
         if not self.proxy_bag:
             return
         logging.debug('Changing proxy')
         self.proxy_bag.pop(0)
-        self.proxy['http'] = self.proxy_bag[0]['ip']
+        self.proxies['http'] = self.proxy_bag[0]['ip']
 
     def _handle_ssl_error(self, method, url, headers, payload, ssl_verify, retry):
         """
