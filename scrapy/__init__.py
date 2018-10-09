@@ -8,6 +8,7 @@ Author: @politeauthority
 from datetime import datetime
 import logging
 import os
+from random import shuffle
 
 import requests
 
@@ -197,8 +198,12 @@ class Scrapy(BaseScrapy):
         :type test_proxy: bool
         """
         logging.debug('Filling proxy bag')
-        self.proxy_bag = self._get_proxies()
         self.use_proxy_bag = True
+        self.proxy_bag = self._get_proxies()
+
+        # Shuffle the proxies so multiple instances of Scrapy wont use the same one
+        shuffle(self.proxy_bag)
+
         self.proxies = {'http': self.proxy_bag[0]['ip']}
 
         if not test_proxy:
