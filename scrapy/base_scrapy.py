@@ -6,6 +6,7 @@ import logging
 import math
 import os
 import time
+from random import shuffle
 import re
 
 import requests
@@ -27,6 +28,9 @@ class BaseScrapy(object):
 
         :class param user_agent: User setable User Agent to send on every request. This can be updated at any time.
         :class type user_agent: str
+
+        :class param random_user_agent: Setting to decide whether or not to use a random user agent string.
+        :class type random_user_agent: bool
 
         :class param skip_ssl_verify: Skips the SSL cert verification. Sometimes this is needed when hitting certs
             given out by LetsEncrypt.
@@ -65,6 +69,7 @@ class BaseScrapy(object):
         logging.getLogger(__name__)
         self.headers = {}
         self.user_agent = ''
+        self.random_user_agent = False
         self.skip_ssl_verify = True
         self.mininum_wait_time = 0  # Sets the minumum wait time per domain to make a new request in seconds.
         self.wait_and_retry_on_connection_error = 0
@@ -85,7 +90,7 @@ class BaseScrapy(object):
         self.last_response = None
         self.manifest = {}
         self.proxy_bag = []
-        self.use_proxy_bag = False
+        self.random_proxy_bag = False
         self.send_user_agent = ''
         self._setup_proxies()
 
@@ -258,7 +263,7 @@ class BaseScrapy(object):
         # Catch Connection Refused Error. This is probably happening because of a bad proxy.
         # Catch an error with the connection to the Proxy
         except requests.exceptions.ProxyError:
-            if self.use_proxy_bag:
+            if self.random_proxy_bag:
                 logging.warning('Hit a proxy error, picking a new one from proxy bag and continuing.')
                 self.reset_proxy_from_bag()
             else:
@@ -277,7 +282,7 @@ class BaseScrapy(object):
 
         # Catch the server unavailble exception, and potentially retry if needed.
         except requests.exceptions.ConnectionError:
-            if retry == 0 and self.use_proxy_bag:
+            if retry == 0 and self.random_proxy_bag:
                 self.reset_proxy_from_bag()
 
             response = self._handle_connection_error(method, url, headers, payload, ssl_verify, retry)
@@ -408,6 +413,9 @@ class BaseScrapy(object):
         proxies_url = "https://free-proxy-list.net/"
         response = self.get(proxies_url)
         proxies = ParseResponse(response).freeproxylistdotnet()
+
+        # Shuffle the proxies so multiple instances of Scrapy wont use the same one
+        shuffle(proxies)
         return proxies
 
     def _prep_destination(self, destination):

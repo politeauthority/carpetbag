@@ -8,7 +8,6 @@ Author: @politeauthority
 from datetime import datetime
 import logging
 import os
-from random import shuffle
 
 import requests
 
@@ -187,6 +186,7 @@ class Scrapy(BaseScrapy):
         Sets a random, common browser's User Agent string as our own.
 
         """
+        self.random_user_agent = True
         self.user_agent = user_agent.get_random_ua()
 
     def use_random_public_proxy(self, test_proxy=True):
@@ -198,11 +198,9 @@ class Scrapy(BaseScrapy):
         :type test_proxy: bool
         """
         logging.debug('Filling proxy bag')
-        self.use_proxy_bag = True
+        self.random_proxy_bag = True
         self.proxy_bag = self._get_proxies()
 
-        # Shuffle the proxies so multiple instances of Scrapy wont use the same one
-        shuffle(self.proxy_bag)
 
         self.proxies = {'http': self.proxy_bag[0]['ip']}
 
@@ -341,6 +339,18 @@ class Scrapy(BaseScrapy):
         logging.error('Could not get outbound ip address.')
         return False
 
+    def reset_identity(self):
+        """
+        Resets the User Agent String if using random user agent string (use_random_user_agent).
+        Resets the proxy being used if (use_proxy_bag) and removes the current proxy from bag.
+
+        """
+        if self.random_user_agent:
+            self.user_agent = user_agent.get_random_ua(except_user_agent=self.user_agent)
+
+        if self.random_proxy_bag:
+            self.reset_proxy_from_bag()
+
     @staticmethod
     def url_concat(*args):
         """
@@ -375,4 +385,4 @@ class Scrapy(BaseScrapy):
         ret = the_date.strftime("%Y-%m-%d %H:%M:%S")
         return ret
 
-# End File: scrapy/__init__.py
+# End File: scrapy/scrapy/__init__.py

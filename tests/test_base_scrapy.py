@@ -39,7 +39,7 @@ class TestBaseScrapy(object):
         assert not s.username
         assert not s.password
         assert not s.auth_type
-        assert not s.use_proxy_bag
+        assert not s.random_proxy_bag
         assert s.proxy_bag == []
         assert s.manifest == {}
 
