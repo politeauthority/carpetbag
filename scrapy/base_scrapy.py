@@ -415,8 +415,8 @@ class BaseScrapy(object):
         proxies = ParseResponse(response).freeproxylistdotnet()
 
         # Shuffle the proxies so multiple instances of Scrapy wont use the same one
-        shuffle(proxies)
-        return proxies
+        self.proxy_bag = shuffle(proxies)
+        self.reset_proxy_from_bag()
 
     def _prep_destination(self, destination):
         """

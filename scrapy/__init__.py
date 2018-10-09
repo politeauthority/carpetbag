@@ -199,10 +199,7 @@ class Scrapy(BaseScrapy):
         """
         logging.debug('Filling proxy bag')
         self.random_proxy_bag = True
-        self.proxy_bag = self._get_proxies()
-
-
-        self.proxies = {'http': self.proxy_bag[0]['ip']}
+        self._get_proxies()
 
         if not test_proxy:
             return
