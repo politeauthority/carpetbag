@@ -7,7 +7,6 @@ import math
 import os
 import time
 import re
-import urllib3
 
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -123,11 +122,10 @@ class BaseScrapy(object):
 
         response = self._make(method, url, headers, payload, ssl_verify)
 
-        roundtrip = self._after_request(ts_start, response)
+        if response.status_code >= 500:
+            logging.warning('Recieved a server error response %s' % response.status_code)
 
-        if response.status_code >= 503 and response.status_code < 600:
-            logging.warning('Recieved an error response %s' % response.status_code)
-
+        roundtrip = self._after_request(ts_start, url, response)
         logging.debug('Repsonse took %s for %s' % (roundtrip, url))
 
         return response
@@ -143,14 +141,11 @@ class BaseScrapy(object):
         if not self.mininum_wait_time:
             return
 
-        if not self.last_response:
+        if not self.last_request_time:
             return
 
         # Checks that the next server we're making a request to is the same as the previous request.
         if tld.get_fld(self.last_response.url) != tld.get_fld(url):
-            return
-
-        if not self.last_request_time:
             return
 
         # Checks the time of the last request and sets the sleep timer for the difference.
@@ -340,7 +335,6 @@ class BaseScrapy(object):
         one.
 
         """
-        print('resetting proxy')
         if not self.proxy_bag:
             return
         logging.debug('Changing proxy')
@@ -372,7 +366,7 @@ class BaseScrapy(object):
             return self._make(method, url, headers, payload, ssl_verify, retry)
         return False
 
-    def _after_request(self, ts_start, url, response=None):
+    def _after_request(self, ts_start, url, response):
         """
         Runs after request opperations, sets counters and run times. This Should be called before any raised known
         execption.
