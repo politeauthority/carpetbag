@@ -4,7 +4,6 @@
 import os
 
 from scrapy import Scrapy
-from scrapy import user_agent
 
 import vcr
 

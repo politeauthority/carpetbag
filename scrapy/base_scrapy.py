@@ -7,7 +7,6 @@ import math
 import os
 import time
 import re
-import urllib3
 
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
