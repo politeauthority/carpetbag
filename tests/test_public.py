@@ -69,7 +69,6 @@ class TestPublic(object):
             ip = scraper.get_outbound_ip()
             assert ip == '73.203.37.237'
 
-
     def test_reset_identity(self):
         """
         """
