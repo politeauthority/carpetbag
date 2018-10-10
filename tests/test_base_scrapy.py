@@ -220,7 +220,6 @@ class TestBaseScrapy(object):
         assert scraper._get_domain('http://192.168.50.137:5000') == '192.168.50.137'
         assert scraper._get_domain('http://www.google.com') == 'google.com'
         assert scraper._get_domain('http://localhost') == 'localhost'
-        # assert scraper._get_domain('http://192.168.50.137:5000') == '192.168.50.137'
-
+        assert scraper._get_domain('http://192.168.1.19:5010') == '192.168.1.19'
 
 # End File scrapy/tests/test_scrapy.py

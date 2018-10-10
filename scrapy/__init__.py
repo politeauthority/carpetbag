@@ -209,7 +209,7 @@ class Scrapy(BaseScrapy):
             return
 
         logging.info('Testing Proxy: %s (%s)' % (self.proxy_bag[0]['ip'], self.proxy_bag[0]['location']))
-        proxy_test_urls = ['http://www.google.com', 'http://1.1.1.1']
+        proxy_test_urls = ['http://www.google.com']
         for url in proxy_test_urls:
             self.get(url)
         logging.debug('Registered Proxy %s (%s)' % (self.proxy_bag[0]['ip'], self.proxy_bag[0]['location']))
