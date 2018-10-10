@@ -1,43 +1,23 @@
-from scrapy.scrapy import Scrapy
+import logging
+
+from scrapy import Scrapy
+
+log = logging.getLogger(__name__)
+console = logging.StreamHandler()
+console.setLevel(logging.DEBUG)
+log.addHandler(console)
 
 scraper = Scrapy()
 
-"""
-Set the proxies for Scrapy to use, in this example we're connecting over privoxy which is routing traffic through tor.
-"""
-scraper.proxies = {"http": "172.18.0.6:8118", "https": "172.18.0.6:8118"}
+scraper.use_random_user_agent()
+scraper.use_random_public_proxy()
+try:
+    x = scraper.get('http://www.google.com')
+except requests.requests.exceptions.ConnectionError:
+    print('resetting bag')
+    scraper.reset_proxy_from_bag()
+    x = scraper.get('http://www.google.com')
 
-"""
-I've had issues with certs from LetsEncrypt not passing cert checks.
-Set skip_ssl_verify high and we'll try once to get verify the cert, and if that fails go ahead with the request
-anyways.
-"""
-scraper.skip_ssl_verify = True
-
-"""
-Check if the torproject.org to see if tor is setup and cofigured properly.
-"""
-if scraper.check_tor():
-    print("Tor Check: Connected!\n")
-else:
-    print("Tor Check: Failed\n")
-
-"""
-Get the current outbound ip
-"""
-print("Current outbound ip: %s" % scraper.get_outbound_ip())
-
-"""
-Grab content from tor
-"""
-x = scraper.get('http://rnslnjdb6lioal3d.onion/')
-print(x.text)
-
-"""
-Grab content from public site.
-"""
-news = scraper.get('https://www.google.com/news/')
-print(news.text)
-print(news.status_code)
+print(x)
 
 # EndFile: scrapy/example.py

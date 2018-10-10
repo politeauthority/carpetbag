@@ -51,8 +51,8 @@ class BaseScrapy(object):
             raise as exception if it has surpassed that limit. (@todo This needs to be done still.)
         :class type max_content_length: int
 
-        :class param proxies: Set of proxies to be used for the connection.
-        :class type proxies: dict
+        :class param proxy: Proxy to be used for the connection.
+        :class type proxy: dict
 
         Everything below is still to be implemented!
         :class param change_user_interval: Changes identity every x requests. @todo: Implement the changing.
@@ -68,14 +68,14 @@ class BaseScrapy(object):
         """
         logging.getLogger(__name__)
         self.headers = {}
-        self.user_agent = ''
+        self.user_agent = 'Scrapy v.001'
         self.random_user_agent = False
         self.skip_ssl_verify = True
         self.mininum_wait_time = 0  # Sets the minumum wait time per domain to make a new request in seconds.
         self.wait_and_retry_on_connection_error = 0
         self.retries_on_connection_failure = 5
         self.max_content_length = 200000000  # Sets the maximum downloard size, default 200 MegaBytes, in bytes.
-        self.proxies = {}
+        self.proxy = {}
         self.username = None
         self.password = None
         self.auth_type = None
@@ -96,8 +96,8 @@ class BaseScrapy(object):
 
     def __repr__(self):
         proxy = ''
-        if self.proxies.get('http'):
-            proxy = " Proxy:%s" % self.proxies.get('http')
+        if self.proxy.get('http'):
+            proxy = " Proxy:%s" % self.proxy.get('http')
         return '<Scrapy%s>' % proxy
 
     def _make_request(self, method, url, payload={}, ssl_verify=True):
@@ -163,7 +163,7 @@ class BaseScrapy(object):
     def _get_domain(self, url):
         """
         Tries to get the domain/ip and port from the url we are requesting to.
-        @tod: There looks to be an issue with getting an ip address from the url.
+        @todo: There looks to be an issue with getting an ip address from the url.
 
         :param url:
         :type urls: str
@@ -209,10 +209,10 @@ class BaseScrapy(object):
         If an HTTPS proxy is not specified but an HTTP is, use the same for both by default.
 
         """
-        if not self.proxies:
+        if not self.proxy:
             return
-        if 'http' in self.proxies and 'https' not in self.proxies:
-            self.proxies['https'] = self.proxies['http']
+        if 'http' in self.proxy and 'https' not in self.proxy:
+            self.proxy['https'] = self.proxy['http']
 
     def _set_user_agent(self):
         """
@@ -249,7 +249,7 @@ class BaseScrapy(object):
             'method': method,
             'url': url,
             'headers': headers,
-            'proxies': self.proxies,
+            'proxies': self.proxy,
             'verify': ssl_verify
         }
         if method == 'GET':
@@ -344,7 +344,7 @@ class BaseScrapy(object):
             return
         logging.debug('Changing proxy')
         self.proxy_bag.pop(0)
-        self.proxies['http'] = self.proxy_bag[0]['ip']
+        self._setup_proxies()
 
     def _handle_ssl_error(self, method, url, headers, payload, ssl_verify, retry):
         """
@@ -391,7 +391,7 @@ class BaseScrapy(object):
         self.last_request_time = datetime.now()
         if response:
             response.roundtrip = roundtrip
-            response.domain = self._get_domain(url)
+            response.domain = self._get_domain(response.url)
         self.ts_start = None
         return roundtrip
 
@@ -455,4 +455,4 @@ class BaseScrapy(object):
         s = round(size_bytes / p, 2)
         return "%s %s" % (s, size_name[i])
 
-# EndFile: scrapy/base_scrapy.py
+# EndFile: scrapy/scrapy/base_scrapy.py
