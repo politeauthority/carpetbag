@@ -150,7 +150,8 @@ class BaseScrapy(object):
             return
 
         # Checks that the next server we're making a request to is the same as the previous request.
-        if tld.get_fld(self.last_response.url) != tld.get_fld(url):
+        # tld.get_fld(self.last_response.url)
+        if self._get_domain(self.last_response.url) != self._get_domain(url):
             return
 
         # Checks the time of the last request and sets the sleep timer for the difference.
