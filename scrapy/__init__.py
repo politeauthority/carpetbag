@@ -48,8 +48,8 @@ class Scrapy(BaseScrapy):
             raise as exception if it has surpassed that limit. (@todo This needs to be done still.)
         :class type max_content_length: int
 
-        :class param proxies: Set of proxies to be used for the connection.
-        :class type proxies: dict
+        :class param proxy: Proxy to be used for the connection.
+        :class type proxy: dict
 
         **************************************************
         *  Everything below is still to be implemented!  *
@@ -72,7 +72,7 @@ class Scrapy(BaseScrapy):
         self.wait_and_retry_on_connection_error = 0
         self.retries_on_connection_failure = 5
         self.max_content_length = 200000000  # Sets the maximum downloard size, default 200 MegaBytes, in bytes.
-        self.proxies = {}
+        self.proxy = {}
 
         self.change_identity_interval = 10
         self.username = None
@@ -200,8 +200,7 @@ class Scrapy(BaseScrapy):
         logging.debug('Filling proxy bag')
         self.random_proxy_bag = True
         self.proxy_bag = self._get_proxies()
-
-        self.proxies = {'http': self.proxy_bag[0]['ip']}
+        self._setup_proxies()
 
         if not test_proxy:
             return
