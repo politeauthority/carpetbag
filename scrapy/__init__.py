@@ -79,7 +79,6 @@ class Scrapy(BaseScrapy):
         self.username = None
         self.password = None
         self.auth_type = None
-        logging.getLogger(__name__)
         super().__init__()
 
     def request(self, method, url, payload={}, skip_ssl_verify=False):
