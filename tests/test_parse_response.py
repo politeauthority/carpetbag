@@ -4,7 +4,7 @@ Run by using "pytest ." in the project root.
 """
 from scrapy.parse_response import ParseResponse
 
-from .data.response_data import Response
+from .data.response_data import GoogleDotComResponse
 
 
 class TestParseResponse(object):
@@ -14,13 +14,13 @@ class TestParseResponse(object):
         Tests that the module init has correct default values.
 
         """
-        r = Response()
+        r = GoogleDotComResponse()
         pr = ParseResponse(r)
         assert pr.response == r
         assert pr.content
 
     def test__get_title(self):
-        r = Response()
+        r = GoogleDotComResponse()
         pr = ParseResponse(r)
         assert pr.get_title() == "Here's a title"
 

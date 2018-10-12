@@ -8,6 +8,7 @@ Author: @politeauthority
 from datetime import datetime
 import logging
 import os
+from random import shuffle
 
 import requests
 
@@ -48,8 +49,8 @@ class Scrapy(BaseScrapy):
             raise as exception if it has surpassed that limit. (@todo This needs to be done still.)
         :class type max_content_length: int
 
-        :class param proxies: Set of proxies to be used for the connection.
-        :class type proxies: dict
+        :class param proxy: Proxy to be used for the connection.
+        :class type proxy: dict
 
         **************************************************
         *  Everything below is still to be implemented!  *
@@ -72,7 +73,7 @@ class Scrapy(BaseScrapy):
         self.wait_and_retry_on_connection_error = 0
         self.retries_on_connection_failure = 5
         self.max_content_length = 200000000  # Sets the maximum downloard size, default 200 MegaBytes, in bytes.
-        self.proxies = {}
+        self.proxy = {}
 
         self.change_identity_interval = 10
         self.username = None
@@ -199,16 +200,34 @@ class Scrapy(BaseScrapy):
         """
         logging.debug('Filling proxy bag')
         self.random_proxy_bag = True
-        self._get_proxies()
+        self.proxy_bag = self.get_public_proxies()
 
+        # Shuffle the proxies so multiple instances of Scrapy wont use the same one
+        shuffle(self.proxy_bag)
+
+        self.reset_proxy_from_bag()
+        self._setup_proxies()
         if not test_proxy:
             return
 
         logging.info('Testing Proxy: %s (%s)' % (self.proxy_bag[0]['ip'], self.proxy_bag[0]['location']))
-        proxy_test_urls = ['http://www.google.com', 'http://1.1.1.1']
+        proxy_test_urls = ['http://www.google.com']
         for url in proxy_test_urls:
             self.get(url)
         logging.debug('Registered Proxy %s (%s)' % (self.proxy_bag[0]['ip'], self.proxy_bag[0]['location']))
+
+    def get_public_proxies(self):
+        """
+        Gets list of free public proxies and loads them into a list, currently just selecting from free-proxy-list.
+        @todo: Add filtering by country/ continent.
+
+        :returns: The proxies to be used.
+        :rtype: list
+        """
+        proxies_url = "https://free-proxy-list.net/"
+        response = self.get(proxies_url)
+        proxies = ParseResponse(response).freeproxylistdotnet()
+        return proxies
 
     def save(self, url, destination, payload={}, skip_ssl_verify=True):
         """

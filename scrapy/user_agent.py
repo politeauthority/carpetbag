@@ -64,6 +64,10 @@ def get_random_ua(except_user_agent=''):
 
 def get_flattened_uas():
     """
+    Gets a flattened list of user agent strings, sometimes a little easier to work with than the dictionary.
+
+    :returns: All User Agent Strings in a single flat list.
+    :rtype: list
     """
     flattend_user_agents = []
     for browser, uas in user_agents.items():

@@ -43,7 +43,7 @@ class TestPublic(object):
 
         """
         scraper = Scrapy()
-        assert not scraper.user_agent
+        assert scraper.user_agent == 'Scrapy v.001'
         scraper.use_random_user_agent()
         with vcr.use_cassette(os.path.join(CASSET_DIR, 'public_random_user_agent.yaml')):
             scraper.get('http://www.bad-actor.services')
@@ -73,13 +73,13 @@ class TestPublic(object):
         """
         """
         scraper = Scrapy()
+        scraper.use_random_user_agent()
         with vcr.use_cassette(os.path.join(CASSET_DIR, 'public_reset_identity.yaml')):
-            scraper.use_random_user_agent()
             scraper.use_random_public_proxy()
 
             first_ip = scraper.get_outbound_ip()
             first_ua = scraper.user_agent
-            first_proxy = scraper.proxies['http']
+            first_proxy = scraper.proxy['http']
             scraper.reset_identity()
 
             second_ip = scraper.get_outbound_ip()
@@ -97,12 +97,13 @@ class TestPublic(object):
         scrapy = Scrapy()
         assert not scrapy.random_proxy_bag
         with vcr.use_cassette(os.path.join(CASSET_DIR, 'public_use_random_public_proxy.yaml')):
-            scrapy.use_random_public_proxy()
+            scrapy.use_random_public_proxy(False)
             proxy_ips = []
             for prx in scrapy.proxy_bag:
                 proxy_ips.append(prx['ip'])
-            assert scrapy.proxies['http'] in proxy_ips
-            assert len(scrapy.proxy_bag) > 100
-            assert scrapy.random_proxy_bag
+        assert scrapy.proxy['http'] in proxy_ips
+        assert len(scrapy.proxy_bag) > 100
+        assert scrapy.random_proxy_bag
+
 
 # End File scrapy/tests/test_public.py
