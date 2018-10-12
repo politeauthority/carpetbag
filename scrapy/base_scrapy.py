@@ -3,10 +3,8 @@
 """
 from datetime import datetime
 import logging
-import math
 import os
 import time
-from random import shuffle
 import re
 
 import requests

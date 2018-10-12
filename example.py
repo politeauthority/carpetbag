@@ -1,3 +1,8 @@
+"""Examples
+
+"""
+
+import requests
 import logging
 
 from scrapy import Scrapy
@@ -7,17 +12,21 @@ console = logging.StreamHandler()
 console.setLevel(logging.DEBUG)
 log.addHandler(console)
 
-scraper = Scrapy()
 
-scraper.use_random_user_agent()
-scraper.use_random_public_proxy()
-try:
-    x = scraper.get('http://www.google.com')
-except requests.requests.exceptions.ConnectionError:
-    print('resetting bag')
-    scraper.reset_proxy_from_bag()
-    x = scraper.get('http://www.google.com')
+def public_proxy_with_reset():
+    """
+    Example grabbing a site with a free public proxy, and reset the proxy if we get a connection error.
 
-print(x)
+    """
+    scraper = Scrapy()
+    scraper.use_random_user_agent()
+    scraper.use_random_public_proxy()
+    try:
+        response = scraper.get('http://www.google.com')
+    except requests.requests.exceptions.ConnectionError:
+        print('resetting bag')
+        scraper.reset_proxy_from_bag()
+        response = scraper.get('http://www.google.com')
+    print(response)
 
 # EndFile: scrapy/example.py
