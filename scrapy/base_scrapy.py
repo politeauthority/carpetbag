@@ -3,10 +3,8 @@
 """
 from datetime import datetime
 import logging
-import math
 import os
 import time
-from random import shuffle
 import re
 
 import requests
@@ -345,6 +343,7 @@ class BaseScrapy(object):
             return
         logging.debug('Changing proxy')
         self.proxy_bag.pop(0)
+        self.proxy = {'http': self.proxy_bag[0]['ip']}
         self._setup_proxies()
 
     def _handle_ssl_error(self, method, url, headers, payload, ssl_verify, retry):
@@ -404,21 +403,6 @@ class BaseScrapy(object):
         self.request_count += 1
         self.request_total += 1
 
-    def _get_proxies(self):
-        """
-        Gets list of free public proxies and loads them into a list.
-
-        :returns: The proxies to be used.
-        :rtype: list
-        """
-        proxies_url = "https://free-proxy-list.net/"
-        response = self.get(proxies_url)
-        proxies = ParseResponse(response).freeproxylistdotnet()
-
-        # Shuffle the proxies so multiple instances of Scrapy wont use the same one
-        shuffle(proxies)
-        return proxies
-
     def _prep_destination(self, destination):
         """
         Attempts to create the destintion directory path if needed.
@@ -438,22 +422,5 @@ class BaseScrapy(object):
             except Exception:
                 logging.error('Could not create directory: %s' % destination)
                 return False
-
-    def _convert_size(self, size_bytes):
-        """
-        Converts bytes to human readable size.
-
-        :param size_bytes: Size in bytes to measure.
-        :type size_bytes: int
-        :returns: The size of the var in a human readable format.
-        :rtype: str
-        """
-        if size_bytes == 0:
-            return "0B"
-        size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
-        i = int(math.floor(math.log(size_bytes, 1024)))
-        p = math.pow(1024, i)
-        s = round(size_bytes / p, 2)
-        return "%s %s" % (s, size_name[i])
 
 # EndFile: scrapy/scrapy/base_scrapy.py
