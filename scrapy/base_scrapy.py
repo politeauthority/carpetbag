@@ -9,6 +9,7 @@ import re
 
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
+from requests.exceptions import ChunkedEncodingError
 import tld
 
 from .parse_response import ParseResponse
@@ -289,6 +290,15 @@ class BaseScrapy(object):
                 return response
 
             raise requests.exceptions.ConnectionError
+
+        # Catch a ChunkedEncodingError, response when the expected byte size is not what was recieved, probably a
+        # bad proxy
+        except ChunkedEncodingError:
+            if self.random_proxy_bag:
+                self.logger.warning('Hit a ChunkedEncodingError, proxy might be running to slow resetting proxy.')
+                self.reset_proxy_from_bag()
+            else:
+                raise ChunkedEncodingError
 
         return response
 
