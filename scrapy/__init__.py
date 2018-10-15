@@ -29,10 +29,6 @@ class Scrapy(BaseScrapy):
         :class param user_agent: User setable User Agent to send on every request. This can be updated at any time.
         :class type user_agent: str
 
-        :class param skip_ssl_verify: Skips the SSL cert verification. Sometimes this is needed when hitting certs
-            given out by LetsEncrypt.
-        :class type skip_ssl_verify: bool
-
         :class param mininum_wait_time: Minimum ammount of time to wait before allowing the next request to go out.
         :class type mininum_wait_time: int
 
@@ -67,7 +63,6 @@ class Scrapy(BaseScrapy):
         """
         self.headers = {}
         self.user_agent = ''
-        self.skip_ssl_verify = True
         self.mininum_wait_time = 0  # Sets the minumum wait time per domain to make a new request in seconds.
         self.wait_and_retry_on_connection_error = 0
         self.retries_on_connection_failure = 5
@@ -81,7 +76,7 @@ class Scrapy(BaseScrapy):
         logging.getLogger(__name__)
         super().__init__()
 
-    def request(self, method, url, payload={}, skip_ssl_verify=False):
+    def request(self, method, url, payload={}):
         """
         Wrapper for the Requests python module's get method, adds in extras such as headers and proxies where
         applicable.
@@ -90,38 +85,28 @@ class Scrapy(BaseScrapy):
         :type method: string
         :param url: The url to fetch.
         :type: url: str
-        :param skip_ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified will continue.
-        :type skip_ssl_verify: bool
         :returns: A Requests module instance of the response.
         :rtype: <Requests.response> obj
         """
-        ssl_verify = True
-        if skip_ssl_verify:
-            ssl_verify = False
-        response = self._make_request(method, url, payload, ssl_verify)
+        response = self._make_request(method, url, payload)
 
         return response
 
-    def get(self, url, payload={}, skip_ssl_verify=False):
+    def get(self, url, payload={}):
         """
         Wrapper for the Requests python module's get method, adds in extras such as headers and proxies where
         applicable.
 
         :param url: The url to fetch.
         :type: url: str
-        :param skip_ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified will continue.
-        :type skip_ssl_verify: bool
         :returns: A Requests module instance of the response.
         :rtype: <Requests.response> obj
         """
-        ssl_verify = True
-        if skip_ssl_verify:
-            ssl_verify = False
-        response = self._make_request('GET', url, payload, ssl_verify)
+        response = self._make_request('GET', url, payload)
 
         return response
 
-    def post(self, url, payload={}, skip_ssl_verify=False):
+    def post(self, url, payload={}):
         """
         Wrapper for the Requests python module's post method, adds in extras such as headers and proxies where
         applicable.
@@ -130,18 +115,13 @@ class Scrapy(BaseScrapy):
         :type: url: str
         :param payload: The data to be sent over POST.
         :type payload: dict
-        :param skip_ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified will continue.
-        :type skip_ssl_verify: bool
         :returns: A Requests module instance of the response.
         :rtype: <Requests.response> obj
         """
-        ssl_verify = True
-        if skip_ssl_verify:
-            ssl_verify = False
-        response = self._make_request('POST', url, payload, ssl_verify)
+        response = self._make_request('POST', url, payload)
         return response
 
-    def put(self, url, payload={}, skip_ssl_verify=False):
+    def put(self, url, payload={}):
         """
         Wrapper for the Requests python module's put method, adds in extras such as headers and proxies where
         applicable.
@@ -150,18 +130,13 @@ class Scrapy(BaseScrapy):
         :type: url: str
         :param payload: The data to be sent over POST.
         :type payload: dict
-        :param skip_ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified will continue.
-        :type skip_ssl_verify: bool
         :returns: A Requests module instance of the response.
         :rtype: <Requests.response> obj
         """
-        ssl_verify = True
-        if skip_ssl_verify:
-            ssl_verify = False
-        response = self._make_request('PUT', url, payload, ssl_verify)
+        response = self._make_request('PUT', url, payload)
         return response
 
-    def delete(self, url, payload={}, skip_ssl_verify=False):
+    def delete(self, url, payload={}):
         """
         Wrapper for the Requests python module's DELETE method, adds in extras such as headers and proxies where
         applicable.
@@ -170,15 +145,10 @@ class Scrapy(BaseScrapy):
         :type: url: str
         :param payload: The data to be sent over POST.
         :type payload: dict
-        :param skip_ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified will continue.
-        :type skip_ssl_verify: bool
         :returns: A Requests module instance of the response.
         :rtype: <Requests.response> obj
         """
-        ssl_verify = True
-        if skip_ssl_verify:
-            ssl_verify = False
-        response = self._make_request('DELETE', url, payload, ssl_verify)
+        response = self._make_request('DELETE', url, payload)
         return response
 
     def use_random_user_agent(self):
@@ -188,6 +158,19 @@ class Scrapy(BaseScrapy):
         """
         self.random_user_agent = True
         self.user_agent = user_agent.get_random_ua()
+
+    def get_public_proxies(self):
+        """
+        Gets list of free public proxies and loads them into a list, currently just selecting from free-proxy-list.
+        @todo: Add filtering by country/ continent.
+
+        :returns: The proxies to be used.
+        :rtype: list
+        """
+        proxies_url = "https://free-proxy-list.net/"
+        response = self.get(proxies_url)
+        proxies = ParseResponse(response).freeproxylistdotnet()
+        return proxies
 
     def use_random_public_proxy(self, test_proxy=True):
         """
@@ -211,7 +194,22 @@ class Scrapy(BaseScrapy):
             self.get(url)
         logging.debug('Registered Proxy %s (%s)' % (self.proxy_bag[0]['ip'], self.proxy_bag[0]['location']))
 
-    def save(self, url, destination, payload={}, skip_ssl_verify=True):
+    def use_skip_ssl_verify(self):
+        """
+        Sets Scrapy up to not force a valid certificate return from the server. This exists mostly because I was
+        running into some issues with self signed certs. This can be enabled/disabled at anytime through execution.
+
+        """
+        self.ssl_verify = False
+
+    def stop_skip_ssl(self):
+        """
+        Sets Scrapy up to go back to throwing an error on SSL validation errors.
+
+        """
+        self.ssl_verify = True
+
+    def save(self, url, destination, payload={}):
         """
         Saves a file to a destination on the local drive. Good for quickly grabbing images from a remote site.
 
@@ -221,8 +219,6 @@ class Scrapy(BaseScrapy):
         :type: destination: str
         :param payload: The data to be sent over GET.
         :type payload: dict
-        :param skip_ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified will continue.
-        :type skip_ssl_verify: bool
         """
         h = requests.head(url, allow_redirects=True)
         header = h.headers
@@ -241,7 +237,7 @@ class Scrapy(BaseScrapy):
                 return
 
         # Get the file
-        response = self.get(url, payload=payload, skip_ssl_verify=skip_ssl_verify)
+        response = self.get(url, payload=payload)
 
         # Figure out where to save the file.
         self._prep_destination(destination)

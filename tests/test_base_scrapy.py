@@ -4,10 +4,10 @@
 from datetime import datetime, timedelta
 import os
 
+import vcr
+
 from scrapy import Scrapy
 from .data.response_data import GoogleDotComResponse
-
-import vcr
 
 
 CASSET_DIR = os.path.join(
@@ -26,7 +26,7 @@ class TestBaseScrapy(object):
         assert s.proxy == {}
         assert s.headers == {}
         assert s.user_agent == 'Scrapy v.001'
-        assert s.skip_ssl_verify
+        assert s.ssl_verify
         assert s.change_identity_interval == 0
         assert not s.outbound_ip
         assert s.request_attempts == {}
@@ -154,17 +154,15 @@ class TestBaseScrapy(object):
                 url='http://www.google.com',
                 headers={'Content-Type': 'application/html'},
                 payload={},
-                ssl_verify=False,
                 retry=0)
             assert response
             assert response.status_code == 200
             response = s._make(
-                'GET',
-                'http://www.google.com',
-                {'Content-Type': 'application/html'},
-                {},
-                False,
-                0)
+                method='GET',
+                url='http://www.google.com',
+                headers={'Content-Type': 'application/html'},
+                payload={},
+                retry=0)
             assert response
             assert response.status_code == 200
 
