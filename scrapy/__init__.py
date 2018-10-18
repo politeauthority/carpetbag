@@ -8,6 +8,7 @@ Author: @politeauthority
 from datetime import datetime
 import logging
 import os
+from random import shuffle
 
 import requests
 
@@ -73,7 +74,6 @@ class Scrapy(BaseScrapy):
         self.username = None
         self.password = None
         self.auth_type = None
-        logging.getLogger(__name__)
         super().__init__()
 
     def request(self, method, url, payload={}):
@@ -182,9 +182,13 @@ class Scrapy(BaseScrapy):
         """
         logging.debug('Filling proxy bag')
         self.random_proxy_bag = True
-        self.proxy_bag = self._get_proxies()
-        self._setup_proxies()
+        self.proxy_bag = self.get_public_proxies()
 
+        # Shuffle the proxies so multiple instances of Scrapy wont use the same one
+        shuffle(self.proxy_bag)
+
+        self.reset_proxy_from_bag()
+        self._setup_proxies()
         if not test_proxy:
             return
 
@@ -208,6 +212,19 @@ class Scrapy(BaseScrapy):
 
         """
         self.ssl_verify = True
+
+    def get_public_proxies(self):
+        """
+        Gets list of free public proxies and loads them into a list, currently just selecting from free-proxy-list.
+        @todo: Add filtering by country/ continent.
+
+        :returns: The proxies to be used.
+        :rtype: list
+        """
+        proxies_url = "https://free-proxy-list.net/"
+        response = self.get(proxies_url)
+        proxies = ParseResponse(response).freeproxylistdotnet()
+        return proxies
 
     def save(self, url, destination, payload={}):
         """

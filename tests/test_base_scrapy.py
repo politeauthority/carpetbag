@@ -1,7 +1,7 @@
 """Test Base Scrapy. Tests for the private methods of scrapy.
 
 """
-from datetime import datetime, timedelta
+from datetime import datetime
 import os
 
 import vcr

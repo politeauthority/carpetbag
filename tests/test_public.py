@@ -69,44 +69,41 @@ class TestPublic(object):
             ip = scraper.get_outbound_ip()
             assert ip == '73.203.37.237'
 
-    # def test_use_random_public_proxy(self):
-    #     """
-    #     Tests the Scrapy().use_random_public_proxy() method. Makes sure that it parses the proxy list and sets a proxy
-    #     to be used.
+    def test_reset_identity(self):
+        """
+        """
+        scraper = Scrapy()
+        scraper.use_random_user_agent()
+        with vcr.use_cassette(os.path.join(CASSET_DIR, 'public_reset_identity.yaml')):
+            scraper.use_random_public_proxy()
 
-    #     """
-    #     scrapy = Scrapy()
-    #     assert not scrapy.random_proxy_bag
-    #     with vcr.use_cassette(os.path.join(CASSET_DIR, 'public_use_random_public_proxy.yaml')):
-    #         scrapy.use_random_public_proxy()
-    #         proxy_ips = []
-    #         for prx in scrapy.proxy_bag:
-    #             proxy_ips.append(prx['ip'])
-    #         assert scrapy.proxy['http'] in proxy_ips
-    #         assert len(scrapy.proxy_bag) > 100
-    #         assert scrapy.random_proxy_bag
+            first_ip = scraper.get_outbound_ip()
+            first_ua = scraper.user_agent
+            first_proxy = scraper.proxy['http']
+            scraper.reset_identity()
 
-    # def test_reset_identity(self):
-    #     """
-    #     Tests the Scrapy().reset_identity() method. This checks that the user agent string and outbound proxy is reset
-    #     after the method is hit.
+            second_ip = scraper.get_outbound_ip()
 
-    #     """
-    #     scraper = Scrapy()
-    #     scraper.use_random_user_agent()
+            assert first_ua != scraper.user_agent
+            assert first_proxy != scraper.user_agent
+            assert first_ip != second_ip
 
-    #     with vcr.use_cassette(os.path.join(CASSET_DIR, 'public_reset_identity_pt1.yaml')):
-    #         scraper.use_random_public_proxy()
-    #         first_ip = scraper.get_outbound_ip()
-    #     first_ua = scraper.user_agent
-    #     first_proxy = scraper.proxy['http']
+    def test_use_random_public_proxy(self):
+        """
+        Tests the Scrapy().use_random_public_proxy method. Makes sure that it parses the proxy list and sets a proxy
+        to be used.
 
-    #     with vcr.use_cassette(os.path.join(CASSET_DIR, 'public_reset_identity_pt2.yaml')):
-    #         scraper.reset_identity()
-    #         second_ip = scraper.get_outbound_ip()
+        """
+        scrapy = Scrapy()
+        assert not scrapy.random_proxy_bag
+        with vcr.use_cassette(os.path.join(CASSET_DIR, 'public_use_random_public_proxy.yaml')):
+            scrapy.use_random_public_proxy(False)
+            proxy_ips = []
+            for prx in scrapy.proxy_bag:
+                proxy_ips.append(prx['ip'])
+        assert scrapy.proxy['http'] in proxy_ips
+        assert len(scrapy.proxy_bag) > 100
+        assert scrapy.random_proxy_bag
 
-    #     assert first_ua != scraper.user_agent
-    #     assert first_proxy != scraper.proxy['http']
-    #     assert first_ip != second_ip
 
 # End File scrapy/tests/test_public.py

@@ -3,14 +3,13 @@
 """
 from datetime import datetime
 import logging
-import math
 import os
 import time
-from random import shuffle
 import re
 
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
+from requests.exceptions import ChunkedEncodingError
 import tld
 
 from .parse_response import ParseResponse
@@ -66,7 +65,6 @@ class BaseScrapy(object):
         :class param auth_type: Authentication class to use when needing to authenticate a request. @todo
             Authentication needs to be implemented.
         """
-        logging.getLogger(__name__)
         self.headers = {}
         self.user_agent = 'Scrapy v.001'
         self.random_user_agent = False
@@ -93,6 +91,7 @@ class BaseScrapy(object):
         self.send_user_agent = ''
         self.ssl_verify = True
         self._setup_proxies()
+        self.logger = logging.getLogger(__name__)
 
     def __repr__(self):
         proxy = ''
@@ -126,10 +125,10 @@ class BaseScrapy(object):
         response = self._make(method, url, headers, payload, ssl_verify)
 
         if response.status_code >= 500:
-            logging.warning('Recieved a server error response %s' % response.status_code)
+            self.logger.warning('Recieved a server error response %s' % response.status_code)
 
         roundtrip = self._after_request(ts_start, url, response)
-        logging.debug('Repsonse took %s for %s' % (roundtrip, url))
+        self.logger.debug('Repsonse took %s for %s' % (roundtrip, url))
 
         return response
 
@@ -156,7 +155,7 @@ class BaseScrapy(object):
         diff_time = datetime.now() - self.last_request_time
         if diff_time.seconds < self.mininum_wait_time:
             sleep_time = self.mininum_wait_time - diff_time.seconds
-            logging.debug('Sleeping %s seconds before next request.')
+            self.logger.debug('Sleeping %s seconds before next request.')
             time.sleep(sleep_time)
 
     def _get_domain(self, url):
@@ -183,7 +182,7 @@ class BaseScrapy(object):
         try:
             return tld.get_fld(url)
         except tld.exceptions.TldDomainNotFound:
-            logging.warning('Could not determin domain for %s' % url)
+            self.logger.warning('Could not determin domain for %s' % url)
             return ''
 
     def _get_headers(self):
@@ -240,7 +239,7 @@ class BaseScrapy(object):
         :returns: A Requests module instance of the response.
         :rtype: <Requests.response> obj
         """
-        logging.debug('Making request: %s' % url)
+        self.logger.debug('Making request: %s' % url)
         request_args = {
             'method': method,
             'url': url,
@@ -260,10 +259,10 @@ class BaseScrapy(object):
         # Catch an error with the connection to the Proxy
         except requests.exceptions.ProxyError:
             if self.random_proxy_bag:
-                logging.warning('Hit a proxy error, picking a new one from proxy bag and continuing.')
+                self.logger.warning('Hit a proxy error, picking a new one from proxy bag and continuing.')
                 self.reset_proxy_from_bag()
             else:
-                logging.warning('Hit a proxy error, sleeping for %s and continuing.' % 5)
+                self.logger.warning('Hit a proxy error, sleeping for %s and continuing.' % 5)
                 time.sleep(5)
 
             return self._make(method, url, headers, payload, retry)
@@ -287,6 +286,15 @@ class BaseScrapy(object):
 
             raise requests.exceptions.ConnectionError
 
+        # Catch a ChunkedEncodingError, response when the expected byte size is not what was recieved, probably a
+        # bad proxy
+        except ChunkedEncodingError:
+            if self.random_proxy_bag:
+                self.logger.warning('Hit a ChunkedEncodingError, proxy might be running to slow resetting proxy.')
+                self.reset_proxy_from_bag()
+            else:
+                raise ChunkedEncodingError
+
         return response
 
     def _handle_connection_error(self, method, url, headers, payload, retry):
@@ -305,7 +313,7 @@ class BaseScrapy(object):
         :returns: A Requests module instance of the response.
         :rtype: <Requests.response> obj or None
         """
-        logging.error('Unabled to connect to: %s' % url)
+        self.logger.error('Unabled to connect to: %s' % url)
 
         total_retries = self.retries_on_connection_failure
         retry += 1
@@ -316,7 +324,7 @@ class BaseScrapy(object):
         #     self._reset_proxy_from_bag()
 
         if self.retries_on_connection_failure:
-            logging.warning(
+            self.logger.warning(
                 'Attempt %s of %s. Sleeping and retrying url in %s seconds.' % (
                     str(retry),
                     total_retries,
@@ -335,8 +343,9 @@ class BaseScrapy(object):
         """
         if not self.proxy_bag:
             return
-        logging.debug('Changing proxy')
+        self.logger.debug('Changing proxy')
         self.proxy_bag.pop(0)
+        self.proxy = {'http': self.proxy_bag[0]['ip']}
         self._setup_proxies()
 
     def _handle_ssl_error(self, method, url, headers, payload, retry):
@@ -394,21 +403,6 @@ class BaseScrapy(object):
         self.request_count += 1
         self.request_total += 1
 
-    def _get_proxies(self):
-        """
-        Gets list of free public proxies and loads them into a list.
-
-        :returns: The proxies to be used.
-        :rtype: list
-        """
-        proxies_url = "https://free-proxy-list.net/"
-        response = self.get(proxies_url)
-        proxies = ParseResponse(response).freeproxylistdotnet()
-
-        # Shuffle the proxies so multiple instances of Scrapy wont use the same one
-        shuffle(proxies)
-        return proxies
-
     def _prep_destination(self, destination):
         """
         Attempts to create the destintion directory path if needed.
@@ -426,24 +420,7 @@ class BaseScrapy(object):
                 os.makedirs(destination)
                 return True
             except Exception:
-                logging.error('Could not create directory: %s' % destination)
+                self.logger.error('Could not create directory: %s' % destination)
                 return False
-
-    def _convert_size(self, size_bytes):
-        """
-        Converts bytes to human readable size.
-
-        :param size_bytes: Size in bytes to measure.
-        :type size_bytes: int
-        :returns: The size of the var in a human readable format.
-        :rtype: str
-        """
-        if size_bytes == 0:
-            return "0B"
-        size_name = ("B", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB")
-        i = int(math.floor(math.log(size_bytes, 1024)))
-        p = math.pow(1024, i)
-        s = round(size_bytes / p, 2)
-        return "%s %s" % (s, size_name[i])
 
 # EndFile: scrapy/scrapy/base_scrapy.py
