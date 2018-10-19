@@ -213,19 +213,6 @@ class Scrapy(BaseScrapy):
         """
         self.ssl_verify = True
 
-    def get_public_proxies(self):
-        """
-        Gets list of free public proxies and loads them into a list, currently just selecting from free-proxy-list.
-        @todo: Add filtering by country/ continent.
-
-        :returns: The proxies to be used.
-        :rtype: list
-        """
-        proxies_url = "https://free-proxy-list.net/"
-        response = self.get(proxies_url)
-        proxies = ParseResponse(response).freeproxylistdotnet()
-        return proxies
-
     def save(self, url, destination, payload={}):
         """
         Saves a file to a destination on the local drive. Good for quickly grabbing images from a remote site.
