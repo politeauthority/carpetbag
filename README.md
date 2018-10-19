@@ -21,7 +21,7 @@ scraper = Scrapy()
 scraper.use_random_user_agent()
 scraper.use_random_public_proxy()
 news = scraper.get('https://www.google.com/news/')
-if news.status_code in >= 400:
+if news.status_code >= 400:
     scraper.reset_identity()
     news = scraper.get('https://www.google.com/news/')
 print(news.text)

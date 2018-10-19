@@ -31,9 +31,9 @@ class BaseScrapy(object):
         :class param random_user_agent: Setting to decide whether or not to use a random user agent string.
         :class type random_user_agent: bool
 
-        :class param skip_ssl_verify: Skips the SSL cert verification. Sometimes this is needed when hitting certs
-            given out by LetsEncrypt.
-        :class type skip_ssl_verify: bool
+        :class param ssl_verify : Skips the SSL cert verification if set False. Sometimes this is needed when hitting
+            certs given out by LetsEncrypt.
+        :class type ssl_verify: bool
 
         :class param mininum_wait_time: Minimum ammount of time to wait before allowing the next request to go out.
         :class type mininum_wait_time: int
@@ -68,7 +68,6 @@ class BaseScrapy(object):
         self.headers = {}
         self.user_agent = 'Scrapy v.001'
         self.random_user_agent = False
-        self.skip_ssl_verify = True
         self.mininum_wait_time = 0  # Sets the minumum wait time per domain to make a new request in seconds.
         self.wait_and_retry_on_connection_error = 0
         self.retries_on_connection_failure = 5
@@ -90,6 +89,7 @@ class BaseScrapy(object):
         self.proxy_bag = []
         self.random_proxy_bag = False
         self.send_user_agent = ''
+        self.ssl_verify = True
         self._setup_proxies()
         self.logger = logging.getLogger(__name__)
 
@@ -115,8 +115,6 @@ class BaseScrapy(object):
         :returns: A Requests module instance of the response.
         :rtype: <Requests.response> obj
         """
-        if self.skip_ssl_verify:
-            ssl_verify = False
         ts_start = int(round(time.time() * 1000))
         url = ParseResponse.add_missing_protocol(url)
         headers = self._get_headers()
@@ -226,7 +224,7 @@ class BaseScrapy(object):
             self.send_user_agent = self.user_agent
             return
 
-    def _make(self, method, url, headers, payload, ssl_verify, retry=0):
+    def _make(self, method, url, headers, payload, retry=0):
         """
         Makes the request and handles different errors that may come about.
 
@@ -238,9 +236,6 @@ class BaseScrapy(object):
         :type: headers: dict
         :param payload: The data to be sent over the POST request.
         :type payload: dict
-        :param ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified the request
-            will fail.
-        :type ssl_verify: bool
         :returns: A Requests module instance of the response.
         :rtype: <Requests.response> obj
         """
@@ -250,7 +245,7 @@ class BaseScrapy(object):
             'url': url,
             'headers': headers,
             'proxies': self.proxy,
-            'verify': ssl_verify
+            'verify': self.ssl_verify
         }
         if method == 'GET':
             request_args['params'] = payload
@@ -270,13 +265,13 @@ class BaseScrapy(object):
                 self.logger.warning('Hit a proxy error, sleeping for %s and continuing.' % 5)
                 time.sleep(5)
 
-            return self._make(method, url, headers, payload, ssl_verify, retry)
+            return self._make(method, url, headers, payload, retry)
 
         # Catch an SSLError, seems to crop up with LetsEncypt certs.
         except requests.exceptions.SSLError:
-            self.logger.warning('Recieved an SSLError from %s' % url)
-            if self.skip_ssl_verify:
-                self.logger.warning('Re-running request without SSL cert verification.')
+            logging.warning('Recieved an SSLError from %s' % url)
+            if not self.ssl_verify:
+                logging.warning('Re-running request without SSL cert verification.')
                 return self._make(method, url, headers, payload, True, retry)
             return self._handle_ssl_error(method, url, headers, payload, retry)
 
@@ -285,7 +280,7 @@ class BaseScrapy(object):
             if retry == 0 and self.random_proxy_bag:
                 self.reset_proxy_from_bag()
 
-            response = self._handle_connection_error(method, url, headers, payload, ssl_verify, retry)
+            response = self._handle_connection_error(method, url, headers, payload, retry)
             if response:
                 return response
 
@@ -302,7 +297,7 @@ class BaseScrapy(object):
 
         return response
 
-    def _handle_connection_error(self, method, url, headers, payload, ssl_verify, retry):
+    def _handle_connection_error(self, method, url, headers, payload, retry):
         """
         Handles a connection error. If self.wait_and_retry_on_connection_error has a value other than 0 we will wait
         that long until attempting to retry the url again.
@@ -313,11 +308,8 @@ class BaseScrapy(object):
         :type: headers: dict
         :param payload: The data to be sent over the POST request.
         :type payload: dict
-        :param ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified the request
-            will fail.
-        :type ssl_verify: bool
         :param retry: Number of attempts that have already been performed for this request.
-        :type ssl_verify: int
+        :type retry: int
         :returns: A Requests module instance of the response.
         :rtype: <Requests.response> obj or None
         """
@@ -339,7 +331,7 @@ class BaseScrapy(object):
                     self.wait_and_retry_on_connection_error))
             if self.wait_and_retry_on_connection_error:
                 time.sleep(self.wait_and_retry_on_connection_error)
-            return self._make(method, url, headers, payload, ssl_verify, retry)
+            return self._make(method, url, headers, payload, retry)
 
         return None
 
@@ -356,7 +348,7 @@ class BaseScrapy(object):
         self.proxy = {'http': self.proxy_bag[0]['ip']}
         self._setup_proxies()
 
-    def _handle_ssl_error(self, method, url, headers, payload, ssl_verify, retry):
+    def _handle_ssl_error(self, method, url, headers, payload, retry):
         """
         Used to catch an SSL issue and allow scrapy to choose whether or not to try without SSL.
 
@@ -366,19 +358,17 @@ class BaseScrapy(object):
         :type: headers: dict
         :param payload: The data to be sent over the POST request.
         :type payload: dict
-        :param ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified the request
-            will fail.
-        :type ssl_verify: bool
         :param retry: Number of attempts that have already been performed for this request.
-        :type ssl_verify: int
+        :type retry: int
         :returns: A Requests module instance of the response.
         :rtype: <Requests.response> obj or None
         """
-        self.logger.warning("""There was an error with the SSL cert, this happens a lot with LetsEncrypt certificates. Set the class
-            var, self.skip_ssl_verify or use the skip_ssl_verify in the .get(url=url, skip_ssl_verify=True)""")
-        if self.skip_ssl_verify:
-            self.logger.warning('Re-running request without SSL cert verification.')
-            return self._make(method, url, headers, payload, ssl_verify, retry)
+        msg = """There was an error with the SSL cert, this happens a lot with LetsEncrypt certificates. Set the """
+        msg += """class var, self.ssl_verify = False"""
+        logging.warning(msg)
+        if not self.ssl_verify:
+            logging.warning('Re-running request without SSL cert verification.')
+            return self._make(method, url, headers, payload, retry)
         return False
 
     def _after_request(self, ts_start, url, response):
