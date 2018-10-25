@@ -106,5 +106,4 @@ class TestPublic(object):
         assert len(scrapy.proxy_bag) > 100
         assert scrapy.random_proxy_bag
 
-
 # End File scrapy/tests/test_public.py

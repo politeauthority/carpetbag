@@ -184,7 +184,7 @@ class Scrapy(BaseScrapy):
         self.random_proxy_bag = True
         self.proxy_bag = self.get_public_proxies()
 
-        # Shuffle the proxies so multiple instances of Scrapy wont use the same one
+        # Shuffle the proxies so concurrent instances of Scrapy wont use the same proxy
         shuffle(self.proxy_bag)
 
         self.reset_proxy_from_bag()
@@ -335,6 +335,7 @@ class Scrapy(BaseScrapy):
             return self.outbound_ip
 
         logging.error('Could not get outbound ip address.')
+
         return False
 
     def reset_identity(self):
@@ -365,6 +366,7 @@ class Scrapy(BaseScrapy):
             if url and url[len(url) - 1] != '/' and url_segment[0] != '/':
                 url_segment = '/' + url_segment
             url += url_segment
+
         return url
 
     @staticmethod
@@ -381,6 +383,7 @@ class Scrapy(BaseScrapy):
         if not the_date:
             the_date = datetime.now()
         ret = the_date.strftime("%Y-%m-%d %H:%M:%S")
+
         return ret
 
 # End File: scrapy/scrapy/__init__.py

@@ -226,7 +226,8 @@ class BaseScrapy(object):
 
     def _make(self, method, url, headers, payload, retry=0):
         """
-        Makes the request and handles different errors that may come about.
+        Just about every Scrapy request comes through this method. It makes the request and handles different errors
+        that may come about.
 
         self.wait_and_retry_on_connection_error can be set to add a wait and retry in seconds.
 

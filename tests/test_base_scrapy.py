@@ -102,6 +102,17 @@ class TestBaseScrapy(object):
         run_time_3 = (end_3 - start_3).seconds
         assert run_time_3 < 3
 
+    def test__get_domain(self):
+        """
+        Tests the BaseScrapy._get_domain method to see if it properly picks the domain from a url.
+
+        """
+        scraper = Scrapy()
+        assert scraper._get_domain('http://192.168.50.137:5000') == '192.168.50.137'
+        assert scraper._get_domain('http://www.google.com') == 'google.com'
+        assert scraper._get_domain('http://localhost') == 'localhost'
+        assert scraper._get_domain('http://192.168.1.19:5010') == '192.168.1.19'
+
     def test__get_headers(self):
         """
         Tests that headers can be set by the scrapy application, and by the end-user.
@@ -144,7 +155,7 @@ class TestBaseScrapy(object):
     def test__make_1(self):
         """
         Tests the _make() method of Scrapy. This is one of the primary methods of scrapy, and could always use
-        more tests.!
+        more tests!
 
         """
         s = Scrapy()
@@ -207,17 +218,5 @@ class TestBaseScrapy(object):
         s._increment_counters()
         assert s.request_count == 2
         assert s.request_total == 2
-
-    def test__get_domain(self):
-        """
-        Tests the increment_counters method to make sure they increment!
-        @todo: Fix the ip fetching portion of this domain.
-
-        """
-        scraper = Scrapy()
-        assert scraper._get_domain('http://192.168.50.137:5000') == '192.168.50.137'
-        assert scraper._get_domain('http://www.google.com') == 'google.com'
-        assert scraper._get_domain('http://localhost') == 'localhost'
-        assert scraper._get_domain('http://192.168.1.19:5010') == '192.168.1.19'
 
 # End File scrapy/tests/test_scrapy.py
