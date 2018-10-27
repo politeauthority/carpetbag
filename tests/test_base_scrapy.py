@@ -34,7 +34,7 @@ class TestBaseScrapy(object):
         assert s.request_total == 0
         assert not s.last_request_time
         assert not s.last_response
-        assert s.send_user_agent == "
+        assert s.send_user_agent == ""
         assert s.max_content_length == 200000000
         assert s.mininum_wait_time == 0
         assert s.wait_and_retry_on_connection_error == 0

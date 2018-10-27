@@ -31,11 +31,11 @@ class ParseResponse(object):
         :rtype: str
         """
         if not self.soup:
-            return "
+            return ""
         elif not self.soup.title:
-            return "
+            return ""
         elif not self.soup.title.string:
-            return "
+            return ""
         return self.soup.title.string.strip()
 
     def get_links(self, content=None):
@@ -144,9 +144,9 @@ class ParseResponse(object):
         :returns: Safe url with protocal.
         :rtype: str
         """
-        url = url.replace("https", ")
-        url = url.replace("http", ")
-        url = url.replace("://", ")
+        url = url.replace("https", "")
+        url = url.replace("http", "")
+        url = url.replace("://", "")
         if "/" in url:
             url = url[: url.find("/")]
         return url

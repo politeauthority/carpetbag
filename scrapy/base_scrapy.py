@@ -183,7 +183,7 @@ class BaseScrapy(object):
             return tld.get_fld(url)
         except tld.exceptions.TldDomainNotFound:
             self.logger.warning("Could not determin domain for %s" % url)
-            return "
+            return ""
 
     def _get_headers(self):
         """
