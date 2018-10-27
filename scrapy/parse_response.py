@@ -21,21 +21,21 @@ class ParseResponse(object):
         self.soup = self._make_soup()
 
     def __repr__(self):
-        return '<Parsed %s>' % self.response.url
+        return "<Parsed %s>" % self.response.url
 
     def get_title(self):
         """
         Gets the title of the current content
 
-        :returns: The page's title.
+        :returns: The page"s title.
         :rtype: str
         """
         if not self.soup:
-            return ''
+            return "
         elif not self.soup.title:
-            return ''
+            return "
         elif not self.soup.title.string:
-            return ''
+            return "
         return self.soup.title.string.strip()
 
     def get_links(self, content=None):
@@ -53,21 +53,21 @@ class ParseResponse(object):
         anchors = soup.findAll("a")
 
         ret = {
-            'local': [],
-            'remote': []
+            "local": [],
+            "remote": []
         }
         for anchor in anchors:
-            if not anchor.get('href'):
+            if not anchor.get("href"):
                 continue
-            if anchor['href'][0] == '#':
+            if anchor["href"][0] == "#":
                 continue
 
-            if self._get_remote_links(anchor['href']):
-                if anchor['href'] not in ret['remote']:
-                    ret['remote'].append(anchor['href'])
+            if self._get_remote_links(anchor["href"]):
+                if anchor["href"] not in ret["remote"]:
+                    ret["remote"].append(anchor["href"])
                     continue
 
-            ret['local'].append(anchor['href'])
+            ret["local"].append(anchor["href"])
         return ret
 
     def _get_remote_links(self, anchor):
@@ -77,7 +77,7 @@ class ParseResponse(object):
         :param anchor: Url to inspect for local or remote url.
         :type anchor: str
         """
-        if anchor[:7] == 'http://' or anchor[:8] == 'https://':
+        if anchor[:7] == "http://" or anchor[:8] == "https://":
             return True
         return False
 
@@ -91,9 +91,9 @@ class ParseResponse(object):
         for link in links:
             results.append(
                 {
-                    'title': link.h2.text.strip(),
-                    'description': link.find('a', {'class': 'result__snippet'}).text.strip(),
-                    'url': self.add_missing_protocol(link.find('a', {'class': 'result__url'}).text.strip())
+                    "title": link.h2.text.strip(),
+                    "description": link.find("a", {"class": "result__snippet"}).text.strip(),
+                    "url": self.add_missing_protocol(link.find("a", {"class": "result__url"}).text.strip())
                 }
             )
         return results
@@ -106,49 +106,49 @@ class ParseResponse(object):
         :rtype: list
         """
         proxies = []
-        for prx in self.soup.findAll('tr')[1:]:
-            row = prx.findAll('td')
+        for prx in self.soup.findAll("tr")[1:]:
+            row = prx.findAll("td")
             if len(row) < 6:
                 continue
             proxy = {}
-            proxy['ip'] = "%s:%s" % (row[0].text, row[1].text)
-            proxy['location'] = row[3].text
-            proxy['ssl'] = False
-            if row[6].text == 'yes':
-                proxy['ssl'] = True
+            proxy["ip"] = "%s:%s" % (row[0].text, row[1].text)
+            proxy["location"] = row[3].text
+            proxy["ssl"] = False
+            if row[6].text == "yes":
+                proxy["ssl"] = True
             proxies.append(proxy)
         return proxies
 
     @staticmethod
     def add_missing_protocol(url):
         """
-        Adds the protocol 'http://' if a protocal is not present.
+        Adds the protocol "http://" if a protocal is not present.
 
         :param url: The url that may or may not be missing a protocol.
         :type url: str
         :returns: Safe url with protocal.
         :rtype: str
         """
-        if url[:8] == 'https://' or url[:7] == 'http://':
+        if url[:8] == "https://" or url[:7] == "http://":
             return url
         else:
-            return '%s%s' % ('http://', url)
+            return "%s%s" % ("http://", url)
 
     @staticmethod
     def remove_protocol(url):
         """
-        Adds the protocol 'http://' if a protocal is not present.
+        Adds the protocol "http://" if a protocal is not present.
 
         :param url: The url that may or may not be missing a protocol.
         :type url: str
         :returns: Safe url with protocal.
         :rtype: str
         """
-        url = url.replace('https', '')
-        url = url.replace('http', '')
-        url = url.replace('://', '')
-        if '/' in url:
-            url = url[: url.find('/')]
+        url = url.replace("https", ")
+        url = url.replace("http", ")
+        url = url.replace("://", ")
+        if "/" in url:
+            url = url[: url.find("/")]
         return url
 
     def _make_soup(self):
@@ -158,6 +158,6 @@ class ParseResponse(object):
         """
         self.content = self.response.text
         self.domain = tld.get_tld(self.response.url)
-        return BeautifulSoup(self.content, 'html.parser')
+        return BeautifulSoup(self.content, "html.parser")
 
 # EndFile: scrapy/scrapy/parse_response.py

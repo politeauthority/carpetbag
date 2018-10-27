@@ -46,7 +46,7 @@ class BaseScrapy(object):
             hit.
         :class type retries_on_connection_failure: int
 
-        :class param max_content_length: The maximum content length to download with the Scrapy 'save' method, with
+        :class param max_content_length: The maximum content length to download with the Scrapy "save" method, with
             raise as exception if it has surpassed that limit. (@todo This needs to be done still.)
         :class type max_content_length: int
 
@@ -66,7 +66,7 @@ class BaseScrapy(object):
             Authentication needs to be implemented.
         """
         self.headers = {}
-        self.user_agent = 'Scrapy v.001'
+        self.user_agent = "Scrapy v.001"
         self.random_user_agent = False
         self.mininum_wait_time = 0  # Sets the minumum wait time per domain to make a new request in seconds.
         self.wait_and_retry_on_connection_error = 0
@@ -78,7 +78,7 @@ class BaseScrapy(object):
         self.auth_type = None
         self.change_identity_interval = 0
 
-        # These are private reserved class vars, don't use these!
+        # These are private reserved class vars, don"t use these!
         self.outbound_ip = None
         self.request_attempts = {}
         self.request_count = 0
@@ -88,16 +88,16 @@ class BaseScrapy(object):
         self.manifest = {}
         self.proxy_bag = []
         self.random_proxy_bag = False
-        self.send_user_agent = ''
+        self.send_user_agent = ""
         self.ssl_verify = True
         self._setup_proxies()
         self.logger = logging.getLogger(__name__)
 
     def __repr__(self):
-        proxy = ''
-        if self.proxy.get('http'):
-            proxy = " Proxy:%s" % self.proxy.get('http')
-        return '<Scrapy%s>' % proxy
+        proxy = ""
+        if self.proxy.get("http"):
+            proxy = " Proxy:%s" % self.proxy.get("http")
+        return "<Scrapy%s>" % proxy
 
     def _make_request(self, method, url, payload={}, ssl_verify=True):
         """
@@ -107,9 +107,9 @@ class BaseScrapy(object):
         :type method: string
         :param url: The url to fetch/ post to.
         :type: url: str
-        :param payload: The payload to be sent, if we're making a post request.
+        :param payload: The payload to be sent, if we"re making a post request.
         :type payload: dict
-        :param ssl_verify: If True will attempt to verify a site's SSL cert, if it can't be verified the request
+        :param ssl_verify: If True will attempt to verify a site"s SSL cert, if it can"t be verified the request
             will fail.
         :type ssl_verify: bool
         :returns: A Requests module instance of the response.
@@ -125,10 +125,10 @@ class BaseScrapy(object):
         response = self._make(method, url, headers, payload, ssl_verify)
 
         if response.status_code >= 500:
-            self.logger.warning('Recieved a server error response %s' % response.status_code)
+            self.logger.warning("Recieved a server error response %s" % response.status_code)
 
         roundtrip = self._after_request(ts_start, url, response)
-        self.logger.debug('Repsonse took %s for %s' % (roundtrip, url))
+        self.logger.debug("Repsonse took %s for %s" % (roundtrip, url))
 
         return response
 
@@ -146,7 +146,7 @@ class BaseScrapy(object):
         if not self.last_request_time:
             return
 
-        # Checks that the next server we're making a request to is the same as the previous request.
+        # Checks that the next server we"re making a request to is the same as the previous request.
         # tld.get_fld(self.last_response.url)
         if self._get_domain(self.last_response.url) != self._get_domain(url):
             return
@@ -155,7 +155,7 @@ class BaseScrapy(object):
         diff_time = datetime.now() - self.last_request_time
         if diff_time.seconds < self.mininum_wait_time:
             sleep_time = self.mininum_wait_time - diff_time.seconds
-            self.logger.debug('Sleeping %s seconds before next request.')
+            self.logger.debug("Sleeping %s seconds before next request.")
             time.sleep(sleep_time)
 
     def _get_domain(self, url):
@@ -176,14 +176,14 @@ class BaseScrapy(object):
             except AttributeError:
                 pass
 
-        if '//localhost' in url:
-            return 'localhost'
+        if "//localhost" in url:
+            return "localhost"
 
         try:
             return tld.get_fld(url)
         except tld.exceptions.TldDomainNotFound:
-            self.logger.warning('Could not determin domain for %s' % url)
-            return ''
+            self.logger.warning("Could not determin domain for %s" % url)
+            return "
 
     def _get_headers(self):
         """
@@ -195,7 +195,7 @@ class BaseScrapy(object):
         send_headers = {}
         self._set_user_agent()
         if self.send_user_agent:
-            send_headers['User-Agent'] = self.send_user_agent
+            send_headers["User-Agent"] = self.send_user_agent
 
         for key, value in self.headers.items():
             send_headers[key] = value
@@ -209,12 +209,12 @@ class BaseScrapy(object):
         """
         if not self.proxy:
             return
-        if 'http' in self.proxy and 'https' not in self.proxy:
-            self.proxy['https'] = self.proxy['http']
+        if "http" in self.proxy and "https" not in self.proxy:
+            self.proxy["https"] = self.proxy["http"]
 
     def _set_user_agent(self):
         """
-        Sets a user agent to the class var if it is being used, otherwise if it's the 1st or 10th request, fetches a new
+        Sets a user agent to the class var if it is being used, otherwise if it"s the 1st or 10th request, fetches a new
         random user agent string.
 
         :returns: The user agent string to be used in the request.
@@ -226,8 +226,9 @@ class BaseScrapy(object):
 
     def _make(self, method, url, headers, payload, retry=0):
         """
-        Just about every Scrapy request comes through this method. It makes the request and handles different errors
+        Just about every Scrapy requesmisct comes through this method. It makes the request and handles different errors
         that may come about.
+        @todo: rework arg list to be url, payload, method,
 
         self.wait_and_retry_on_connection_error can be set to add a wait and retry in seconds.
 
@@ -240,18 +241,18 @@ class BaseScrapy(object):
         :returns: A Requests module instance of the response.
         :rtype: <Requests.response> obj
         """
-        self.logger.debug('Making request: %s' % url)
+        self.logger.debug("Making request: %s" % url)
         request_args = {
-            'method': method,
-            'url': url,
-            'headers': headers,
-            'proxies': self.proxy,
-            'verify': self.ssl_verify
+            "method": method,
+            "url": url,
+            "headers": headers,
+            "proxies": self.proxy,
+            "verify": self.ssl_verify
         }
-        if method == 'GET':
-            request_args['params'] = payload
-        elif method in ['PUT', 'POST']:
-            request_args['data'] = payload
+        if method == "GET":
+            request_args["params"] = payload
+        elif method in ["PUT", "POST"]:
+            request_args["data"] = payload
 
         try:
             response = requests.request(**request_args)
@@ -260,19 +261,19 @@ class BaseScrapy(object):
         # Catch an error with the connection to the Proxy
         except requests.exceptions.ProxyError:
             if self.random_proxy_bag:
-                self.logger.warning('Hit a proxy error, picking a new one from proxy bag and continuing.')
+                self.logger.warning("Hit a proxy error, picking a new one from proxy bag and continuing.")
                 self.reset_proxy_from_bag()
             else:
-                self.logger.warning('Hit a proxy error, sleeping for %s and continuing.' % 5)
+                self.logger.warning("Hit a proxy error, sleeping for %s and continuing." % 5)
                 time.sleep(5)
 
             return self._make(method, url, headers, payload, retry)
 
         # Catch an SSLError, seems to crop up with LetsEncypt certs.
         except requests.exceptions.SSLError:
-            logging.warning('Recieved an SSLError from %s' % url)
+            logging.warning("Recieved an SSLError from %s" % url)
             if not self.ssl_verify:
-                logging.warning('Re-running request without SSL cert verification.')
+                logging.warning("Re-running request without SSL cert verification.")
                 return self._make(method, url, headers, payload, True, retry)
             return self._handle_ssl_error(method, url, headers, payload, retry)
 
@@ -291,7 +292,7 @@ class BaseScrapy(object):
         # bad proxy
         except ChunkedEncodingError:
             if self.random_proxy_bag:
-                self.logger.warning('Hit a ChunkedEncodingError, proxy might be running to slow resetting proxy.')
+                self.logger.warning("Hit a ChunkedEncodingError, proxy might be running to slow resetting proxy.")
                 self.reset_proxy_from_bag()
             else:
                 raise ChunkedEncodingError
@@ -314,7 +315,7 @@ class BaseScrapy(object):
         :returns: A Requests module instance of the response.
         :rtype: <Requests.response> obj or None
         """
-        self.logger.error('Unabled to connect to: %s' % url)
+        self.logger.error("Unabled to connect to: %s" % url)
 
         total_retries = self.retries_on_connection_failure
         retry += 1
@@ -326,7 +327,7 @@ class BaseScrapy(object):
 
         if self.retries_on_connection_failure:
             self.logger.warning(
-                'Attempt %s of %s. Sleeping and retrying url in %s seconds.' % (
+                "Attempt %s of %s. Sleeping and retrying url in %s seconds." % (
                     str(retry),
                     total_retries,
                     self.wait_and_retry_on_connection_error))
@@ -344,9 +345,9 @@ class BaseScrapy(object):
         """
         if not self.proxy_bag:
             return
-        self.logger.debug('Changing proxy')
+        self.logger.debug("Changing proxy")
         self.proxy_bag.pop(0)
-        self.proxy = {'http': self.proxy_bag[0]['ip']}
+        self.proxy = {"http": self.proxy_bag[0]["ip"]}
         self._setup_proxies()
 
     def _handle_ssl_error(self, method, url, headers, payload, retry):
@@ -368,7 +369,7 @@ class BaseScrapy(object):
         msg += """class var, self.ssl_verify = False"""
         logging.warning(msg)
         if not self.ssl_verify:
-            logging.warning('Re-running request without SSL cert verification.')
+            logging.warning("Re-running request without SSL cert verification.")
             return self._make(method, url, headers, payload, retry)
         return False
 
@@ -421,7 +422,7 @@ class BaseScrapy(object):
                 os.makedirs(destination)
                 return True
             except Exception:
-                self.logger.error('Could not create directory: %s' % destination)
+                self.logger.error("Could not create directory: %s" % destination)
                 return False
 
 # EndFile: scrapy/scrapy/base_scrapy.py

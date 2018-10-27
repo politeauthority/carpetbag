@@ -11,7 +11,7 @@ from scrapy import user_agent
 
 CASSET_DIR = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
-    'data/vcr_cassettes')
+    "data/vcr_cassettes")
 
 
 class TestPublic(object):
@@ -23,7 +23,7 @@ class TestPublic(object):
         """
         now = datetime.now()
         the_date = datetime(2018, 10, 13, 12, 12, 12)
-        assert Scrapy.json_date(the_date) == '2018-10-13 12:12:12'
+        assert Scrapy.json_date(the_date) == "2018-10-13 12:12:12"
         assert isinstance(Scrapy.json_date(), str)
         assert Scrapy.json_date()[:4] == str(now.year)
 
@@ -32,21 +32,21 @@ class TestPublic(object):
         Tests the url_concat method, to make sure we're not adding any extra slashes or making weird urls.
 
         """
-        assert Scrapy.url_concat('http://www.google.com', 'news') == 'http://www.google.com/news'
-        assert Scrapy.url_concat('http://www.google.com', '/news') == 'http://www.google.com/news'
-        # assert Scrapy.url_concat('http://www.google.com/', '/') == 'http://www.google.com/'
-        assert Scrapy.url_concat('http://www.google.com', '/') == 'http://www.google.com/'
+        assert Scrapy.url_concat("http://www.google.com", "news") == "http://www.google.com/news"
+        assert Scrapy.url_concat("http://www.google.com", "/news") == "http://www.google.com/news"
+        # assert Scrapy.url_concat("http://www.google.com/", "/") == "http://www.google.com/"
+        assert Scrapy.url_concat("http://www.google.com", "/") == "http://www.google.com/"
 
     def test_use_random_user_agent(self):
         """
-        Tests Scrapy's main public method to make sure we're getting the responses we expect.
+        Tests Scrapy"s main public method to make sure we're getting the responses we expect.
 
         """
         scraper = Scrapy()
-        assert scraper.user_agent == 'Scrapy v.001'
+        assert scraper.user_agent == "Scrapy v.001"
         scraper.use_random_user_agent()
-        with vcr.use_cassette(os.path.join(CASSET_DIR, 'public_random_user_agent.yaml')):
-            scraper.get('http://www.bad-actor.services')
+        with vcr.use_cassette(os.path.join(CASSET_DIR, "public_random_user_agent.yaml")):
+            scraper.get("http://www.bad-actor.services")
         assert scraper.user_agent in user_agent.get_flattened_uas()
 
     def test_check_tor_fail(self):
@@ -55,7 +55,7 @@ class TestPublic(object):
 
         """
         scraper = Scrapy()
-        with vcr.use_cassette(os.path.join(CASSET_DIR, 'public_tor_fail.yaml')):
+        with vcr.use_cassette(os.path.join(CASSET_DIR, "public_tor_fail.yaml")):
             tor = scraper.check_tor()
             assert not tor
 
@@ -65,9 +65,9 @@ class TestPublic(object):
 
         """
         scraper = Scrapy()
-        with vcr.use_cassette(os.path.join(CASSET_DIR, 'public_outbound_ip.yaml')):
+        with vcr.use_cassette(os.path.join(CASSET_DIR, "public_outbound_ip.yaml")):
             ip = scraper.get_outbound_ip()
-            assert ip == '73.203.37.237'
+            assert ip == "73.203.37.237"
 
     # Removing this test for the time being, the constanly rotating proxies is casuing false negatives on the test
     # def test_reset_identity(self):
@@ -75,12 +75,12 @@ class TestPublic(object):
     #     """
     #     scraper = Scrapy()
     #     scraper.use_random_user_agent()
-    #     with vcr.use_cassette(os.path.join(CASSET_DIR, 'public_reset_identity.yaml')):
+    #     with vcr.use_cassette(os.path.join(CASSET_DIR, "public_reset_identity.yaml")):
     #         scraper.use_random_public_proxy()
 
     #         first_ip = scraper.get_outbound_ip()
     #         first_ua = scraper.user_agent
-    #         first_proxy = scraper.proxy['http']
+    #         first_proxy = scraper.proxy["http"]
     #         scraper.reset_identity()
 
     #         second_ip = scraper.get_outbound_ip()
@@ -97,12 +97,12 @@ class TestPublic(object):
         """
         scrapy = Scrapy()
         assert not scrapy.random_proxy_bag
-        with vcr.use_cassette(os.path.join(CASSET_DIR, 'public_use_random_public_proxy.yaml')):
+        with vcr.use_cassette(os.path.join(CASSET_DIR, "public_use_random_public_proxy.yaml")):
             scrapy.use_random_public_proxy(False)
             proxy_ips = []
             for prx in scrapy.proxy_bag:
-                proxy_ips.append(prx['ip'])
-        assert scrapy.proxy['http'] in proxy_ips
+                proxy_ips.append(prx["ip"])
+        assert scrapy.proxy["http"] in proxy_ips
         assert len(scrapy.proxy_bag) > 100
         assert scrapy.random_proxy_bag
 
