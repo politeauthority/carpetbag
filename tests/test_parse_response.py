@@ -11,7 +11,7 @@ class TestParseResponse(object):
 
     def test___init__(self):
         """
-        Tests that the module init has correct default values.
+        Tests that the ParseResponse module init has correct default values.
 
         """
         r = GoogleDotComResponse()
@@ -30,6 +30,6 @@ class TestParseResponse(object):
         string. Keep in mind this only removes http:// and https:// protocals.
 
         """
-        assert ParseResponse.remove_protocol('http://google.com') == 'google.com'
-        assert ParseResponse.remove_protocol('https://google.com') == 'google.com'
-        assert ParseResponse.remove_protocol('http://www.google.com') == 'www.google.com'
+        assert ParseResponse.remove_protocol("http://google.com") == "google.com"
+        assert ParseResponse.remove_protocol("https://google.com") == "google.com"
+        assert ParseResponse.remove_protocol("http://www.google.com") == "www.google.com"

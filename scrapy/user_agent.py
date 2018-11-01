@@ -46,7 +46,7 @@ user_agents = {
 }
 
 
-def get_random_ua(except_user_agent=''):
+def get_random_ua(except_user_agent=""):
     """
     Gets a random user aget string. @todo add optional restrictions for browser brand/operating system.
 
