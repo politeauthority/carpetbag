@@ -11,9 +11,9 @@ from scrapy import Scrapy
 
 CASSET_DIR = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
-    'data/vcr_cassettes')
+    "data/vcr_cassettes")
 
-SCRAPE_BASE = 'http://192.168.50.137:5000/api/'
+SCRAPE_BASE = "http://192.168.50.137:5000/api/"
 
 
 class TestPut(object):
@@ -24,12 +24,12 @@ class TestPut(object):
 
         """
         scraper = Scrapy()
-        scraper.headers = {'Content-Type': 'application/json'}
+        scraper.headers = {"Content-Type": "application/json"}
 
         payload = {}
-        payload['ts_updated'] = scraper.json_date()
+        payload["ts_updated"] = scraper.json_date()
         api_url = "http://www.bad-actor.services/api/symbols/1"
-        with vcr.use_cassette(os.path.join(CASSET_DIR, 'put_success.yaml')):
+        with vcr.use_cassette(os.path.join(CASSET_DIR, "put_success.yaml")):
             response = scraper.put(
                 api_url,
                 payload=json.dumps(payload))

@@ -12,7 +12,7 @@ from .data.response_data import GoogleDotComResponse
 
 CASSET_DIR = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
-    'data/vcr_cassettes')
+    "data/vcr_cassettes")
 
 
 class TestBaseScrapy(object):
@@ -25,7 +25,7 @@ class TestBaseScrapy(object):
         s = Scrapy()
         assert s.proxy == {}
         assert s.headers == {}
-        assert s.user_agent == 'Scrapy v.001'
+        assert s.user_agent == "Scrapy v.001"
         assert s.ssl_verify
         assert s.change_identity_interval == 0
         assert not s.outbound_ip
@@ -34,7 +34,7 @@ class TestBaseScrapy(object):
         assert s.request_total == 0
         assert not s.last_request_time
         assert not s.last_response
-        assert s.send_user_agent == ''
+        assert s.send_user_agent == ""
         assert s.max_content_length == 200000000
         assert s.mininum_wait_time == 0
         assert s.wait_and_retry_on_connection_error == 0
@@ -47,8 +47,8 @@ class TestBaseScrapy(object):
 
     def test__make_request(self):
         scraper = Scrapy()
-        with vcr.use_cassette(os.path.join(CASSET_DIR, 'test__make_request.yaml')):
-            request = scraper._make_request('GET', 'http://www.google.com/news')
+        with vcr.use_cassette(os.path.join(CASSET_DIR, "test__make_request.yaml")):
+            request = scraper._make_request("GET", "http://www.google.com/news")
         assert request
         assert request.text
         assert request.status_code == 200
@@ -60,14 +60,14 @@ class TestBaseScrapy(object):
         """
         scraper = Scrapy()
         start_1 = datetime.now()
-        scraper._handle_sleep('https://www.google.com/')
+        scraper._handle_sleep("https://www.google.com/")
         end_1 = datetime.now()
         run_time_1 = (end_1 - start_1).seconds
         assert run_time_1 < 3
 
         scraper = Scrapy()
         start_2 = datetime.now()
-        scraper._handle_sleep('https://www.google.com/')
+        scraper._handle_sleep("https://www.google.com/")
         end_2 = datetime.now()
         run_time_2 = (end_2 - start_2).seconds
         assert run_time_2 < 3
@@ -82,7 +82,7 @@ class TestBaseScrapy(object):
         scraper.mininum_wait_time = 5
 
         start_1 = datetime.now()
-        scraper._handle_sleep('https://www.google.com/')
+        scraper._handle_sleep("https://www.google.com/")
         end_1 = datetime.now()
         run_time_1 = (end_1 - start_1).seconds
         assert run_time_1 < 3
@@ -90,14 +90,14 @@ class TestBaseScrapy(object):
         start_2 = datetime.now()
         scraper.last_request_time = start_1
         scraper.last_response = GoogleDotComResponse()
-        scraper._handle_sleep('https://www.google.com/')
+        scraper._handle_sleep("https://www.google.com/")
         end_2 = datetime.now()
         run_time_2 = (end_2 - start_2).seconds
         assert run_time_2 > 4
 
         start_3 = datetime.now()
         scraper.last_request_time = start_1
-        scraper._handle_sleep('https://www.example.com/')
+        scraper._handle_sleep("https://www.example.com/")
         end_3 = datetime.now()
         run_time_3 = (end_3 - start_3).seconds
         assert run_time_3 < 3
@@ -108,10 +108,10 @@ class TestBaseScrapy(object):
 
         """
         scraper = Scrapy()
-        assert scraper._get_domain('http://192.168.50.137:5000') == '192.168.50.137'
-        assert scraper._get_domain('http://www.google.com') == 'google.com'
-        assert scraper._get_domain('http://localhost') == 'localhost'
-        assert scraper._get_domain('http://192.168.1.19:5010') == '192.168.1.19'
+        assert scraper._get_domain("http://192.168.50.137:5000") == "192.168.50.137"
+        assert scraper._get_domain("http://www.google.com") == "google.com"
+        assert scraper._get_domain("http://localhost") == "localhost"
+        assert scraper._get_domain("http://192.168.1.19:5010") == "192.168.1.19"
 
     def test__get_headers(self):
         """
@@ -119,11 +119,11 @@ class TestBaseScrapy(object):
 
         """
         s = Scrapy()
-        s.headers = {'Content-Type': 'application/html'}
+        s.headers = {"Content-Type": "application/html"}
         s.user_agent = "Mozilla/5.0 (Windows NT 10.0)"
         set_headers = s._get_headers()
-        assert set_headers['Content-Type'] == 'application/html'
-        assert set_headers['User-Agent'] == "Mozilla/5.0 (Windows NT 10.0)"
+        assert set_headers["Content-Type"] == "application/html"
+        assert set_headers["User-Agent"] == "Mozilla/5.0 (Windows NT 10.0)"
 
     def test__setup_proxy(self):
         """
@@ -132,10 +132,10 @@ class TestBaseScrapy(object):
         """
         s = Scrapy()
         assert not s.proxy
-        s.proxy = {'http': 'localhost:8118'}
+        s.proxy = {"http": "localhost:8118"}
         s._setup_proxies()
-        assert s.proxy['https'] == 'localhost:8118'
-        assert s.proxy['http'] == 'localhost:8118'
+        assert s.proxy["https"] == "localhost:8118"
+        assert s.proxy["http"] == "localhost:8118"
 
     def test__set_user_agent_manual(self):
         """
@@ -143,14 +143,14 @@ class TestBaseScrapy(object):
 
         """
         s = Scrapy()
-        s.user_agent = 'My test user agent'
+        s.user_agent = "My test user agent"
         s._set_user_agent()
-        assert s.send_user_agent == 'My test user agent'
+        assert s.send_user_agent == "My test user agent"
 
         s.request_count = 2
         s.change_user_agent_interval = 2
         s._set_user_agent()
-        assert s.send_user_agent == 'My test user agent'
+        assert s.send_user_agent == "My test user agent"
 
     def test__make_1(self):
         """
@@ -159,19 +159,19 @@ class TestBaseScrapy(object):
 
         """
         s = Scrapy()
-        with vcr.use_cassette(os.path.join(CASSET_DIR, 'test__make_1.yaml')):
+        with vcr.use_cassette(os.path.join(CASSET_DIR, "test__make_1.yaml")):
             response = s._make(
-                method='GET',
-                url='http://www.google.com',
-                headers={'Content-Type': 'application/html'},
+                method="GET",
+                url="http://www.google.com",
+                headers={"Content-Type": "application/html"},
                 payload={},
                 retry=0)
             assert response
             assert response.status_code == 200
             response = s._make(
-                method='GET',
-                url='http://www.google.com',
-                headers={'Content-Type': 'application/html'},
+                method="GET",
+                url="http://www.google.com",
+                headers={"Content-Type": "application/html"},
                 payload={},
                 retry=0)
             assert response
@@ -183,15 +183,15 @@ class TestBaseScrapy(object):
 
     #     """
     #     s = Scrapy()
-    #     with vcr.use_cassette(os.path.join(CASSET_DIR, 'reset_proxy_from_bag.yaml')):
+    #     with vcr.use_cassette(os.path.join(CASSET_DIR, "reset_proxy_from_bag.yaml")):
     #         s.use_random_public_proxy()
     #         proxy_bag_size = len(s.proxy_bag)
-    #         http_proxy_1 = s.proxy['http']
-    #         http2_proxy_1 = s.proxy['https']
+    #         http_proxy_1 = s.proxy["http"]
+    #         http2_proxy_1 = s.proxy["https"]
 
     #         s.reset_proxy_from_bag()
-    #         http_proxy_2 = s.proxy['http']
-    #         https_proxy_2 = s.proxy['https']
+    #         http_proxy_2 = s.proxy["http"]
+    #         https_proxy_2 = s.proxy["https"]
 
     #         assert http_proxy_1 != http_proxy_2
     #         assert https_proxy_1 != https_proxy_2
@@ -202,7 +202,7 @@ class TestBaseScrapy(object):
     #     """
     #     fake_start = datetime.now() - timedelta(minutes=5)
     #     scraper = Scrapy()
-    #     scraper._after_request(fake_start, 'https://www.google.com', GoogleDotComResponse)
+    #     scraper._after_request(fake_start, "https://www.google.com", GoogleDotComResponse)
 
     def test__increment_counters(self):
         """

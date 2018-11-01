@@ -41,7 +41,7 @@ class Scrapy(BaseScrapy):
             hit.
         :class type retries_on_connection_failure: int
 
-        :class param max_content_length: The maximum content length to download with the Scrapy 'save' method, with
+        :class param max_content_length: The maximum content length to download with the Scrapy "save" method, with
             raise as exception if it has surpassed that limit. (@todo This needs to be done still.)
         :class type max_content_length: int
 
@@ -63,7 +63,7 @@ class Scrapy(BaseScrapy):
             Authentication needs to be implemented.
         """
         self.headers = {}
-        self.user_agent = ''
+        self.user_agent = ""
         self.mininum_wait_time = 0  # Sets the minumum wait time per domain to make a new request in seconds.
         self.wait_and_retry_on_connection_error = 0
         self.retries_on_connection_failure = 5
@@ -102,7 +102,7 @@ class Scrapy(BaseScrapy):
         :returns: A Requests module instance of the response.
         :rtype: <Requests.response> obj
         """
-        response = self._make_request('GET', url, payload)
+        response = self._make_request("GET", url, payload)
 
         return response
 
@@ -118,7 +118,7 @@ class Scrapy(BaseScrapy):
         :returns: A Requests module instance of the response.
         :rtype: <Requests.response> obj
         """
-        response = self._make_request('POST', url, payload)
+        response = self._make_request("POST", url, payload)
         return response
 
     def put(self, url, payload={}):
@@ -133,7 +133,7 @@ class Scrapy(BaseScrapy):
         :returns: A Requests module instance of the response.
         :rtype: <Requests.response> obj
         """
-        response = self._make_request('PUT', url, payload)
+        response = self._make_request("PUT", url, payload)
         return response
 
     def delete(self, url, payload={}):
@@ -148,7 +148,7 @@ class Scrapy(BaseScrapy):
         :returns: A Requests module instance of the response.
         :rtype: <Requests.response> obj
         """
-        response = self._make_request('DELETE', url, payload)
+        response = self._make_request("DELETE", url, payload)
         return response
 
     def use_random_user_agent(self):
@@ -180,7 +180,7 @@ class Scrapy(BaseScrapy):
         :param test_proxy: Tests the proxy to see if it's up and working.
         :type test_proxy: bool
         """
-        logging.debug('Filling proxy bag')
+        logging.debug("Filling proxy bag")
         self.random_proxy_bag = True
         self.proxy_bag = self.get_public_proxies()
 
@@ -192,11 +192,11 @@ class Scrapy(BaseScrapy):
         if not test_proxy:
             return
 
-        logging.info('Testing Proxy: %s (%s)' % (self.proxy_bag[0]['ip'], self.proxy_bag[0]['location']))
-        proxy_test_urls = ['http://www.google.com']
+        logging.info("Testing Proxy: %s (%s)" % (self.proxy_bag[0]["ip"], self.proxy_bag[0]["location"]))
+        proxy_test_urls = ["http://www.google.com"]
         for url in proxy_test_urls:
             self.get(url)
-        logging.debug('Registered Proxy %s (%s)' % (self.proxy_bag[0]['ip'], self.proxy_bag[0]['location']))
+        logging.debug("Registered Proxy %s (%s)" % (self.proxy_bag[0]["ip"], self.proxy_bag[0]["location"]))
 
     def use_skip_ssl_verify(self):
         """
@@ -226,18 +226,18 @@ class Scrapy(BaseScrapy):
         """
         h = requests.head(url, allow_redirects=True)
         header = h.headers
-        content_type = header.get('content-type')
-        if 'text' in content_type.lower():
+        content_type = header.get("content-type")
+        if "text" in content_type.lower():
             return False
-        if 'html' in content_type.lower():
+        if "html" in content_type.lower():
             return False
 
         # Check content length
-        content_length = header.get('content-length', None)
+        content_length = header.get("content-length", None)
         if content_length.isdigit():
             content_length = int(content_length)
             if content_length > self.max_content_length:
-                logging.warning('Remote content-length: %s is greater then current max: %s')
+                logging.warning("Remote content-length: %s is greater then current max: %s")
                 return
 
         # Get the file
@@ -246,22 +246,22 @@ class Scrapy(BaseScrapy):
         # Figure out where to save the file.
         self._prep_destination(destination)
         if os.path.isdir(destination):
-            phile_name = url[url.rfind('/') + 1:]
+            phile_name = url[url.rfind("/") + 1:]
             full_phile_name = os.path.join(destination, phile_name)
         else:
             full_phile_name = destination
-        open(full_phile_name, 'wb').write(response.content)
+        open(full_phile_name, "wb").write(response.content)
 
         return full_phile_name
 
-    def search(self, query, engine='duckduckgo'):
+    def search(self, query, engine="duckduckgo"):
         """
         Runs a search query on a search engine with the current proxy, and returns a parsed result set.
         Currently only engine supported is duckduckgo.
 
         :param query: The query to run against the search engine.
         :type query: str
-        :param engine: Search engine to use, default 'duckduckgo'.
+        :param engine: Search engine to use, default "duckduckgo".
         :type engine: str
         :returns: The results from the search engine.
         :rtype: dict
@@ -273,28 +273,28 @@ class Scrapy(BaseScrapy):
         parsed = self.parse(response)
         results = parsed.duckduckgo_results()
         ret = {
-            'response': response,
-            'query': query,
-            'results': results,
-            'parsed': parsed,
+            "response": response,
+            "query": query,
+            "results": results,
+            "parsed": parsed,
         }
         return ret
 
     def check_tor(self):
         """
-        Checks the Tor Projects page "check.torproject.org" to see if we're running through a tor proxy correctly, and
+        Checks the Tor Projects page "check.torproject.org" to see if we"re running through a tor proxy correctly, and
         exiting through an actual tor exit node.
         @todo: Need to run this successfull to get the tor success page!!
 
         :returns: Whether or not your proxy is using Tor and Scrapy is connected to it.
         :params: bool
         """
-        response = self.get('https://check.torproject.org')
+        response = self.get("https://check.torproject.org")
         parsed = self.parse(response)
         title = parsed.get_title()
-        if title == 'Sorry. You are not using Tor.':
+        if title == "Sorry. You are not using Tor.":
             return False
-        elif title == 'yeah':
+        elif title == "yeah":
             return True
         return None
 
@@ -308,7 +308,7 @@ class Scrapy(BaseScrapy):
         :type: ParsedResponse obj
         """
         # if not self.last_response and not response:
-        #     logging.warning('No response to parse')
+        #     logging.warning("No response to parse")
         #     return
         if response:
             x = ParseResponse(response)
@@ -323,18 +323,18 @@ class Scrapy(BaseScrapy):
         :returns: The outbound ip address for the proxy.
         :rtype: str
         """
-        ip_websites = ['http://icanhazip.com/']
+        ip_websites = ["http://icanhazip.com/"]
         for ip in ip_websites:
             response = self.get(ip)
             if response.status_code != 200:
-                logging.warning('Unable to connect to %s for IP.')
+                logging.warning("Unable to connect to %s for IP.")
                 continue
 
             if response.text != self.outbound_ip:
                 self.outbound_ip = response.text.strip()
             return self.outbound_ip
 
-        logging.error('Could not get outbound ip address.')
+        logging.error("Could not get outbound ip address.")
 
         return False
 
@@ -361,10 +361,10 @@ class Scrapy(BaseScrapy):
         :returns: Ready to use url.
         :rtype: str
         """
-        url = ''
+        url = ""
         for url_segment in args:
-            if url and url[len(url) - 1] != '/' and url_segment[0] != '/':
-                url_segment = '/' + url_segment
+            if url and url[len(url) - 1] != "/" and url_segment[0] != "/":
+                url_segment = "/" + url_segment
             url += url_segment
 
         return url

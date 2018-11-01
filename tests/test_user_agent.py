@@ -28,6 +28,6 @@ class TestUserAgent(object):
         uas = user_agent.get_flattened_uas()
 
         assert isinstance(uas, list)
-        assert 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10; rv:33.0) Gecko/20100101 Firefox/33.0' in uas
+        assert "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10; rv:33.0) Gecko/20100101 Firefox/33.0" in uas
 
-# EndFile: tests/test_user_agent.py
+# EndFile: scrapy/tests/test_user_agent.py
