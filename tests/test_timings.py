@@ -13,24 +13,24 @@ from scrapy import Scrapy
 
 CASSET_DIR = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
-    'data/vcr_cassettes')
+    "data/vcr_cassettes")
 
 
 class TestTimings(object):
 
     def test_minimum_wait(self):
         """
-        Tests Scrapy's main public method to make sure we're waiting when the minim
+        Tests Scrapy"s main public method to make sure we"re waiting when the minim
 
         """
         start = datetime.now()
 
         scraper = Scrapy()
         scraper.mininum_wait_time = 3
-        with vcr.use_cassette(os.path.join(CASSET_DIR, 'timings_minimum_wait.yaml')):
-            scraper.get('http://www.bad-actor.services/api/symbols/1')
-            scraper.get('http://www.bad-actor.services/api/symbols/2')
-            scraper.get('http://www.bad-actor.services/api/something-wont-work/1')
+        with vcr.use_cassette(os.path.join(CASSET_DIR, "timings_minimum_wait.yaml")):
+            scraper.get("http://www.bad-actor.services/api/symbols/1")
+            scraper.get("http://www.bad-actor.services/api/symbols/2")
+            scraper.get("http://www.bad-actor.services/api/something-wont-work/1")
 
         end = datetime.now()
         run_time = (end - start).seconds
@@ -47,9 +47,9 @@ class TestTimings(object):
 
         scraper = Scrapy()
         scraper.wait_and_retry_on_connection_error = 3
-        with vcr.use_cassette(os.path.join(CASSET_DIR, 'timings_2.yaml')):
+        with vcr.use_cassette(os.path.join(CASSET_DIR, "timings_2.yaml")):
             with pytest.raises(requests.exceptions.ConnectionError):
-                scraper.get('http://www.asdasdasdkgljaSDF.com/api/symbols/1')
+                scraper.get("http://www.asdasdasdkgljaSDF.com/api/symbols/1")
 
         end = datetime.now()
         run_time = (end - start).seconds

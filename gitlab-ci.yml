@@ -1,0 +1,2 @@
+job1:
+  script: "run_all_tests.sh"
