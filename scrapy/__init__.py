@@ -170,7 +170,7 @@ class Scrapy(BaseScrapy):
         """
         proxies_url = "https://free-proxy-list.net/"
         response = self.get(proxies_url)
-        proxies = ParseResponse(response).freeproxylistdotnet(continents)
+        proxies = ParseResponse(response).freeproxylistdotnet()
         if continents or ssl_only:
             if continents and isinstance(continents, string_types):
                 continents = [continents]
