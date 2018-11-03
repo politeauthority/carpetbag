@@ -2,11 +2,16 @@
 
 """
 from datetime import datetime
+import time
+import json
 import os
 
+import pytest
 import vcr
 
 from scrapy import Scrapy
+from scrapy import errors
+
 from .data.response_data import GoogleDotComResponse
 
 
@@ -93,7 +98,7 @@ class TestBaseScrapy(object):
         scraper._handle_sleep("https://www.google.com/")
         end_2 = datetime.now()
         run_time_2 = (end_2 - start_2).seconds
-        assert run_time_2 > 4
+        assert run_time_2 >= 4
 
         start_3 = datetime.now()
         scraper.last_request_time = start_1
@@ -137,6 +142,39 @@ class TestBaseScrapy(object):
         assert s.proxy["https"] == "localhost:8118"
         assert s.proxy["http"] == "localhost:8118"
 
+    def test__filter_public_proxies(self):
+        """
+        Tests the filtering of the public proxies Scrapy gathers.
+        First assertion makes sure we filter SSL only proxies
+        Second assert makes sure we grab proxies only from North America
+        Third assertion checks that the first proxies is from North Amercia
+        Fourth assertion checks that we order South America after North America
+
+        """
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        json_data = open(os.path.join(dir_path, 'data/default_proxy_bag.json')).read()
+        test_proxies = json.loads(json_data)
+        s = Scrapy()
+        assert isinstance(s._filter_public_proxies(test_proxies, [], False), list)
+
+        # Check that we get only SSL supporting proxies
+        filtered_proxies = s._filter_public_proxies(test_proxies, continents=[], ssl_only=True)
+        for proxy in filtered_proxies:
+            assert proxy['ssl'] == True
+
+        # Check that we can grab proxies based on a single contintent
+        filtered_proxies = s._filter_public_proxies(test_proxies, continents=["North America"])
+        for proxy in filtered_proxies:
+            assert proxy['continent'] == "North America"
+
+        # Check that we grab proxies from multiple continents, ordered appropriately.
+        filtered_proxies = s._filter_public_proxies(test_proxies, continents=["North America", 'South America'])
+        assert filtered_proxies[0]['continent'] == "North America"
+        assert filtered_proxies[len(filtered_proxies) - 1]['continent'] == "South America"
+
+        with pytest.raises(errors.InvalidContinent):
+            filtered_proxies = s._filter_public_proxies(test_proxies, continents=["Nortf America"])
+
     def test__set_user_agent_manual(self):
         """
         Tests to make sure _set_user_agent will not override a manually set user_agent.
@@ -177,32 +215,37 @@ class TestBaseScrapy(object):
             assert response
             assert response.status_code == 200
 
-    # def test_reset_proxy_from_bag(self):
-    #     """
-    #     Tests the reset_proxy_from_bag() method.
+    def test_reset_proxy_from_bag(self):
+        """
+        Tests the reset_proxy_from_bag() method.
 
-    #     """
-    #     s = Scrapy()
-    #     with vcr.use_cassette(os.path.join(CASSET_DIR, "reset_proxy_from_bag.yaml")):
-    #         s.use_random_public_proxy()
-    #         proxy_bag_size = len(s.proxy_bag)
-    #         http_proxy_1 = s.proxy["http"]
-    #         http2_proxy_1 = s.proxy["https"]
+        """
+        s = Scrapy()
+        with vcr.use_cassette(os.path.join(CASSET_DIR, "reset_proxy_from_bag.yaml")):
+            s.use_random_public_proxy()
+            original_proxy_bag_size = len(s.proxy_bag)
+            http_proxy_1 = s.proxy["http"]
+            https_proxy_1 = s.proxy["https"]
 
-    #         s.reset_proxy_from_bag()
-    #         http_proxy_2 = s.proxy["http"]
-    #         https_proxy_2 = s.proxy["https"]
+            s.reset_proxy_from_bag()
+            http_proxy_2 = s.proxy["http"]
+            https_proxy_2 = s.proxy["https"]
 
-    #         assert http_proxy_1 != http_proxy_2
-    #         assert https_proxy_1 != https_proxy_2
-    #         assert original_proxy_bag_size - 1 == len(s.proxy_bag)
+            assert http_proxy_1 != http_proxy_2
+            assert https_proxy_1 != https_proxy_2
+            assert original_proxy_bag_size - 1 == len(s.proxy_bag)
 
-    # def test__after_request(self):
-    #     """
-    #     """
-    #     fake_start = datetime.now() - timedelta(minutes=5)
-    #     scraper = Scrapy()
-    #     scraper._after_request(fake_start, "https://www.google.com", GoogleDotComResponse)
+            # If proxy bag is empty, make sure we throw the error
+            with pytest.raises(errors.EmptyProxyBag):
+                s.proxy_bag = []
+                s.reset_proxy_from_bag()
+
+    def test__after_request(self):
+        """
+        """
+        fake_start = int(round(time.time() * 1000)) - 5000
+        scraper = Scrapy()
+        scraper._after_request(fake_start, "https://www.google.com", GoogleDotComResponse())
 
     def test__increment_counters(self):
         """

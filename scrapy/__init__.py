@@ -9,6 +9,7 @@ from datetime import datetime
 import logging
 import os
 from random import shuffle
+from six import string_types
 
 import requests
 
@@ -159,7 +160,7 @@ class Scrapy(BaseScrapy):
         self.random_user_agent = True
         self.user_agent = user_agent.get_random_ua()
 
-    def get_public_proxies(self):
+    def get_public_proxies(self, continents=[], ssl_only=False):
         """
         Gets list of free public proxies and loads them into a list, currently just selecting from free-proxy-list.
         @todo: Add filtering by country/ continent.
@@ -169,23 +170,37 @@ class Scrapy(BaseScrapy):
         """
         proxies_url = "https://free-proxy-list.net/"
         response = self.get(proxies_url)
-        proxies = ParseResponse(response).freeproxylistdotnet()
+        proxies = ParseResponse(response).freeproxylistdotnet(continents)
+        if continents or ssl_only:
+            if continents and isinstance(continents, string_types):
+                continents = [continents]
+                print(continents)
+            proxies = self._filter_public_proxies(proxies, continents, ssl_only)
+        else:
+            # Shuffle the proxies so concurrent instances of Scrapy wont use the same proxy
+            shuffle(self.proxy_bag)
+
         return proxies
 
-    def use_random_public_proxy(self, test_proxy=True):
+    def use_random_public_proxy(self, continents=[], ssl_only=False, test_proxy=True):
         """
         Gets proxies from free-proxy-list.net and loads them into the self.proxy_bag. The first element in the
         proxy_bag is the currently used proxy.
 
+        :param continents: Filters proxies to either  just a single continent, or if list is used, orders proxies in
+            based off of the order contients are listed within the 'contenient' list.
+        :type continents: stror list
+        :param ssl_only: Select only proxies fully supporting SSL.
+        :type ssl_only: bool
         :param test_proxy: Tests the proxy to see if it's up and working.
         :type test_proxy: bool
         """
         logging.debug("Filling proxy bag")
         self.random_proxy_bag = True
-        self.proxy_bag = self.get_public_proxies()
+        if continents and isinstance(continents, string_types):
+            continents = [continents]
 
-        # Shuffle the proxies so concurrent instances of Scrapy wont use the same proxy
-        shuffle(self.proxy_bag)
+        self.proxy_bag = self.get_public_proxies(continents, ssl_only)
 
         self.reset_proxy_from_bag()
         self._setup_proxies()
