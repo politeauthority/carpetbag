@@ -202,7 +202,7 @@ class ParseResponse(object):
             "bulgaria", "france", "russian federation", "ukraine", "italy", "germany", "united kingdom", "romania",
             "czech republic", "poland", "serbia", "moldova, republic of", "bulgaria", "bosnia and herzegovina",
             "austria", "norway", "albania", "slovenia", "latvia", "lithuania", "hungary", "sweden", "netherlands",
-            "saint martin"]
+            "saint martin", "spain"]
         asia = [
             "bangladesh", "indonesia", "thailand", "india", "japan", "ukraine", "singapore", "mongolia", "hong kong",
             "cambodia", "armenia", "iraq", "pakistan", "iran", "palestinian territory", "vietnam", "nepal", "taiwan",

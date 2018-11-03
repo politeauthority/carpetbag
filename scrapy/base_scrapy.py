@@ -214,7 +214,7 @@ class BaseScrapy(object):
         if "http" in self.proxy and "https" not in self.proxy:
             self.proxy["https"] = self.proxy["http"]
 
-    def _filter_public_proxies(self, proxies, continents, ssl_only=False):
+    def _filter_public_proxies(self, proxies, continents=None, ssl_only=False):
         """
         Pairs down the proxy list based on user requirements. Currently supports a list of continents, ordered by
         requested priority. Also supports filter proxies which will support SSL traffic. @note Defaulting ssl_only to
@@ -229,7 +229,11 @@ class BaseScrapy(object):
         :returns: Set of public proxies, filtered to user specs.
         :rtype: list
         """
-        self._validate_continents(continents)
+        if not continents or not ssl_only:
+            return proxies
+
+        if continents:
+            self._validate_continents(continents)
 
         filtered_proxies = []
         for proxy in proxies:
