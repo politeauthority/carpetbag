@@ -89,21 +89,21 @@ class TestPublic(object):
     #         assert first_proxy != scraper.user_agent
     #         assert first_ip != second_ip
 
-    def test_use_random_public_proxy(self):
-        """
-        Tests the Scrapy().use_random_public_proxy method. Makes sure that it parses the proxy list and sets a proxy
-        to be used.
+    # def test_use_random_public_proxy(self):
+    #     """
+    #     Tests the Scrapy().use_random_public_proxy method. Makes sure that it parses the proxy list and sets a proxy
+    #     to be used.
 
-        """
-        scrapy = Scrapy()
-        assert not scrapy.random_proxy_bag
-        with vcr.use_cassette(os.path.join(CASSET_DIR, "public_use_random_public_proxy.yaml")):
-            scrapy.use_random_public_proxy(False)
-            proxy_ips = []
-            for prx in scrapy.proxy_bag:
-                proxy_ips.append(prx["ip"])
-        assert scrapy.proxy["http"] in proxy_ips
-        assert len(scrapy.proxy_bag) > 100
-        assert scrapy.random_proxy_bag
+    #     """
+    #     scrapy = Scrapy()
+    #     assert not scrapy.random_proxy_bag
+    #     with vcr.use_cassette(os.path.join(CASSET_DIR, "public_use_random_public_proxy.yaml")):
+    #         scrapy.use_random_public_proxy()
+    #         proxy_ips = []
+    #         for prx in scrapy.proxy_bag:
+    #             proxy_ips.append(prx["ip"])
+    #     assert scrapy.proxy["http"] in proxy_ips
+    #     assert len(scrapy.proxy_bag) > 100
+    #     assert scrapy.random_proxy_bag
 
 # End File scrapy/tests/test_public.py

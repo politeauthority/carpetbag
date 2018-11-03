@@ -10,9 +10,11 @@ import re
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from requests.exceptions import ChunkedEncodingError
+from random import shuffle
 import tld
 
 from .parse_response import ParseResponse
+from .errors import EmptyProxyBag, InvalidContinent
 
 
 class BaseScrapy(object):
@@ -212,6 +214,87 @@ class BaseScrapy(object):
         if "http" in self.proxy and "https" not in self.proxy:
             self.proxy["https"] = self.proxy["http"]
 
+    def _filter_public_proxies(self, proxies, continents, ssl_only=False):
+        """
+        Pairs down the proxy list based on user requirements. Currently supports a list of continents, ordered by
+        requested priority. Also supports filter proxies which will support SSL traffic. @note Defaulting ssl_only to
+        True might be a good idea going forward.
+
+        :param proxies: Currated dictionary of public proxies.
+        :type: proxies: list
+        :param continents: User selected list of continents to filter proxy set to.
+        :type: continents: list
+        :param ssl_only:
+        :type: ssl_only: bool
+        :returns: Set of public proxies, filtered to user specs.
+        :rtype: list
+        """
+        self._validate_continents(continents)
+
+        filtered_proxies = []
+        for proxy in proxies:
+            proxy_add = True
+            if ssl_only and not proxy['ssl']:
+                proxy_add = False
+                continue
+            if continents and proxy['continent'] not in continents:
+                proxy_add = False
+                continue
+            if proxy_add:
+                filtered_proxies.append(proxy)
+
+        if continents:
+            filtered_proxies = self._order_public_proxies(proxies, continents)
+
+        return filtered_proxies
+
+    def _validate_continents(self, continents):
+        """
+        Cheks that the user selected continents are usable strings, not just some garbage.
+
+        :param continents: User selected list of continents.
+        :type continents: list
+        :raises: scrapy.errors.InvalidContinent
+        """
+        valid_continents = ["North America", "South America", "Asia", "Europe", "Africa", "Austrailia", "Antarctica"]
+        for continent in continents:
+            if continent not in valid_continents:
+                self.logger.error('Unknown continent: %s' % continent)
+                raise InvalidContinent(continent)
+
+    def _order_public_proxies(self, proxies, continents):
+        """
+        Order the proxy list based on the requested continents, based on the list order of the continents supplied.
+        Ex continents=["North America", "South America"] should return an order list of all found North American
+        proxies, then all South American Proxies, still randomized within each continent to the current Scrapy
+        Inititializtion to try and avoid conflicts of multiple instances of Scrapy running concurrently.
+
+        @todo: does not currently properly support continents lists of more then 3 items.
+
+        :param proxies: Currated dictionary of public proxies.
+        :type: proxies: list
+        :param continents: A user ordered list of continents, priortized by order.
+        :type: continents: list
+        :returns: Ordered public proxies based off user's selected continent preferances.
+        :rtype: list
+        """
+        proxy_set = {}
+        for proxy in proxies:
+            if proxy['continent'] in continents:
+                if proxy['continent'] not in proxy_set:
+                    proxy_set[proxy['continent']] = []
+                proxy_set[proxy['continent']].append(proxy)
+        proxy_order = []
+        for continent in continents:
+            for prx_continent, proxies in proxy_set.items():
+                for prx in proxies:
+                    if prx_continent == continents[0]:
+                        proxy_order.append(prx)
+                    else:
+                        proxy_order.insert(len(proxy_order), prx)
+
+        return proxy_order
+
     def _set_user_agent(self):
         """
         Sets a user agent to the class var if it is being used, otherwise if it"s the 1st or 10th request, fetches a new
@@ -339,13 +422,16 @@ class BaseScrapy(object):
 
     def reset_proxy_from_bag(self):
         """
-        Changes the proxy, assuming the current one is no good, it removes it from the proxy bag and loads up the next
-        one.
+        Grabs the next proxy inline from the self.proxy_bag, and removes the currently used proxy. If proxy bag is empty
+        raises the EmptyProxyBag error.
 
+        :raises: scrapy.erros.EmptyProxyBag
         """
-        if not self.proxy_bag:
-            return
         self.logger.debug("Changing proxy")
+        if len(self.proxy_bag) == 0:
+            self.logger.error('Proxy bag is empty! Cannot reset Proxy from Proxy Bag.')
+            raise EmptyProxyBag
+
         self.proxy_bag.pop(0)
         self.proxy = {"http": self.proxy_bag[0]["ip"]}
         self._setup_proxies()
