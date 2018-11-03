@@ -200,7 +200,7 @@ class Scrapy(BaseScrapy):
         if continents and isinstance(continents, string_types):
             continents = [continents]
 
-        self.proxy_bag = self.get_public_proxies(continents)
+        self.proxy_bag = self.get_public_proxies(continents, ssl_only)
 
         self.reset_proxy_from_bag()
         self._setup_proxies()

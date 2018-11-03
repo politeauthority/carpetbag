@@ -422,8 +422,8 @@ class BaseScrapy(object):
 
     def reset_proxy_from_bag(self):
         """
-        Grabs the next proxy inline from the self.proxy_bag, and removes the currently used proxy. If proxy bag is empty
-        raises the EmptyProxyBag error.
+        Grabs the next proxy inline from the self.proxy_bag, and removes the currently used proxy. If proxy bag is
+        empty, raises the EmptyProxyBag error.
 
         :raises: scrapy.erros.EmptyProxyBag
         """

@@ -98,7 +98,7 @@ class ParseResponse(object):
             )
         return results
 
-    def freeproxylistdotnet(self, continents=[]):
+    def freeproxylistdotnet(self):
         """
         Parses the proxies available from free-proxy-list.net
 
@@ -196,11 +196,20 @@ class ParseResponse(object):
             return 'Unknown'
         country = country.lower()
 
-        north_america = ["united states", "canada", "mexico"]
-        south_america = ["brazil", "colombia", "ecuador", "venezuela"]
-        europe = ["bulgaria", "france", "russian federation"]
-        asia = ["bangladesh", "indonesia", "thailand", "india", "japan", "ukraine"]
-        africa = []
+        north_america = ["united states", "canada", "mexico", "dominican republic"]
+        south_america = ["brazil", "colombia", "ecuador", "venezuela", "chile", "bolivia"]
+        europe = [
+            "bulgaria", "france", "russian federation", "ukraine", "italy", "germany", "united kingdom", "romania",
+            "czech republic", "poland", "serbia", "moldova, republic of", "bulgaria", "bosnia and herzegovina",
+            "austria", "norway", "albania", "slovenia", "latvia", "lithuania", "hungary", "sweden", "netherlands",
+            "saint martin"]
+        asia = [
+            "bangladesh", "indonesia", "thailand", "india", "japan", "ukraine", "singapore", "mongolia", "hong kong",
+            "cambodia", "armenia", "iraq", "pakistan", "iran", "palestinian territory", "vietnam", "nepal", "taiwan",
+            "afghanistan", "malaysia", "kyrgyzstan"]
+        africa = [
+            "south africa", "uganda", "tanzania", "nigeria", "zimbabwe", "kenya", "turkey", "ghana", "botswana",
+            "malawi", "namibia"]
         austrailia = ["Austrailia"]
         continent = ''
 
