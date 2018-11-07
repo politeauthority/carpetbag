@@ -9,7 +9,7 @@ import requests
 import pytest
 import vcr
 
-from scrapy import Scrapy
+from carpetbag import CarpetBag
 
 CASSET_DIR = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
@@ -20,20 +20,20 @@ class TestGet(object):
 
     def test_get_successful(self):
         """
-        Tests Scrapy's main public method to make sure we're getting the responses we expect.
+        Tests CarpetBag's main public method to make sure we're getting the responses we expect.
 
         """
-        scraper = Scrapy()
+        scraper = CarpetBag()
         with vcr.use_cassette(os.path.join(CASSET_DIR, 'get_standard.yaml')):
             response = scraper.get('http://www.bad-actor.services/api/symbols/1')
             assert response.status_code == 200
 
     def test_get_user_agent(self):
         """
-        Tests Scrapy's main public method to make sure we're getting the responses we expect.
+        Tests CarpetBag's main public method to make sure we're getting the responses we expect.
 
         """
-        scraper = Scrapy()
+        scraper = CarpetBag()
         scraper.user_agent = 'Some-User-Agent'
         with vcr.use_cassette(os.path.join(CASSET_DIR, 'get_user_agent.yaml')):
             response = scraper.get('http://www.bad-actor.services/api/symbols/1')
@@ -43,10 +43,10 @@ class TestGet(object):
 
     def test_get_last_response_info(self):
         """
-        Tests Scrapy's main public method to make sure we're getting the responses we expect.
+        Tests CarpetBag's main public method to make sure we're getting the responses we expect.
 
         """
-        scraper = Scrapy()
+        scraper = CarpetBag()
         with vcr.use_cassette(os.path.join(CASSET_DIR, 'get_last_response.yaml')):
             assert not scraper.last_response
             response = scraper.get('http://www.bad-actor.services/api/symbols/1')
@@ -58,10 +58,10 @@ class TestGet(object):
 
     def test_get_404_response(self):
         """
-        Tests Scrapy's main public method to make sure we're getting the responses we expect.
+        Tests CarpetBag's main public method to make sure we're getting the responses we expect.
 
         """
-        scraper = Scrapy()
+        scraper = CarpetBag()
         scraper.user_agent = 'Some-User-Agent'
         with vcr.use_cassette(os.path.join(CASSET_DIR, 'get_404.yaml')):
             response = scraper.get('http://www.bad-actor.services/api/symbol/1')
@@ -69,10 +69,10 @@ class TestGet(object):
 
     def test_get_host_unknown(self):
         """
-        Tests Scrapy's main public method to make sure we're rasing the requests.exceptions.Connetion error.
+        Tests CarpetBag's main public method to make sure we're rasing the requests.exceptions.Connetion error.
 
         """
-        scraper = Scrapy()
+        scraper = CarpetBag()
         scraper.user_agent = 'Some-User-Agent'
         with vcr.use_cassette(os.path.join(CASSET_DIR, 'get_cant_find_host.yaml')):
             with pytest.raises(requests.exceptions.ConnectionError):
@@ -80,12 +80,12 @@ class TestGet(object):
 
     def test_search_one(self):
         """
-        Tests Scrapy's search, which runs a search on DuckDuckGo and parses the response.
+        Tests CarpetBag's search, which runs a search on DuckDuckGo and parses the response.
 
         """
-        scraper = Scrapy()
+        scraper = CarpetBag()
         with vcr.use_cassette(os.path.join(CASSET_DIR, 'search_one.yaml')):
             response = scraper.search('learn python')
             assert response['results'][0]['title'] == 'Learn Python | Udemy.com\nAd'
 
-# End File scrapy/tests/test_get.py
+# End File carpetbag/tests/test_get.py

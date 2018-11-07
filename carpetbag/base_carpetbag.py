@@ -1,4 +1,4 @@
-"""BaseScrapy
+"""BaseCarpetBag
 
 """
 from datetime import datetime
@@ -10,18 +10,17 @@ import re
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from requests.exceptions import ChunkedEncodingError
-from random import shuffle
 import tld
 
 from .parse_response import ParseResponse
 from .errors import EmptyProxyBag, InvalidContinent
 
 
-class BaseScrapy(object):
+class BaseCarpetBag(object):
 
     def __init__(self):
         """
-        Scrapy constructor. Here we set the default, user changable class vars.
+        CarpetBag constructor. Here we set the default, user changable class vars.
 
         :class param headers: Any extra headers to add to the response. This can be maniuplated at any time and applied
             just before each request made.
@@ -48,7 +47,7 @@ class BaseScrapy(object):
             hit.
         :class type retries_on_connection_failure: int
 
-        :class param max_content_length: The maximum content length to download with the Scrapy "save" method, with
+        :class param max_content_length: The maximum content length to download with the CarpetBag "save" method, with
             raise as exception if it has surpassed that limit. (@todo This needs to be done still.)
         :class type max_content_length: int
 
@@ -68,7 +67,7 @@ class BaseScrapy(object):
             Authentication needs to be implemented.
         """
         self.headers = {}
-        self.user_agent = "Scrapy v.001"
+        self.user_agent = "CarpetBag v.001"
         self.random_user_agent = False
         self.mininum_wait_time = 0  # Sets the minumum wait time per domain to make a new request in seconds.
         self.wait_and_retry_on_connection_error = 0
@@ -99,7 +98,7 @@ class BaseScrapy(object):
         proxy = ""
         if self.proxy.get("http"):
             proxy = " Proxy:%s" % self.proxy.get("http")
-        return "<Scrapy%s>" % proxy
+        return "<CarpetBag%s>" % proxy
 
     def _make_request(self, method, url, payload={}, ssl_verify=True):
         """
@@ -136,7 +135,7 @@ class BaseScrapy(object):
 
     def _handle_sleep(self, url):
         """
-        Sets scrapy to sleep if we are making a request to the same server in less time then the value of
+        Sets CarpetBag to sleep if we are making a request to the same server in less time then the value of
         self.mininum_wait_time allows for.
 
         :param url: The url being requested.
@@ -258,7 +257,7 @@ class BaseScrapy(object):
 
         :param continents: User selected list of continents.
         :type continents: list
-        :raises: scrapy.errors.InvalidContinent
+        :raises: CarpetBag.errors.InvalidContinent
         """
         valid_continents = ["North America", "South America", "Asia", "Europe", "Africa", "Austrailia", "Antarctica"]
         for continent in continents:
@@ -270,8 +269,8 @@ class BaseScrapy(object):
         """
         Order the proxy list based on the requested continents, based on the list order of the continents supplied.
         Ex continents=["North America", "South America"] should return an order list of all found North American
-        proxies, then all South American Proxies, still randomized within each continent to the current Scrapy
-        Inititializtion to try and avoid conflicts of multiple instances of Scrapy running concurrently.
+        proxies, then all South American Proxies, still randomized within each continent to the current CarpetBag
+        Inititializtion to try and avoid conflicts of multiple instances of CarpetBag running concurrently.
 
         @todo: does not currently properly support continents lists of more then 3 items.
 
@@ -313,8 +312,8 @@ class BaseScrapy(object):
 
     def _make(self, method, url, headers, payload, retry=0):
         """
-        Just about every Scrapy requesmisct comes through this method. It makes the request and handles different errors
-        that may come about.
+        Just about every CarpetBag requesmisct comes through this method. It makes the request and handles different
+        errors that may come about.
         @todo: rework arg list to be url, payload, method,
 
         self.wait_and_retry_on_connection_error can be set to add a wait and retry in seconds.
@@ -429,7 +428,7 @@ class BaseScrapy(object):
         Grabs the next proxy inline from the self.proxy_bag, and removes the currently used proxy. If proxy bag is
         empty, raises the EmptyProxyBag error.
 
-        :raises: scrapy.erros.EmptyProxyBag
+        :raises: CarpetBag.erros.EmptyProxyBag
         """
         self.logger.debug("Changing proxy")
         if len(self.proxy_bag) == 0:
@@ -442,7 +441,7 @@ class BaseScrapy(object):
 
     def _handle_ssl_error(self, method, url, headers, payload, retry):
         """
-        Used to catch an SSL issue and allow scrapy to choose whether or not to try without SSL.
+        Used to catch an SSL issue and allow CarpetBag to choose whether or not to try without SSL.
 
         :param url: The url to fetch/ post to.
         :type: url: str
@@ -515,4 +514,4 @@ class BaseScrapy(object):
                 self.logger.error("Could not create directory: %s" % destination)
                 return False
 
-# EndFile: scrapy/scrapy/base_scrapy.py
+# EndFile: CarpetBag/CarpetBag/base_CarpetBag.py

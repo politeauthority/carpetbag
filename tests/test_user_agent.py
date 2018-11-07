@@ -2,7 +2,7 @@
 Run by using "pytest ." in the project root.
 
 """
-from scrapy import user_agent
+from carpetbag import user_agent
 
 
 class TestUserAgent(object):
@@ -30,4 +30,4 @@ class TestUserAgent(object):
         assert isinstance(uas, list)
         assert "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10; rv:33.0) Gecko/20100101 Firefox/33.0" in uas
 
-# EndFile: scrapy/tests/test_user_agent.py
+# EndFile: carpetbag/tests/test_user_agent.py

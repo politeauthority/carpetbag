@@ -2,7 +2,7 @@
 Run by using "pytest ." in the project root.
 
 """
-from scrapy.parse_response import ParseResponse
+from carpetbag.parse_response import ParseResponse
 
 from .data.response_data import GoogleDotComResponse
 

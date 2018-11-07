@@ -1,6 +1,6 @@
 FROM frolvlad/alpine-python3
 
-COPY ./ /opt/scrapy
+COPY ./ /opt/carpetbag
 
 RUN apk add --no-cache \
     bash \
@@ -11,10 +11,10 @@ RUN apk add --no-cache \
     musl-dev \
     && rm -rf /var/cache/apk/*
 
-WORKDIR /opt/scrapy/
+WORKDIR /opt/carpetbag/
 
 
-ADD ./ /opt/scrapy
+ADD ./ /opt/carpetbag
 RUN pip3 install -r requirements.txt
 RUN pip3 install -r tests/requirements.txt
 

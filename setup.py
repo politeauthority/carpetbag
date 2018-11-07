@@ -13,8 +13,9 @@ Depending on whether there is a virtualenv, packages may be installed in a locat
 
 from distutils.core import setup
 setup(
-    name='scrapy',
+    name='CarpetBag',
     version='0.0.1',
-    packages=['scrapy'],
+    packages=['carpetbag'],
     author="""politeauthority""",
-    description="Scraper that wont take no for an answer")
+    description="Scraper that wont take no for an answer",
+    url="https://github.com/politeauthority/carpetbag")

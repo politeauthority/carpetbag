@@ -1,5 +1,5 @@
 """Errors
-Scrapy Errors that might be thrown when problems happen
+CarpetBag Errors that might be thrown when problems happen
 """
 
 
@@ -16,3 +16,5 @@ class EmptyProxyBag(Error):
 class InvalidContinent(Error):
     """Raised when an unknwon continent is supplied by the user"""
     pass
+
+# EndFile: CarpetBag/carpetbag/errors.py

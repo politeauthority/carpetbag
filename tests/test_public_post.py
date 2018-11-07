@@ -1,4 +1,4 @@
-"""Test Scrapy methods which are under lying GET Request/Responses
+"""Test CarpetBag methods which are under lying GET Request/Responses
 This uses the vcr module to mimick responses to http requests. This tests the module as a whole.
 
 """
@@ -7,7 +7,7 @@ import os
 
 import vcr
 
-from scrapy import Scrapy
+from carpetbag import CarpetBag
 
 CASSET_DIR = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
@@ -20,10 +20,10 @@ class TestPost(object):
 
     def test_post_one(self):
         """
-        Tests Scrapy"s main public method to make sure we"re getting the responses we expect.
+        Tests CarpetBag's main public method to make sure we"re getting the responses we expect.
 
         """
-        scraper = Scrapy()
+        scraper = CarpetBag()
         scraper.headers = {"Content-Type": "application/json"}
 
         payload = {}
@@ -40,4 +40,4 @@ class TestPost(object):
                 payload=json.dumps(payload))
         assert response.status_code == 201
 
-# End File scrapy/tests/test_post.py
+# End File carpetbag/tests/test_post.py
