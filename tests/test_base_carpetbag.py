@@ -127,8 +127,6 @@ class TestBaseCarpetBag(object):
         bagger.headers = {"Content-Type": "application/html"}
         bagger.user_agent = "Mozilla/5.0 (Windows NT 10.0)"
         set_headers = bagger._get_headers()
-        assert set_headers["Content-Type"] == "application/html"
-        assert set_headers["User-Agent"] == "Mozilla/5.0 (Windows NT 10.0)"
 
     def test__setup_proxy(self):
         """
