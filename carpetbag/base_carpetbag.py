@@ -228,7 +228,7 @@ class BaseCarpetBag(object):
         :returns: Set of public proxies, filtered to user specs.
         :rtype: list
         """
-        if not continents or not ssl_only:
+        if not continents and not ssl_only:
             return proxies
 
         if continents:
@@ -251,19 +251,22 @@ class BaseCarpetBag(object):
 
         return filtered_proxies
 
-    def _validate_continents(self, continents):
+    def _validate_continents(self, requested_continents):
         """
         Cheks that the user selected continents are usable strings, not just some garbage.
 
-        :param continents: User selected list of continents.
-        :type continents: list
+        :param requested_continents: User selected list of continents.
+        :type requested_continents: list
+        :returns: Success if supplied continent list is valid.
+        :rtype: bool
         :raises: CarpetBag.errors.InvalidContinent
         """
         valid_continents = ["North America", "South America", "Asia", "Europe", "Africa", "Austrailia", "Antarctica"]
-        for continent in continents:
+        for continent in requested_continents:
             if continent not in valid_continents:
                 self.logger.error('Unknown continent: %s' % continent)
                 raise InvalidContinent(continent)
+        return True
 
     def _order_public_proxies(self, proxies, continents):
         """
