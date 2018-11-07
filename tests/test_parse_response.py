@@ -1,5 +1,4 @@
-"""Test Scrapy
-Run by using "pytest ." in the project root.
+"""Tests ParseResponse
 
 """
 from carpetbag.parse_response import ParseResponse

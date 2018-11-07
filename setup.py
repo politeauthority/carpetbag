@@ -17,5 +17,5 @@ setup(
     version='0.0.1',
     packages=['carpetbag'],
     author="""politeauthority""",
-    description="Scraper that wont take no for an answer",
+    description="A python scraper that wont take no for an answer",
     url="https://github.com/politeauthority/carpetbag")
