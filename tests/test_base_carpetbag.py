@@ -144,36 +144,65 @@ class TestBaseCarpetBag(object):
 
     def test__filter_public_proxies(self):
         """
-        Tests the filtering of the public proxies CarpetBag gathers.
+        Tests the BaseCarpetBag.__filter_public_proxies() method, which filters public proxies CarpetBag is using.
         First assertion makes sure we filter SSL only proxies
         Second assert makes sure we grab proxies only from North America
         Third assertion checks that the first proxies is from North Amercia
         Fourth assertion checks that we order South America after North America
 
+        @todo: This test is passing, but I dont believe it's checking as many points as it needs to be.
         """
+        # Load the test proxies
         dir_path = os.path.dirname(os.path.realpath(__file__))
         json_data = open(os.path.join(dir_path, 'data/default_proxy_bag.json')).read()
         test_proxies = json.loads(json_data)
+
+        # Check that we return a list.
         scraper = CarpetBag()
         assert isinstance(scraper._filter_public_proxies(test_proxies, [], False), list)
 
-        # Check that we get only SSL supporting proxies
+        # Check that we get only SSL supporting proxies.
         filtered_proxies = scraper._filter_public_proxies(test_proxies, continents=[], ssl_only=True)
         for proxy in filtered_proxies:
             assert proxy['ssl']
 
-        # Check that we can grab proxies based on a single contintent
+        # Check that we can filter proxies based on a single contintent.
         filtered_proxies = scraper._filter_public_proxies(test_proxies, continents=["North America"])
         for proxy in filtered_proxies:
             assert proxy['continent'] == "North America"
+
+        # Check that we can filter proxies based on a multiple contintents.
+        filtered_proxies = scraper._filter_public_proxies(test_proxies, continents=["North America", "South America"])
+        for proxy in filtered_proxies:
+            assert proxy['continent'] in ["North America", "South America"]
 
         # Check that we grab proxies from multiple continents, ordered appropriately.
         filtered_proxies = scraper._filter_public_proxies(test_proxies, continents=["North America", 'South America'])
         assert filtered_proxies[0]['continent'] == "North America"
         assert filtered_proxies[len(filtered_proxies) - 1]['continent'] == "South America"
 
+        # Test that we raise the InvalidContinent exception if we get a bad continent name.
         with pytest.raises(errors.InvalidContinent):
             filtered_proxies = scraper._filter_public_proxies(test_proxies, continents=["Nortf America"])
+
+    def test__validate_continents(self):
+        """
+        Tests the BaseCarpetBag._validate_continents() method to make sure we only are using valid contintent names.
+
+        """
+        # Load the test proxies
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        json_data = open(os.path.join(dir_path, 'data/default_proxy_bag.json')).read()
+        test_proxies = json.loads(json_data)
+
+        scraper = CarpetBag()
+
+        # Check that we return True for valid contintents.
+        assert scraper._filter_public_proxies(test_proxies, continents=["North America"])
+        assert scraper._filter_public_proxies(test_proxies, continents=["North America", "South America"])
+
+        with pytest.raises(errors.InvalidContinent):
+            scraper._filter_public_proxies(test_proxies, continents=["Nortf America"])
 
     def test__set_user_agent_manual(self):
         """
