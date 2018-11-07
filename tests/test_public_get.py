@@ -1,4 +1,4 @@
-"""Test Scrapy methods which are under lying GET Request/Responses
+"""Test CarpetBag methods which are under lying GET Request/Responses
 This uses the vcr module to mimick responses to http requests. This tests the module as a whole.
 
 """

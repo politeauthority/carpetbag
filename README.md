@@ -13,7 +13,7 @@ A multi faceted scraping swiss army knife, built on top of the python [Requests]
 - Make FlaskRestless queries - Simply send REST API commands using the FlaskRestless basic API structure.
 
 ## Basic Usage
-Run scraper through a proxy service, though this is not required, proxy services will enhance CarpetBag's ability to reliably return a result.
+To run the scraper through a proxy service, though this is not required, proxy services will enhance CarpetBag's ability to reliably return a result.
 ```python
 from carpetbag import CarpetBag
 
@@ -39,7 +39,7 @@ sudo python setup.py install
 
 ## Public Methods
 - CarpetBagger.**get(url, payload)**
-        The primary method of Scraper, grabs a url over a specified proxy, set by the self.poxies class var. If none specified will grab over the current servers internet connection.
+        The primary method of scraper, grabs a url over a specified proxy, set by the self.poxies class var. If none specified will grab over the current servers internet connection.
     - **url**: _(str)_ The url to fetch.
     - **payload**: _(dict)_ This is data that will get url escaped and added to the end of a request. Mostly a convenience, not required.
 

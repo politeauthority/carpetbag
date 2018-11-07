@@ -17,7 +17,7 @@ class TestGet(object):
 
     def test_request_successful(self):
         """
-        Tests Scrapy"s main public method, currently only for a GET Response
+        Tests CarpetBag's main public method, currently only for a GET Response
 
         """
         scraper = CarpetBag()
