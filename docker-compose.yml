@@ -1,6 +1,6 @@
 version: '3'
 services:
-  scrape:
+  carpetbag:
     build: ./
     command: tail -f /dev/null
   tor:

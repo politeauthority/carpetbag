@@ -13,17 +13,17 @@ A multi faceted scraping swiss army knife, built on top of the python [Requests]
 - Make FlaskRestless queries - Simply send REST API commands using the FlaskRestless basic API structure.
 
 ## Basic Usage
-Run scraper through a proxy service, though this is not required, proxy services will enhance Srapey's ability to reliable return a result
+Run scraper through a proxy service, though this is not required, proxy services will enhance Scrapy's ability to reliably return a result.
 ```python
 from scrapy import Scrapy
 
 scraper = Scrapy()
 scraper.use_random_user_agent()
 scraper.use_random_public_proxy()
-news = scraper.get('https://www.google.com/news/')
+news = scraper.get("https://www.google.com/news/")
 if news.status_code >= 400:
     scraper.reset_identity()
-    news = scraper.get('https://www.google.com/news/')
+    news = scraper.get("https://www.google.com/news/")
 print(news.text)
 print(news.status_code)
 ```
@@ -38,10 +38,10 @@ sudo python setup.py install
 ```
 
 ## Public Methods
-- Scraper.**get(url, skip_ssl_verify=False)**
+- Scraper.**get(url, payload)**
         The primary method of Scraper, grabs a url over a specified proxy, set by the self.poxies class var. If none specified will grab over the current servers internet connection.
-    - **url**: _(str)_ The url to grab from the remote source.
-    - **skip_ssl_verify** _(default: False)_: _(bool)_
+    - **url**: _(str)_ The url to fetch.
+    - **payload**: _(dict)_ This is data that will get url escaped and added to the end of a request. Mostly a convenience, not required.
 - Scrapper.**check_tor()**
     Checks if the current client/ proxy is propperly configured for tor.
 
@@ -54,7 +54,7 @@ For best results, use Privoxy to connect to tor, using a docker container is a r
     scraper.proxy = {"http": "tor:8118", "https": "tor:8118"}
     if scraper.check_tor():
         print("Tor Check: Connected!\n")
-        response = scrapper.get('http://rnslnjdb6lioal3d.onion/')
+        response = scrapper.get("http://rnslnjdb6lioal3d.onion/")
         print(reponse.text)
     else:
         print("Tor Check: Failed\n")

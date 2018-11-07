@@ -1,6 +1,6 @@
-"""Scrapy
-Multi faceted scraping utility. All the public methods of the Scrapy python module are in this file! For more
-information check out the README.md or https://www.github.com/politeauthority/scrapy
+"""CarpetBag
+Multi faceted scraping utility. All the public methods of the CarpetBag python module are in this file! For more
+information check out the README.md or https://www.github.com/politeauthority/carpetbag
 
 Author: @politeauthority
 """
@@ -13,16 +13,16 @@ from six import string_types
 
 import requests
 
-from .base_scrapy import BaseScrapy
+from .base_carpetbag import CarpetBag
 from .parse_response import ParseResponse
 from . import user_agent
 
 
-class Scrapy(BaseScrapy):
+class CarpetBag(BaseCarpetBag):
 
     def __init(self):
         """
-        Scrapy constructor. Here we set the default, user changable class vars.
+        CarpetBag constructor. Here we set the default, user changable class vars.
 
         :class param headers: Any extra headers to add to the response. This can be maniuplated at any time and applied
             just before each request made.
@@ -42,7 +42,7 @@ class Scrapy(BaseScrapy):
             hit.
         :class type retries_on_connection_failure: int
 
-        :class param max_content_length: The maximum content length to download with the Scrapy "save" method, with
+        :class param max_content_length: The maximum content length to download with the CarpetBag "save" method, with
             raise as exception if it has surpassed that limit. (@todo This needs to be done still.)
         :class type max_content_length: int
 
@@ -177,7 +177,7 @@ class Scrapy(BaseScrapy):
                 print(continents)
             proxies = self._filter_public_proxies(proxies, continents, ssl_only)
         else:
-            # Shuffle the proxies so concurrent instances of Scrapy wont use the same proxy
+            # Shuffle the proxies so concurrent instances of CarpetBag wont use the same proxy
             shuffle(self.proxy_bag)
 
         return proxies
@@ -215,7 +215,7 @@ class Scrapy(BaseScrapy):
 
     def use_skip_ssl_verify(self):
         """
-        Sets Scrapy up to not force a valid certificate return from the server. This exists mostly because I was
+        Sets CarpetBag up to not force a valid certificate return from the server. This exists mostly because I was
         running into some issues with self signed certs. This can be enabled/disabled at anytime through execution.
 
         """
@@ -223,7 +223,7 @@ class Scrapy(BaseScrapy):
 
     def stop_skip_ssl(self):
         """
-        Sets Scrapy up to go back to throwing an error on SSL validation errors.
+        Sets CarpetBag up to go back to throwing an error on SSL validation errors.
 
         """
         self.ssl_verify = True
@@ -301,7 +301,7 @@ class Scrapy(BaseScrapy):
         exiting through an actual tor exit node.
         @todo: Need to run this successfull to get the tor success page!!
 
-        :returns: Whether or not your proxy is using Tor and Scrapy is connected to it.
+        :returns: Whether or not your proxy is using Tor and CarpetBag is connected to it.
         :params: bool
         """
         response = self.get("https://check.torproject.org")
@@ -401,4 +401,4 @@ class Scrapy(BaseScrapy):
 
         return ret
 
-# End File: scrapy/scrapy/__init__.py
+# End File: CarpetBag/carpetbag/__init__.py

@@ -76,4 +76,4 @@ def get_flattened_uas():
     return flattend_user_agents
 
 
-# EndFile: scrapy/scrapy/user_agent.py
+# EndFile: CarpetBag/carpetbag/user_agent.py
