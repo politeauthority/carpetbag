@@ -9,7 +9,7 @@ import requests
 import pytest
 import vcr
 
-from scrapy import Scrapy
+from carpetbag import CarpetBag
 
 CASSET_DIR = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
@@ -25,7 +25,7 @@ class TestTimings(object):
         """
         start = datetime.now()
 
-        scraper = Scrapy()
+        scraper = CarpetBag()
         scraper.mininum_wait_time = 3
         with vcr.use_cassette(os.path.join(CASSET_DIR, "timings_minimum_wait.yaml")):
             scraper.get("http://www.bad-actor.services/api/symbols/1")
@@ -45,7 +45,7 @@ class TestTimings(object):
         """
         start = datetime.now()
 
-        scraper = Scrapy()
+        scraper = CarpetBag()
         scraper.wait_and_retry_on_connection_error = 3
         with vcr.use_cassette(os.path.join(CASSET_DIR, "timings_2.yaml")):
             with pytest.raises(requests.exceptions.ConnectionError):
@@ -57,4 +57,4 @@ class TestTimings(object):
         assert scraper.request_total == 1
         assert scraper.request_count == 1
 
-# End File scrapy/tests/test_timings.py
+# End File carpetbag/tests/test_timings.py

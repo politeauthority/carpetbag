@@ -2,7 +2,7 @@
 Run by using "pytest ." in the project root.
 
 """
-from scrapy.parse_response import ParseResponse
+from carpetbag.parse_response import ParseResponse
 
 from .data.response_data import GoogleDotComResponse
 
@@ -33,3 +33,7 @@ class TestParseResponse(object):
         assert ParseResponse.remove_protocol("http://google.com") == "google.com"
         assert ParseResponse.remove_protocol("https://google.com") == "google.com"
         assert ParseResponse.remove_protocol("http://www.google.com") == "www.google.com"
+
+    def test__get_continent_from_country(self):
+        assert ParseResponse._get_continent_from_country("United States") == 'North America'
+        assert ParseResponse._get_continent_from_country("Japan") == 'Asia'
