@@ -1,4 +1,4 @@
-"""Test Base CarpetBag. Tests for the private methods of CarpetBag.
+"""Test Base CarpetBag for the private methods of CarpetBag.
 
 """
 from datetime import datetime
@@ -28,27 +28,27 @@ class TestBaseCarpetBag(object):
 
         """
         scraper = CarpetBag()
-        assert s.proxy == {}
-        assert s.headers == {}
-        assert s.user_agent == "CarpetBag v.001"
-        assert s.ssl_verify
-        assert s.change_identity_interval == 0
-        assert not s.outbound_ip
-        assert s.request_attempts == {}
-        assert s.request_count == 0
-        assert s.request_total == 0
-        assert not s.last_request_time
-        assert not s.last_response
-        assert s.send_user_agent == ""
-        assert s.max_content_length == 200000000
-        assert s.mininum_wait_time == 0
-        assert s.wait_and_retry_on_connection_error == 0
-        assert not s.username
-        assert not s.password
-        assert not s.auth_type
-        assert not s.random_proxy_bag
-        assert s.proxy_bag == []
-        assert s.manifest == {}
+        assert scraper.proxy == {}
+        assert scraper.headers == {}
+        assert scraper.user_agent == "CarpetBag v.001"
+        assert scraper.ssl_verify
+        assert scraper.change_identity_interval == 0
+        assert not scraper.outbound_ip
+        assert scraper.request_attempts == {}
+        assert scraper.request_count == 0
+        assert scraper.request_total == 0
+        assert not scraper.last_request_time
+        assert not scraper.last_response
+        assert scraper.send_user_agent == ""
+        assert scraper.max_content_length == 200000000
+        assert scraper.mininum_wait_time == 0
+        assert scraper.wait_and_retry_on_connection_error == 0
+        assert not scraper.username
+        assert not scraper.password
+        assert not scraper.auth_type
+        assert not scraper.random_proxy_bag
+        assert scraper.proxy_bag == []
+        assert scraper.manifest == {}
 
     def test__make_request(self):
         scraper = CarpetBag()
@@ -126,7 +126,7 @@ class TestBaseCarpetBag(object):
         scraper = CarpetBag()
         scraper.headers = {"Content-Type": "application/html"}
         scraper.user_agent = "Mozilla/5.0 (Windows NT 10.0)"
-        set_headers = s._get_headers()
+        set_headers = scraper._get_headers()
         assert set_headers["Content-Type"] == "application/html"
         assert set_headers["User-Agent"] == "Mozilla/5.0 (Windows NT 10.0)"
 
@@ -136,7 +136,7 @@ class TestBaseCarpetBag(object):
 
         """
         scraper = CarpetBag()
-        assert not s.proxy
+        assert not scraper.proxy
         scraper.proxy = {"http": "localhost:8118"}
         scraper._setup_proxies()
         assert scraper.proxy["https"] == "localhost:8118"
@@ -183,7 +183,7 @@ class TestBaseCarpetBag(object):
         scraper = CarpetBag()
         scraper.user_agent = "My test user agent"
         scraper._set_user_agent()
-        assert s.send_user_agent == "My test user agent"
+        assert scraper.send_user_agent == "My test user agent"
 
         scraper.request_count = 2
         scraper.change_user_agent_interval = 2
@@ -196,9 +196,9 @@ class TestBaseCarpetBag(object):
         more tests!
 
         """
-        s = CarpetBag()
+        scraper = CarpetBag()
         with vcr.use_cassette(os.path.join(CASSET_DIR, "test__make_1.yaml")):
-            response = s._make(
+            response = scraper._make(
                 method="GET",
                 url="http://www.google.com",
                 headers={"Content-Type": "application/html"},
@@ -206,7 +206,7 @@ class TestBaseCarpetBag(object):
                 retry=0)
             assert response
             assert response.status_code == 200
-            response = s._make(
+            response = scraper._make(
                 method="GET",
                 url="http://www.google.com",
                 headers={"Content-Type": "application/html"},
@@ -252,14 +252,14 @@ class TestBaseCarpetBag(object):
         Tests the increment_counters method to make sure they increment!
 
         """
-        s = CarpetBag()
-        assert s.request_count == 0
-        assert s.request_total == 0
-        s._increment_counters()
-        assert s.request_count == 1
-        assert s.request_total == 1
-        s._increment_counters()
-        assert s.request_count == 2
-        assert s.request_total == 2
+        scraper = CarpetBag()
+        assert scraper.request_count == 0
+        assert scraper.request_total == 0
+        scraper._increment_counters()
+        assert scraper.request_count == 1
+        assert scraper.request_total == 1
+        scraper._increment_counters()
+        assert scraper.request_count == 2
+        assert scraper.request_total == 2
 
 # End File CarpetBag/tests/test_base_carpetbag.py

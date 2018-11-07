@@ -13,7 +13,7 @@ from six import string_types
 
 import requests
 
-from .base_carpetbag import CarpetBag
+from .base_carpetbag import BaseCarpetBag
 from .parse_response import ParseResponse
 from . import user_agent
 

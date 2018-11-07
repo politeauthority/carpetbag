@@ -10,7 +10,6 @@ import re
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from requests.exceptions import ChunkedEncodingError
-from random import shuffle
 import tld
 
 from .parse_response import ParseResponse
