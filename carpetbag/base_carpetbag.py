@@ -1,6 +1,7 @@
 """BaseCarpetBag
 
 """
+
 from datetime import datetime
 import logging
 import os
@@ -8,9 +9,10 @@ import time
 import re
 
 import requests
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from requests.exceptions import ChunkedEncodingError
 import tld
+import urllib3
+from urllib3.exceptions import InsecureRequestWarning
 
 from .parse_response import ParseResponse
 from .errors import EmptyProxyBag, InvalidContinent
@@ -119,7 +121,7 @@ class BaseCarpetBag(object):
         ts_start = int(round(time.time() * 1000))
         url = ParseResponse.add_missing_protocol(url)
         headers = self._get_headers()
-        requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+        urllib3.disable_warnings(InsecureRequestWarning)
         self._increment_counters()
         self._handle_sleep(url)
 
