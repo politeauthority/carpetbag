@@ -128,6 +128,10 @@ class TestBaseCarpetBag(object):
         bagger.user_agent = "Mozilla/5.0 (Windows NT 10.0)"
         set_headers = bagger._get_headers()
 
+        assert isinstance(set_headers, dict)
+        assert len(set_headers) == 2
+        assert "User-Agent" in set_headers
+
     def test__setup_proxy(self):
         """
         Tests that proxies are defaulted to http and https if not specified.
@@ -289,4 +293,4 @@ class TestBaseCarpetBag(object):
         assert bagger.request_count == 2
         assert bagger.request_total == 2
 
-# End File CarpetBag/tests/test_base_carpetbag.py
+# End File carpetbag/tests/test_base_carpetbag.py

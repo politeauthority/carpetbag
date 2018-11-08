@@ -16,8 +16,8 @@ log.addHandler(console)
 
 def public_proxy_with_reset():
     """
-    Example grabbing a site with a random user agetn and free public proxy, and reset the proxy if we get a connection
-    error.
+    Example grabbing a site with a random user agent and free public proxy.
+    Then we reset the proxy if we get a connectionerror.
 
     """
     bagger = CarpetBag()
