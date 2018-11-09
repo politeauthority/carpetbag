@@ -92,9 +92,7 @@ class TestPublic(object):
     # def test_use_random_public_proxy(self):
     #     """
     #     Tests the CarpetBag().use_random_public_proxy method. Makes sure that it parses the proxy list and sets a
-    #     proxy
-    #     to be used.
-
+    #     proxy to be used.
     #     """
     #     bagger = CarpetBag()
     #     assert not bagger.random_proxy_bag
