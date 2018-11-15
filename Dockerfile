@@ -17,5 +17,3 @@ WORKDIR /opt/carpetbag/
 ADD ./ /opt/carpetbag
 RUN pip3 install -r requirements.txt
 RUN pip3 install -r tests/requirements.txt
-
-

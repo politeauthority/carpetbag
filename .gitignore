@@ -1,4 +1,5 @@
 *dev.yml
+.idea/*
 .DS_Store
 # Byte-compiled / optimized / DLL files
 *~
@@ -62,9 +63,6 @@ db.sqlite3
 # Flask stuff:
 instance/
 .webassets-cache
-
-# Scrapy stuff:
-.scrapy
 
 # Sphinx documentation
 docs/_build/

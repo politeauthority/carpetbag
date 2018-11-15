@@ -6,4 +6,4 @@ docker exec -it carpetbag_carpetbag_1 python3 setup.py install
 docker exec -it carpetbag_carpetbag_1 pytest .
 docker exec -it carpetbag_carpetbag_1 flake8 -v
 docker-compose stop
-
+docker-compose rm

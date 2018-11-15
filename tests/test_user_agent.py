@@ -1,4 +1,4 @@
-"""Test Scrapy
+"""Test UserAgent
 Run by using "pytest ." in the project root.
 
 """

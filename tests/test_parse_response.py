@@ -1,5 +1,4 @@
-"""Test Scrapy
-Run by using "pytest ." in the project root.
+"""Tests ParseResponse
 
 """
 from carpetbag.parse_response import ParseResponse
@@ -35,5 +34,7 @@ class TestParseResponse(object):
         assert ParseResponse.remove_protocol("http://www.google.com") == "www.google.com"
 
     def test__get_continent_from_country(self):
-        assert ParseResponse._get_continent_from_country("United States") == 'North America'
-        assert ParseResponse._get_continent_from_country("Japan") == 'Asia'
+        assert ParseResponse._get_continent_from_country("United States") == "North America"
+        assert ParseResponse._get_continent_from_country("Japan") == "Asia"
+
+# End File carpetbag/tests/test_parse_response.py

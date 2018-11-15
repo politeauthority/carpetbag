@@ -120,6 +120,7 @@ class CarpetBag(BaseCarpetBag):
         :rtype: <Requests.response> obj
         """
         response = self._make_request("POST", url, payload)
+
         return response
 
     def put(self, url, payload={}):
@@ -135,6 +136,7 @@ class CarpetBag(BaseCarpetBag):
         :rtype: <Requests.response> obj
         """
         response = self._make_request("PUT", url, payload)
+
         return response
 
     def delete(self, url, payload={}):
@@ -150,6 +152,7 @@ class CarpetBag(BaseCarpetBag):
         :rtype: <Requests.response> obj
         """
         response = self._make_request("DELETE", url, payload)
+
         return response
 
     def use_random_user_agent(self):
@@ -159,6 +162,8 @@ class CarpetBag(BaseCarpetBag):
         """
         self.random_user_agent = True
         self.user_agent = user_agent.get_random_ua()
+
+        return True
 
     def get_public_proxies(self, continents=[], ssl_only=False):
         """
@@ -205,13 +210,15 @@ class CarpetBag(BaseCarpetBag):
         self.reset_proxy_from_bag()
         self._setup_proxies()
         if not test_proxy:
-            return
+            return True
 
         logging.info("Testing Proxy: %s (%s)" % (self.proxy_bag[0]["ip"], self.proxy_bag[0]["location"]))
         proxy_test_urls = ["http://www.google.com"]
         for url in proxy_test_urls:
             self.get(url)
         logging.debug("Registered Proxy %s (%s)" % (self.proxy_bag[0]["ip"], self.proxy_bag[0]["location"]))
+
+        return True
 
     def use_skip_ssl_verify(self):
         """
@@ -221,12 +228,16 @@ class CarpetBag(BaseCarpetBag):
         """
         self.ssl_verify = False
 
+        return True
+
     def stop_skip_ssl(self):
         """
         Sets CarpetBag up to go back to throwing an error on SSL validation errors.
 
         """
         self.ssl_verify = True
+
+        return True
 
     def save(self, url, destination, payload={}):
         """
@@ -293,6 +304,7 @@ class CarpetBag(BaseCarpetBag):
             "results": results,
             "parsed": parsed,
         }
+
         return ret
 
     def check_tor(self):
@@ -311,6 +323,7 @@ class CarpetBag(BaseCarpetBag):
             return False
         elif title == "yeah":
             return True
+
         return None
 
     def parse(self, response=None):
@@ -365,6 +378,8 @@ class CarpetBag(BaseCarpetBag):
         if self.random_proxy_bag:
             self.reset_proxy_from_bag()
 
+        return True
+
     @staticmethod
     def url_concat(*args):
         """
@@ -401,4 +416,4 @@ class CarpetBag(BaseCarpetBag):
 
         return ret
 
-# End File: CarpetBag/carpetbag/__init__.py
+# End File: carpetbag/carpetbag/__init__.py
