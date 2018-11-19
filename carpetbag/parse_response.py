@@ -231,4 +231,4 @@ class ParseResponse(object):
 
         return continent
 
-# EndFile: CarpetBag/carpetbag/parse_response.py
+# EndFile: carpetbag/carpetbag/parse_response.py

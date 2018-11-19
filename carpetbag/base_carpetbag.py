@@ -161,6 +161,8 @@ class BaseCarpetBag(object):
             self.logger.debug("Sleeping %s seconds before next request.")
             time.sleep(sleep_time)
 
+        return True
+
     def _get_domain(self, url):
         """
         Tries to get the domain/ip and port from the url we are requesting to.
@@ -212,8 +214,11 @@ class BaseCarpetBag(object):
         """
         if not self.proxy:
             return
+
         if "http" in self.proxy and "https" not in self.proxy:
             self.proxy["https"] = self.proxy["http"]
+
+        return True
 
     def _filter_public_proxies(self, proxies, continents=None, ssl_only=False):
         """
@@ -313,7 +318,8 @@ class BaseCarpetBag(object):
         """
         if self.user_agent:
             self.send_user_agent = self.user_agent
-            return
+
+        return True
 
     def _make(self, method, url, headers, payload, retry=0):
         """
@@ -519,4 +525,4 @@ class BaseCarpetBag(object):
                 self.logger.error("Could not create directory: %s" % destination)
                 return False
 
-# EndFile: CarpetBag/CarpetBag/base_CarpetBag.py
+# EndFile: carpetbag/CarpetBag/base_carpetbag.py

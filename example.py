@@ -1,11 +1,12 @@
 """Examples
 
+@todo: More/better examples!
 """
 
 import requests
 import logging
 
-from scrapy import Scrapy
+from carpetbag import CarpetBag
 
 log = logging.getLogger(__name__)
 console = logging.StreamHandler()
@@ -15,18 +16,27 @@ log.addHandler(console)
 
 def public_proxy_with_reset():
     """
-    Example grabbing a site with a free public proxy, and reset the proxy if we get a connection error.
+    Example grabbing a site with a random user agent and free public proxy.
+    Then we reset the proxy if we get a ConnectionError.
 
     """
-    scraper = Scrapy()
-    scraper.use_random_user_agent()
-    scraper.use_random_public_proxy()
+    bagger = CarpetBag()
+    bagger.use_random_user_agent()
+    bagger.use_random_public_proxy()
     try:
-        response = scraper.get('http://www.google.com')
+        response = bagger.get('http://www.google.com')
     except requests.requests.exceptions.ConnectionError:
         print('resetting bag')
-        scraper.reset_proxy_from_bag()
-        response = scraper.get('http://www.google.com')
+        bagger.reset_proxy_from_bag()
+        response = bagger.get('http://www.google.com')
     print(response)
 
-# EndFile: scrapy/example.py
+
+def public_proxy_continent():
+    """
+    """
+    bagger = CarpetBag()
+    bagger.use_random_public_proxy(continents=['North America'], ssl_only=True)
+
+
+# EndFile: carpetbag/example.py
