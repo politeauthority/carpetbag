@@ -17,5 +17,4 @@ class InvalidContinent(Error):
     """Raised when an unknwon continent is supplied by the user"""
     pass
 
-
 # EndFile: carpetbag/carpetbag/errors.py

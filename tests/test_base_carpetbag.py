@@ -51,9 +51,13 @@ class TestBaseCarpetBag(object):
         assert scraper.manifest == {}
 
     def test__make_request(self):
-        scraper = CarpetBag()
-        with vcr.use_cassette(os.path.join(CASSET_DIR, "test__make_request.yaml")):
-            request = scraper._make_request("GET", "http://www.google.com/news")
+        """
+        Tests the BaseCarpetBag._make_request() method.
+
+        """
+        bager = CarpetBag()
+        with vcr.use_cassette(os.path.join(CASSET_DIR, "google.com.yaml")):
+            request = bager._make_request("GET", "https://www.google.com/")
         assert request
         assert request.text
         assert request.status_code == 200
@@ -244,30 +248,30 @@ class TestBaseCarpetBag(object):
             assert response
             assert response.status_code == 200
 
-    def test_reset_proxy_from_bag(self):
-        """
-        Tests the reset_proxy_from_bag() method.
+    # def test_reset_proxy_from_bag(self):
+    #     """
+    #     Tests the reset_proxy_from_bag() method.
 
-        """
-        s = CarpetBag()
-        with vcr.use_cassette(os.path.join(CASSET_DIR, "reset_proxy_from_bag.yaml")):
-            s.use_random_public_proxy()
-            original_proxy_bag_size = len(s.proxy_bag)
-            http_proxy_1 = s.proxy["http"]
-            https_proxy_1 = s.proxy["https"]
+    #     """
+    #     s = CarpetBag()
+    #     with vcr.use_cassette(os.path.join(CASSET_DIR, "reset_proxy_from_bag.yaml")):
+    #         s.use_random_public_proxy()
+    #         original_proxy_bag_size = len(s.proxy_bag)
+    #         http_proxy_1 = s.proxy["http"]
+    #         https_proxy_1 = s.proxy["https"]
 
-            s.reset_proxy_from_bag()
-            http_proxy_2 = s.proxy["http"]
-            https_proxy_2 = s.proxy["https"]
+    #         s.reset_proxy_from_bag()
+    #         http_proxy_2 = s.proxy["http"]
+    #         https_proxy_2 = s.proxy["https"]
 
-            assert http_proxy_1 != http_proxy_2
-            assert https_proxy_1 != https_proxy_2
-            assert original_proxy_bag_size - 1 == len(s.proxy_bag)
+    #         assert http_proxy_1 != http_proxy_2
+    #         assert https_proxy_1 != https_proxy_2
+    #         assert original_proxy_bag_size - 1 == len(s.proxy_bag)
 
-            # If proxy bag is empty, make sure we throw the error
-            with pytest.raises(errors.EmptyProxyBag):
-                s.proxy_bag = []
-                s.reset_proxy_from_bag()
+    #         # If proxy bag is empty, make sure we throw the error
+    #         with pytest.raises(errors.EmptyProxyBag):
+    #             s.proxy_bag = []
+    #             s.reset_proxy_from_bag()
 
     def test__after_request(self):
         """
