@@ -15,7 +15,7 @@ import urllib3
 from urllib3.exceptions import InsecureRequestWarning
 
 from .parse_response import ParseResponse
-from .errors import EmptyProxyBag, InvalidContinent
+from .errors import InvalidContinent
 
 
 class BaseCarpetBag(object):
@@ -93,7 +93,6 @@ class BaseCarpetBag(object):
         self.random_proxy_bag = False
         self.send_user_agent = ""
         self.ssl_verify = True
-        self._setup_proxies()
         self.logger = logging.getLogger(__name__)
 
     def __repr__(self):
@@ -207,18 +206,33 @@ class BaseCarpetBag(object):
 
         return send_headers
 
-    def _setup_proxies(self):
+    def _remove_proxy_from_bag(self):
         """
-        If an HTTPS proxy is not specified but an HTTP is, use the same for both by default.
+        Remvoes the current proxy from the Proxy Bag.
+        @todo: unit test
 
+        :returns: True if current proxy was remove, false if their is no currnet proxy.
+        :rtype: bool
         """
-        if not self.proxy:
-            return
+        if not self.proxy_bag:
+            return False
 
-        if "http" in self.proxy and "https" not in self.proxy:
-            self.proxy["https"] = self.proxy["http"]
+        remove_item = None
+        if "http" in self.proxy:
+            c = 0
+            for prx in self.proxy_bag:
+                if prx["ip"] == self.proxy["http"]:
+                    remove_item = c
+                c += 1
 
-        return True
+        if isinstance(remove_item, int):
+            logging.debug("Removing: %s - %s from proxy bag." % (
+                self.proxy_bag[c]["ip"],
+                self.proxy_bag[c]["location"]))
+            self.proxy_bag.pop(c)
+            return True
+
+        return False
 
     def _filter_public_proxies(self, proxies, continents=None, ssl_only=False):
         """
@@ -260,7 +274,7 @@ class BaseCarpetBag(object):
 
     def _validate_continents(self, requested_continents):
         """
-        Cheks that the user selected continents are usable strings, not just some garbage.
+        Checks that the user selected continents are usable strings, not just some garbage.
 
         :param requested_continents: User selected list of continents.
         :type requested_continents: list
@@ -434,22 +448,6 @@ class BaseCarpetBag(object):
 
         return None
 
-    def reset_proxy_from_bag(self):
-        """
-        Grabs the next proxy inline from the self.proxy_bag, and removes the currently used proxy. If proxy bag is
-        empty, raises the EmptyProxyBag error.
-
-        :raises: CarpetBag.erros.EmptyProxyBag
-        """
-        self.logger.debug("Changing proxy")
-        if len(self.proxy_bag) == 0:
-            self.logger.error('Proxy bag is empty! Cannot reset Proxy from Proxy Bag.')
-            raise EmptyProxyBag
-
-        self.proxy_bag.pop(0)
-        self.proxy = {"http": self.proxy_bag[0]["ip"]}
-        self._setup_proxies()
-
     def _handle_ssl_error(self, method, url, headers, payload, retry):
         """
         Used to catch an SSL issue and allow CarpetBag to choose whether or not to try without SSL.
@@ -525,4 +523,4 @@ class BaseCarpetBag(object):
                 self.logger.error("Could not create directory: %s" % destination)
                 return False
 
-# EndFile: carpetbag/CarpetBag/base_carpetbag.py
+# EndFile: carpetbag/carpetbag/base_carpetbag.py

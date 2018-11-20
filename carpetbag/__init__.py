@@ -16,11 +16,12 @@ import requests
 from .base_carpetbag import BaseCarpetBag
 from .parse_response import ParseResponse
 from . import user_agent
+from .errors import EmptyProxyBag
 
 
 class CarpetBag(BaseCarpetBag):
 
-    def __init(self):
+    def __init__(self):
         """
         CarpetBag constructor. Here we set the default, user changable class vars.
 
@@ -179,11 +180,10 @@ class CarpetBag(BaseCarpetBag):
         if continents or ssl_only:
             if continents and isinstance(continents, string_types):
                 continents = [continents]
-                print(continents)
             proxies = self._filter_public_proxies(proxies, continents, ssl_only)
-        else:
-            # Shuffle the proxies so concurrent instances of CarpetBag wont use the same proxy
-            shuffle(self.proxy_bag)
+
+        # Shuffle the proxies so concurrent instances of CarpetBag wont use the same proxy
+        shuffle(self.proxy_bag)
 
         return proxies
 
@@ -208,7 +208,6 @@ class CarpetBag(BaseCarpetBag):
         self.proxy_bag = self.get_public_proxies(continents, ssl_only)
 
         self.reset_proxy_from_bag()
-        self._setup_proxies()
         if not test_proxy:
             return True
 
@@ -219,6 +218,25 @@ class CarpetBag(BaseCarpetBag):
         logging.debug("Registered Proxy %s (%s)" % (self.proxy_bag[0]["ip"], self.proxy_bag[0]["location"]))
 
         return True
+
+    def reset_proxy_from_bag(self):
+        """
+        Grabs the next proxy inline from the self.proxy_bag, and removes the currently used proxy. If proxy bag is
+        empty, raises the EmptyProxyBag error.
+
+        :raises: carpetbag.erros.EmptyProxyBag
+        """
+        self.logger.debug("Changing proxy")
+        if len(self.proxy_bag) == 0:
+            self.logger.error("Proxy bag is empty! Cannot reset Proxy from Proxy Bag.")
+            raise EmptyProxyBag
+
+        self._remove_proxy_from_bag()
+        chosen_proxy = self.proxy_bag[0]
+        self.proxy = {"http": chosen_proxy["ip"]}
+
+        if chosen_proxy["ssl"]:
+            self.proxy = {"https": chosen_proxy["ip"]}
 
     def use_skip_ssl_verify(self):
         """

@@ -142,7 +142,6 @@ class TestBaseCarpetBag(object):
         scraper = CarpetBag()
         assert not scraper.proxy
         scraper.proxy = {"http": "localhost:8118"}
-        scraper._setup_proxies()
         assert scraper.proxy["https"] == "localhost:8118"
         assert scraper.proxy["http"] == "localhost:8118"
 

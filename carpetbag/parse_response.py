@@ -114,7 +114,7 @@ class ParseResponse(object):
         Parses the html response from free-proxy-list.net
         Each item in the list contains the following.
         {
-            "ip": '129.145.123.151',
+            "ip": "129.145.123.151",
             "location": "Bulgaria",
             "ssl": True
         }
