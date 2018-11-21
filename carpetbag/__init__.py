@@ -223,15 +223,14 @@ class CarpetBag(BaseCarpetBag):
 
     async def get_gud_proxies(self):
         for proxy in self.get_public_proxies(ssl_only=False):
-            print(proxy)
             conn = aiohttp.TCPConnector(verify_ssl=False)
             try:
                 async with aiohttp.ClientSession(trust_env=True, connector=conn) as session:
-                    print(session)
                     if not proxy.get('ssl'):
                         async with session.get('http://google.com', proxy='http://'+proxy.get('ip'), ssl=False) as resp:
                             print(resp.status)
                             print(await resp.text())
+                            self.proxy_bag.append(proxy)
             except:
                 pass
         return True
