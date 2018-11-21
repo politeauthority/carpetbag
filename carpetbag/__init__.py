@@ -4,7 +4,8 @@ information check out the README.md or https://www.github.com/politeauthority/ca
 
 Author: @politeauthority
 """
-
+import aiohttp
+import asyncio
 from datetime import datetime
 import logging
 import os
@@ -218,6 +219,21 @@ class CarpetBag(BaseCarpetBag):
             self.get(url)
         logging.debug("Registered Proxy %s (%s)" % (self.proxy_bag[0]["ip"], self.proxy_bag[0]["location"]))
 
+        return True
+
+    async def get_gud_proxies(self):
+        for proxy in self.get_public_proxies(ssl_only=False):
+            print(proxy)
+            conn = aiohttp.TCPConnector(verify_ssl=False)
+            try:
+                async with aiohttp.ClientSession(trust_env=True, connector=conn) as session:
+                    print(session)
+                    if not proxy.get('ssl'):
+                        async with session.get('http://google.com', proxy='http://'+proxy.get('ip'), ssl=False) as resp:
+                            print(resp.status)
+                            print(await resp.text())
+            except:
+                pass
         return True
 
     def use_skip_ssl_verify(self):
