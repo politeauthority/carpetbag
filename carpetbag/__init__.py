@@ -165,6 +165,28 @@ class CarpetBag(BaseCarpetBag):
 
         return True
 
+    # def get_public_proxies(self, continents=[], ssl_only=False):
+    #     """
+    #     Gets list of free public proxies and loads them into a list, currently just selecting from free-proxy-list.
+    #     @todo: Add filtering by country/ continent.
+
+    #     :returns: The proxies to be used.
+    #     :rtype: list
+    #     """
+    #     proxies_url = "https://free-proxy-list.net/"
+    #     response = self.get(proxies_url)
+    #     proxies = ParseResponse(response).freeproxylistdotnet()
+    #     if continents or ssl_only:
+    #         if continents and isinstance(continents, string_types):
+    #             continents = [continents]
+    #             print(continents)
+    #         proxies = self._filter_public_proxies(proxies, continents, ssl_only)
+    #     else:
+    #         # Shuffle the proxies so concurrent instances of CarpetBag wont use the same proxy
+    #         shuffle(self.proxy_bag)
+
+    #     return proxies
+
     def get_public_proxies(self, continents=[], ssl_only=False):
         """
         Gets list of free public proxies and loads them into a list, currently just selecting from free-proxy-list.
@@ -173,18 +195,8 @@ class CarpetBag(BaseCarpetBag):
         :returns: The proxies to be used.
         :rtype: list
         """
-        proxies_url = "https://free-proxy-list.net/"
+        proxies_url = "http://www.bad-actor.services/api/proxies"
         response = self.get(proxies_url)
-        proxies = ParseResponse(response).freeproxylistdotnet()
-        if continents or ssl_only:
-            if continents and isinstance(continents, string_types):
-                continents = [continents]
-                print(continents)
-            proxies = self._filter_public_proxies(proxies, continents, ssl_only)
-        else:
-            # Shuffle the proxies so concurrent instances of CarpetBag wont use the same proxy
-            shuffle(self.proxy_bag)
-
         return proxies
 
     def use_random_public_proxy(self, continents=[], ssl_only=False, test_proxy=True):
@@ -379,6 +391,19 @@ class CarpetBag(BaseCarpetBag):
             self.reset_proxy_from_bag()
 
         return True
+
+    @staticmethod
+    def url_join(*args):
+        """
+        Concats all args with slashes as needed.
+        @note this will probably move to a utility class sometime in the near future.
+
+        :param args: All the url components to join.
+        :type args: list
+        :returns: Ready to use url.
+        :rtype: str
+        """
+        return self.url_concat(args)
 
     @staticmethod
     def url_concat(*args):
