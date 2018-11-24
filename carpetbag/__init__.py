@@ -165,28 +165,6 @@ class CarpetBag(BaseCarpetBag):
 
         return True
 
-    # def get_public_proxies(self, continents=[], ssl_only=False):
-    #     """
-    #     Gets list of free public proxies and loads them into a list, currently just selecting from free-proxy-list.
-    #     @todo: Add filtering by country/ continent.
-
-    #     :returns: The proxies to be used.
-    #     :rtype: list
-    #     """
-    #     proxies_url = "https://free-proxy-list.net/"
-    #     response = self.get(proxies_url)
-    #     proxies = ParseResponse(response).freeproxylistdotnet()
-    #     if continents or ssl_only:
-    #         if continents and isinstance(continents, string_types):
-    #             continents = [continents]
-    #             print(continents)
-    #         proxies = self._filter_public_proxies(proxies, continents, ssl_only)
-    #     else:
-    #         # Shuffle the proxies so concurrent instances of CarpetBag wont use the same proxy
-    #         shuffle(self.proxy_bag)
-
-    #     return proxies
-
     def get_public_proxies(self, continents=[], ssl_only=False):
         """
         Gets list of free public proxies and loads them into a list, currently just selecting from free-proxy-list.
@@ -195,9 +173,19 @@ class CarpetBag(BaseCarpetBag):
         :returns: The proxies to be used.
         :rtype: list
         """
-        proxies_url = "http://www.bad-actor.services/api/proxies"
+        proxies_url = "http://192.168.1.19:5000/api/proxies"
         response = self.get(proxies_url)
-        return proxies
+        bad_actor_proxies = response.json()['objects']
+
+        if continents or ssl_only:
+            if continents and isinstance(continents, string_types):
+                continents = [continents]
+            bad_actor_proxies = self._filter_public_proxies(bad_actor_proxies, continents, ssl_only)
+
+        # Shuffle the proxies so concurrent instances of CarpetBag wont use the same proxy
+        shuffle(bad_actor_proxies)
+
+        return bad_actor_proxies
 
     def use_random_public_proxy(self, continents=[], ssl_only=False, test_proxy=True):
         """
@@ -224,11 +212,11 @@ class CarpetBag(BaseCarpetBag):
         if not test_proxy:
             return True
 
-        logging.info("Testing Proxy: %s (%s)" % (self.proxy_bag[0]["ip"], self.proxy_bag[0]["location"]))
+        logging.info("Testing Proxy: %s (%s)" % (self.proxy_bag[0]["ip"], self.proxy_bag[0]["country"]))
         proxy_test_urls = ["http://www.google.com"]
         for url in proxy_test_urls:
             self.get(url)
-        logging.debug("Registered Proxy %s (%s)" % (self.proxy_bag[0]["ip"], self.proxy_bag[0]["location"]))
+        logging.debug("Registered Proxy %s (%s)" % (self.proxy_bag[0]["ip"], self.proxy_bag[0]["country"]))
 
         return True
 

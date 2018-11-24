@@ -98,49 +98,6 @@ class ParseResponse(object):
             )
         return results
 
-    def freeproxylistdotnet(self):
-        """
-        Parses the proxies available from free-proxy-list.net
-
-        :returns: List of Proxies and related info.
-        :rtype: list
-        """
-        proxies = self._parse_free_proxy_list()
-
-        return proxies
-
-    def _parse_free_proxy_list(self):
-        """
-        Parses the html response from free-proxy-list.net
-        Each item in the list contains the following.
-        {
-            "ip": '129.145.123.151',
-            "location": "Bulgaria",
-            "ssl": True
-        }
-
-        :returns: List of Proxies and related info.
-        :rtype: list
-        """
-        proxies = []
-        for prx in self.soup.findAll("tr")[1:]:
-            row = prx.findAll("td")
-            if len(row) < 6:
-                continue
-            proxy = {}
-            proxy["ip"] = "%s:%s" % (row[0].text, row[1].text)
-            proxy["country"] = row[3].text
-            proxy["continent"] = self._get_continent_from_country(proxy["country"])
-            if proxy["continent"]:
-                proxy["location"] = "%s / %s" % (proxy["continent"], proxy["country"])
-            else:
-                proxy["location"] = proxy["country"]
-            proxy["ssl"] = False
-            if row[6].text == "yes":
-                proxy["ssl"] = True
-            proxies.append(proxy)
-        return proxies
-
     @staticmethod
     def add_missing_protocol(url):
         """
@@ -181,54 +138,5 @@ class ParseResponse(object):
         self.content = self.response.text
         self.domain = tld.get_tld(self.response.url)
         return BeautifulSoup(self.content, "html.parser")
-
-    @staticmethod
-    def _get_continent_from_country(country):
-        """
-        Gets a countries continent from the country string
-
-        :param country:
-        :type country: str
-        :returns:
-        :rtype: str
-        """
-        if not country:
-            return 'Unknown'
-        country = country.lower()
-
-        north_america = ["united states", "canada", "mexico", "dominican republic"]
-        south_america = ["brazil", "colombia", "ecuador", "venezuela", "chile", "bolivia"]
-        europe = [
-            "bulgaria", "france", "russian federation", "ukraine", "italy", "germany", "united kingdom", "romania",
-            "czech republic", "poland", "serbia", "moldova, republic of", "bulgaria", "bosnia and herzegovina",
-            "austria", "norway", "albania", "slovenia", "latvia", "lithuania", "hungary", "sweden", "netherlands",
-            "saint martin", "spain"]
-        asia = [
-            "bangladesh", "indonesia", "thailand", "india", "japan", "ukraine", "singapore", "mongolia", "hong kong",
-            "cambodia", "armenia", "iraq", "pakistan", "iran", "palestinian territory", "vietnam", "nepal", "taiwan",
-            "afghanistan", "malaysia", "kyrgyzstan"]
-        africa = [
-            "south africa", "uganda", "tanzania", "nigeria", "zimbabwe", "kenya", "turkey", "ghana", "botswana",
-            "malawi", "namibia"]
-        austrailia = ["Austrailia"]
-        continent = ''
-
-        if country in north_america:
-            continent = "North America"
-        elif country in south_america:
-            continent = "South America"
-        elif country in europe:
-            continent = "Europe"
-        elif country in asia:
-            continent = "Asia"
-        elif country in africa:
-            continent = "Africa"
-        elif country in austrailia:
-            continent = "Austrailia"
-
-        else:
-            continent = "Unknown"
-
-        return continent
 
 # EndFile: carpetbag/carpetbag/parse_response.py
