@@ -173,7 +173,7 @@ class CarpetBag(BaseCarpetBag):
         :returns: The proxies to be used.
         :rtype: list
         """
-        proxies_url = "http://192.168.1.19:5000/api/proxies"
+        proxies_url = "http://www.bad-actor.services/api/proxies"
         response = self.get(proxies_url)
         bad_actor_proxies = response.json()['objects']
 
