@@ -391,7 +391,7 @@ class CarpetBag(BaseCarpetBag):
         :returns: Ready to use url.
         :rtype: str
         """
-        return CarpetBag.url_concat(args)
+        return CarpetBag.url_concat(*args)
 
     @staticmethod
     def url_concat(*args):
