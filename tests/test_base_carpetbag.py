@@ -3,7 +3,6 @@
 """
 from datetime import datetime
 import time
-import json
 import os
 
 import pytest
