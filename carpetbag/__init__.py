@@ -173,7 +173,7 @@ class CarpetBag(BaseCarpetBag):
         :returns: The proxies to be used.
         :rtype: list
         """
-        proxies_url = "http://www.bad-actor.services/api/proxies"
+        proxies_url = self.url_join(self.remote_service_api, "proxies")
         response = self.get(proxies_url)
         bad_actor_proxies = response.json()['objects']
 
@@ -391,7 +391,7 @@ class CarpetBag(BaseCarpetBag):
         :returns: Ready to use url.
         :rtype: str
         """
-        return self.url_concat(args)
+        return CarpetBag.url_concat(args)
 
     @staticmethod
     def url_concat(*args):
