@@ -91,6 +91,7 @@ class BaseCarpetBag(object):
         self.random_proxy_bag = False
         self.send_user_agent = ""
         self.ssl_verify = True
+        self.remote_service_api = 'http://www.bad-actor.services/api'
         self._setup_proxies()
         self.logger = logging.getLogger(__name__)
 
