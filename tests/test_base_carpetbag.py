@@ -31,6 +31,7 @@ class TestBaseCarpetBag(object):
         assert bagger.headers == {}
         assert bagger.user_agent == "CarpetBag v.001"
         assert bagger.ssl_verify
+        assert bagger.remote_service_api == 'http://www.bad-actor.services/api'
         assert bagger.change_identity_interval == 0
         assert not bagger.outbound_ip
         assert bagger.request_attempts == {}
