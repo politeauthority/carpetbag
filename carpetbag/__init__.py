@@ -174,7 +174,7 @@ class CarpetBag(BaseCarpetBag):
         :returns: The proxies to be used.
         :rtype: list
         """
-        proxies_url = "http://www.bad-actor.services/api/proxies"
+        proxies_url = CarpetBag.url_join(self.remote_service_api, "proxies")
         response = self.get(proxies_url)
         bad_actor_proxies = response.json()['objects']
 
@@ -207,32 +207,52 @@ class CarpetBag(BaseCarpetBag):
             continents = [continents]
 
         self.proxy_bag = self.get_public_proxies(continents, ssl_only)
-
+        self.logger.info("Getting stuff")
         self.reset_proxy_from_bag()
         self._setup_proxies()
-        if not test_proxy:
-            return True
+        self.verify_proxies()
+        # return True
 
-        logging.info("Testing Proxy: %s (%s)" % (self.proxy_bag[0]["ip"], self.proxy_bag[0]["country"]))
-        proxy_test_urls = ["http://www.google.com"]
-        for url in proxy_test_urls:
-            self.get(url)
-        logging.debug("Registered Proxy %s (%s)" % (self.proxy_bag[0]["ip"], self.proxy_bag[0]["country"]))
+        # logging.info("Testing Proxy: %s (%s)" % (self.proxy_bag[0]["ip"], self.proxy_bag[0]["country"]))
+        # proxy_test_urls = ["http://www.google.com"]
+        # for url in proxy_test_urls:
+        #     self.get(url)
+        # logging.debug("Registered Proxy %s (%s)" % (self.proxy_bag[0]["ip"], self.proxy_bag[0]["country"]))
 
         return True
 
+    def verify_proxies(self):
+        """
+        """
+        loop = asyncio.get_event_loop()
+        test2 = loop.run_until_complete(self.get_gud_proxies())
+        print(test2)
+        loop.close()
+
     async def get_gud_proxies(self):
-        for proxy in self.get_public_proxies(ssl_only=False):
+        """
+
+        """
+        url = 'http://www.github.com'
+        print('ASYNC TEST Proxies')
+        current_proxies = self.proxy_bag
+        self.proxy_bag = []
+        for proxy in current_proxies:
             conn = aiohttp.TCPConnector(verify_ssl=False)
-            try:
-                async with aiohttp.ClientSession(trust_env=True, connector=conn) as session:
-                    if not proxy.get('ssl'):
-                        async with session.get('http://google.com', proxy='http://'+proxy.get('ip'), ssl=False) as resp:
+            async with aiohttp.ClientSession(trust_env=True, connector=conn) as session:
+                if not proxy.get('ssl'):
+                    print(proxy['ip'])
+                    try:
+                        async with session.get(
+                            url,
+                            proxy='http://' + proxy.get('ip'),
+                            ssl=False)\
+                                as resp:
                             print(resp.status)
                             print(await resp.text())
                             self.proxy_bag.append(proxy)
-            except:
-                pass
+                    except Exception:
+                        pass
         return True
 
     def use_skip_ssl_verify(self):
@@ -406,7 +426,7 @@ class CarpetBag(BaseCarpetBag):
         :returns: Ready to use url.
         :rtype: str
         """
-        return self.url_concat(args)
+        return CarpetBag.url_concat(args)
 
     @staticmethod
     def url_concat(*args):
@@ -420,7 +440,10 @@ class CarpetBag(BaseCarpetBag):
         :rtype: str
         """
         url = ""
-        for url_segment in args:
+        if not args:
+            return url
+
+        for url_segment in args[0]:
             if url and url[len(url) - 1] != "/" and url_segment[0] != "/":
                 url_segment = "/" + url_segment
             url += url_segment
