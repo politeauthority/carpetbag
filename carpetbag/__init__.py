@@ -20,7 +20,7 @@ from . import user_agent
 
 class CarpetBag(BaseCarpetBag):
 
-    def __init(self):
+    def __init__(self):
         """
         CarpetBag constructor. Here we set the default, user changable class vars.
 
