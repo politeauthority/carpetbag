@@ -351,18 +351,17 @@ class CarpetBag(BaseCarpetBag):
         :returns: The outbound ip address for the proxy.
         :rtype: str
         """
-        ip_websites = ["http://icanhazip.com/"]
-        for ip in ip_websites:
-            response = self.get(ip)
-            if response.status_code != 200:
-                logging.warning("Unable to connect to %s for IP.")
-                continue
+        remote_service_ip = self.url_join(self.remote_service_api, "ip")
+        response = self.get(remote_service_ip)
+        if response.status_code != 200:
+            logging.warning("Unable to connect to %s for IP." % self.remote_service_ip)
+            continue
 
-            if response.text != self.outbound_ip:
-                self.outbound_ip = response.text.strip()
-            return self.outbound_ip
+        if response.json['ip'] != self.outbound_ip:
+            self.outbound_ip = response.text.strip()
+        return self.outbound_ip
 
-        logging.error("Could not get outbound ip address.")
+        # logging.error("Could not get outbound ip address.")
 
         return False
 
