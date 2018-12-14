@@ -78,6 +78,7 @@ class BaseCarpetBag(object):
         self.password = None
         self.auth_type = None
         self.change_identity_interval = 0
+        self.remote_service_api = 'https://www.bad-actor.services/api'
 
         # These are private reserved class vars, don"t use these!
         self.outbound_ip = None

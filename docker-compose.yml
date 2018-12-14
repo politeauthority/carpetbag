@@ -3,6 +3,8 @@ services:
   carpetbag:
     build: ./
     command: tail -f /dev/null
+    volumes:
+      - ./:/opt/cartpetbag
   tor:
     image: zeta0/alpine-tor
     environment:

@@ -33,8 +33,4 @@ class TestParseResponse(object):
         assert ParseResponse.remove_protocol("https://google.com") == "google.com"
         assert ParseResponse.remove_protocol("http://www.google.com") == "www.google.com"
 
-    def test__get_continent_from_country(self):
-        assert ParseResponse._get_continent_from_country("United States") == "North America"
-        assert ParseResponse._get_continent_from_country("Japan") == "Asia"
-
 # End File carpetbag/tests/test_parse_response.py

@@ -20,7 +20,7 @@ from . import user_agent
 
 class CarpetBag(BaseCarpetBag):
 
-    def __init(self):
+    def __init__(self):
         """
         CarpetBag constructor. Here we set the default, user changable class vars.
 
@@ -170,22 +170,28 @@ class CarpetBag(BaseCarpetBag):
         Gets list of free public proxies and loads them into a list, currently just selecting from free-proxy-list.
         @todo: Add filtering by country/ continent.
 
+
+        :param continents: Filters proxies to either  just a single continent, or if list is used, orders proxies in
+            based off of the order contients are listed within the 'contenient' list.
+        :type continents: str or list
+        :param ssl_only: Select only proxies fully supporting SSL.
+        :type ssl_only: bool
         :returns: The proxies to be used.
         :rtype: list
         """
-        proxies_url = "https://free-proxy-list.net/"
+        proxies_url = self.url_join(self.remote_service_api, "proxies")
         response = self.get(proxies_url)
-        proxies = ParseResponse(response).freeproxylistdotnet()
+        bad_actor_proxies = response.json()['objects']
+
         if continents or ssl_only:
             if continents and isinstance(continents, string_types):
                 continents = [continents]
-                print(continents)
-            proxies = self._filter_public_proxies(proxies, continents, ssl_only)
-        else:
-            # Shuffle the proxies so concurrent instances of CarpetBag wont use the same proxy
-            shuffle(self.proxy_bag)
+            bad_actor_proxies = self._filter_public_proxies(bad_actor_proxies, continents, ssl_only)
 
-        return proxies
+        # Shuffle the proxies so concurrent instances of CarpetBag wont use the same proxy
+        shuffle(bad_actor_proxies)
+
+        return bad_actor_proxies
 
     def use_random_public_proxy(self, continents=[], ssl_only=False, test_proxy=True):
         """
@@ -194,7 +200,7 @@ class CarpetBag(BaseCarpetBag):
 
         :param continents: Filters proxies to either  just a single continent, or if list is used, orders proxies in
             based off of the order contients are listed within the 'contenient' list.
-        :type continents: stror list
+        :type continents: str or list
         :param ssl_only: Select only proxies fully supporting SSL.
         :type ssl_only: bool
         :param test_proxy: Tests the proxy to see if it's up and working.
@@ -212,11 +218,11 @@ class CarpetBag(BaseCarpetBag):
         if not test_proxy:
             return True
 
-        logging.info("Testing Proxy: %s (%s)" % (self.proxy_bag[0]["ip"], self.proxy_bag[0]["location"]))
+        logging.info("Testing Proxy: %s (%s)" % (self.proxy_bag[0]["ip"], self.proxy_bag[0]["country"]))
         proxy_test_urls = ["http://www.google.com"]
         for url in proxy_test_urls:
             self.get(url)
-        logging.debug("Registered Proxy %s (%s)" % (self.proxy_bag[0]["ip"], self.proxy_bag[0]["location"]))
+        logging.debug("Registered Proxy %s (%s)" % (self.proxy_bag[0]["ip"], self.proxy_bag[0]["country"]))
 
         return True
 
@@ -379,6 +385,19 @@ class CarpetBag(BaseCarpetBag):
             self.reset_proxy_from_bag()
 
         return True
+
+    @staticmethod
+    def url_join(*args):
+        """
+        Concats all args with slashes as needed.
+        @note this will probably move to a utility class sometime in the near future.
+
+        :param args: All the url components to join.
+        :type args: list
+        :returns: Ready to use url.
+        :rtype: str
+        """
+        return CarpetBag.url_concat(*args)
 
     @staticmethod
     def url_concat(*args):
