@@ -21,6 +21,8 @@ from . import user_agent
 
 class CarpetBag(BaseCarpetBag):
 
+    __version__ = BaseCarpetBag.__version__
+
     def __init__(self):
         """
         CarpetBag constructor. Here we set the default, user changable class vars.

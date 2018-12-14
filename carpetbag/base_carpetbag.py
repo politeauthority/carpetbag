@@ -18,6 +18,8 @@ from .errors import EmptyProxyBag, InvalidContinent
 
 class BaseCarpetBag(object):
 
+    __version__ = '.0.0.1'
+
     def __init__(self):
         """
         CarpetBag constructor. Here we set the default, user changable class vars.
