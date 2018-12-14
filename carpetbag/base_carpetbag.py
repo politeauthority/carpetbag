@@ -78,7 +78,7 @@ class BaseCarpetBag(object):
         self.password = None
         self.auth_type = None
         self.change_identity_interval = 0
-        self.remote_service_api = 'https://www.bad-actor.services/api'
+        self.remote_service_api = "https://www.bad-actor.services/api"
 
         # These are private reserved class vars, don"t use these!
         self.outbound_ip = None
@@ -243,10 +243,10 @@ class BaseCarpetBag(object):
         filtered_proxies = []
         for proxy in proxies:
             proxy_add = True
-            if ssl_only and not proxy['ssl']:
+            if ssl_only and not proxy["ssl"]:
                 proxy_add = False
                 continue
-            if continents and proxy['continent'] not in continents:
+            if continents and proxy["continent"] not in continents:
                 proxy_add = False
                 continue
             if proxy_add:
@@ -270,7 +270,7 @@ class BaseCarpetBag(object):
         valid_continents = ["North America", "South America", "Asia", "Europe", "Africa", "Austrailia", "Antarctica"]
         for continent in requested_continents:
             if continent not in valid_continents:
-                self.logger.error('Unknown continent: %s' % continent)
+                self.logger.error("Unknown continent: %s" % continent)
                 raise InvalidContinent(continent)
         return True
 
@@ -292,10 +292,10 @@ class BaseCarpetBag(object):
         """
         proxy_set = {}
         for proxy in proxies:
-            if proxy['continent'] in continents:
-                if proxy['continent'] not in proxy_set:
-                    proxy_set[proxy['continent']] = []
-                proxy_set[proxy['continent']].append(proxy)
+            if proxy["continent"] in continents:
+                if proxy["continent"] not in proxy_set:
+                    proxy_set[proxy["continent"]] = []
+                proxy_set[proxy["continent"]].append(proxy)
         proxy_order = []
         for continent in continents:
             for prx_continent, proxies in proxy_set.items():
