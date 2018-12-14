@@ -31,7 +31,7 @@ class TestBaseCarpetBag(object):
         assert bagger.headers == {}
         assert bagger.user_agent == "CarpetBag v.001"
         assert bagger.ssl_verify
-        assert bagger.remote_service_api == 'http://www.bad-actor.services/api'
+        assert bagger.remote_service_api == 'https://www.bad-actor.services/api'
         assert bagger.change_identity_interval == 0
         assert not bagger.outbound_ip
         assert bagger.request_attempts == {}
@@ -153,12 +153,12 @@ class TestBaseCarpetBag(object):
         Fourth assertion checks that we order South America after North America
 
         @todo: This test is passing, but I dont believe it's checking as many points as it needs to be.
-
         """
 
         # Load the test proxies
         with vcr.use_cassette(os.path.join(CASSET_DIR, "base_carpet_get_public_proxies.yaml")):
             bagger = CarpetBag()
+            bagger.use_skip_ssl_verify()
             test_proxies = bagger.get_public_proxies()
 
         # Check that we return a list.
@@ -289,5 +289,11 @@ class TestBaseCarpetBag(object):
         bagger._increment_counters()
         assert bagger.request_count == 2
         assert bagger.request_total == 2
+
+
+if __name__ == '__main__':
+    with vcr.use_cassette(os.path.join(CASSET_DIR, "base_carpet_get_public_proxies.yaml")):
+        bagger = CarpetBag()
+        test_proxies = bagger.get_public_proxies()
 
 # End File carpetbag/tests/test_base_carpetbag.py

@@ -47,9 +47,9 @@ class TestTimings(object):
 
         scraper = CarpetBag()
         scraper.wait_and_retry_on_connection_error = 3
-        with vcr.use_cassette(os.path.join(CASSET_DIR, "timings_2.yaml")):
+        with vcr.use_cassette(os.path.join(CASSET_DIR, "timings_retry_bad_conn.yaml")):
             with pytest.raises(requests.exceptions.ConnectionError):
-                scraper.get("http://www.asdasdasdkgljaSDF.com/api/symbols/1")
+                scraper.get("http://0.0.0.0:90/api/symbols/1")
 
         end = datetime.now()
         run_time = (end - start).seconds
