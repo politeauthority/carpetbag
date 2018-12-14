@@ -76,7 +76,7 @@ class TestGet(object):
         scraper.user_agent = 'Some-User-Agent'
         with vcr.use_cassette(os.path.join(CASSET_DIR, 'get_cant_find_host.yaml')):
             with pytest.raises(requests.exceptions.ConnectionError):
-                scraper.get('http://www.12345151dfsdf.com/api/symbol/1')
+                scraper.get('http://0.0.0.0:90/api/symbol/1')
 
     def test_search_one(self):
         """

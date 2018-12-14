@@ -20,7 +20,7 @@ from . import user_agent
 
 class CarpetBag(BaseCarpetBag):
 
-    def __init(self):
+    def __init__(self):
         """
         CarpetBag constructor. Here we set the default, user changable class vars.
 
@@ -170,6 +170,12 @@ class CarpetBag(BaseCarpetBag):
         Gets list of free public proxies and loads them into a list, currently just selecting from free-proxy-list.
         @todo: Add filtering by country/ continent.
 
+
+        :param continents: Filters proxies to either  just a single continent, or if list is used, orders proxies in
+            based off of the order contients are listed within the 'contenient' list.
+        :type continents: str or list
+        :param ssl_only: Select only proxies fully supporting SSL.
+        :type ssl_only: bool
         :returns: The proxies to be used.
         :rtype: list
         """
@@ -194,7 +200,7 @@ class CarpetBag(BaseCarpetBag):
 
         :param continents: Filters proxies to either  just a single continent, or if list is used, orders proxies in
             based off of the order contients are listed within the 'contenient' list.
-        :type continents: stror list
+        :type continents: str or list
         :param ssl_only: Select only proxies fully supporting SSL.
         :type ssl_only: bool
         :param test_proxy: Tests the proxy to see if it's up and working.
