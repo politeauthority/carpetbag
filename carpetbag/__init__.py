@@ -76,6 +76,7 @@ class CarpetBag(BaseCarpetBag):
         self.username = None
         self.password = None
         self.auth_type = None
+        self.__version__ = ".0.0.1"
         super().__init__()
 
     def request(self, method, url, payload={}):
@@ -156,15 +157,23 @@ class CarpetBag(BaseCarpetBag):
 
         return response
 
-    def use_random_user_agent(self):
+    def use_random_user_agent(self, val=True):
         """
         Sets a random, common browser's User Agent string as our own.
 
+        :param val: Whether or not to enable random user agents.
+        :type val: bool
+        :returns: Whether or not random public proxying is happening.
+        :rtype: bool
         """
-        self.random_user_agent = True
-        self.user_agent = user_agent.get_random_ua()
-
-        return True
+        if val:
+            self.random_user_agent = True
+            self.user_agent = user_agent.get_random_ua()
+            return True
+        else:
+            self.random_user_agent = False
+            self.user_agent = ""
+            return False
 
     def get_public_proxies(self, continents=[], ssl_only=False):
         """
@@ -180,6 +189,7 @@ class CarpetBag(BaseCarpetBag):
         :returns: The proxies to be used.
         :rtype: list
         """
+        logging.debug("Filling proxy bag")
         proxies_url = self.url_join(self.remote_service_api, "proxies")
         response = self.get(proxies_url)
         bad_actor_proxies = response.json()['objects']
@@ -198,6 +208,7 @@ class CarpetBag(BaseCarpetBag):
         """
         Gets proxies from free-proxy-list.net and loads them into the self.proxy_bag. The first element in the
         proxy_bag is the currently used proxy.
+        @todo: NEEDS UNIT TEST!
 
         :param continents: Filters proxies to either  just a single continent, or if list is used, orders proxies in
             based off of the order contients are listed within the 'contenient' list.
@@ -206,9 +217,9 @@ class CarpetBag(BaseCarpetBag):
         :type ssl_only: bool
         :param test_proxy: Tests the proxy to see if it's up and working.
         :type test_proxy: bool
+        :returns: Whether or not random public proxying is happening.
+        :rtype: bool
         """
-        logging.debug("Filling proxy bag")
-        self.random_proxy_bag = True
         if continents and isinstance(continents, string_types):
             continents = [continents]
 
@@ -227,24 +238,22 @@ class CarpetBag(BaseCarpetBag):
 
         return True
 
-    def use_skip_ssl_verify(self):
+    def use_skip_ssl_verify(self, val=True):
         """
         Sets CarpetBag up to not force a valid certificate return from the server. This exists mostly because I was
         running into some issues with self signed certs. This can be enabled/disabled at anytime through execution.
 
+        :param val: Whether or not to enable or disable skipping SSL Cert validation.
+        :type val: bool
+        :returns: The value CarpetBag is configured to use for self.ssl_verify
+        :rtype: bool
         """
-        self.ssl_verify = False
+        if val:
+            self.ssl_verify = False
+        else:
+            self.ssl_verify = True
 
-        return True
-
-    def stop_skip_ssl(self):
-        """
-        Sets CarpetBag up to go back to throwing an error on SSL validation errors.
-
-        """
-        self.ssl_verify = True
-
-        return True
+        return val
 
     def save(self, url, destination, payload={}):
         """
