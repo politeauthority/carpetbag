@@ -67,7 +67,7 @@ class BaseCarpetBag(object):
             Authentication needs to be implemented.
         """
         self.headers = {}
-        self.user_agent = "CarpetBag v.001"
+        self.user_agent = "CarpetBag v%s" % self.__version__
         self.random_user_agent = False
         self.mininum_wait_time = 0  # Sets the minumum wait time per domain to make a new request in seconds.
         self.wait_and_retry_on_connection_error = 0
