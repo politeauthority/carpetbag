@@ -5,7 +5,6 @@ services:
     command: tail -f /dev/null
     volumes:
       - ./:/opt/carpetbag
-
 #  tor:
 #    image: zeta0/alpine-tor
 #    environment:
@@ -14,4 +13,3 @@ services:
 #    ports:
 #      - 8118:8118
 #      - 2090:2090
-
