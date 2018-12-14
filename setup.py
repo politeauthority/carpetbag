@@ -13,9 +13,9 @@ Depending on whether there is a virtualenv, packages may be installed in a locat
 
 from distutils.core import setup
 setup(
-    name='CarpetBag',
-    version='0.0.1',
-    packages=['carpetbag'],
+    name="CarpetBag",
+    version="0.0.1",
+    packages=["carpetbag"],
     author="""politeauthority""",
     description="A python scraper that wont take no for an answer",
     url="https://github.com/politeauthority/carpetbag")
