@@ -23,10 +23,10 @@ interactions:
       Connection: [keep-alive]
       Content-Length: ['233']
       Content-Type: [text/html]
-      Date: ['Fri, 14 Dec 2018 03:32:38 GMT']
+      Date: ['Fri, 14 Dec 2018 05:23:03 GMT']
       Server: [nginx/1.13.12]
-      Set-Cookie: ['session=333f8be2-3e97-4287-bb50-c07f39b55641; Expires=Mon, 14-Jan-2019
-          03:32:38 GMT; HttpOnly; Path=/']
+      Set-Cookie: ['session=51bdca9d-195f-4791-8c41-80ccf7d87a10; Expires=Mon, 14-Jan-2019
+          05:23:03 GMT; HttpOnly; Path=/']
       Strict-Transport-Security: [max-age=31536000]
     status: {code: 404, message: NOT FOUND}
 version: 1
