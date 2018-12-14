@@ -11,6 +11,7 @@ import os
 from random import shuffle
 from six import string_types
 
+import json
 import requests
 
 from .base_carpetbag import BaseCarpetBag
@@ -357,18 +358,20 @@ class CarpetBag(BaseCarpetBag):
         :returns: The outbound ip address for the proxy.
         :rtype: str
         """
-        ip_websites = ["http://icanhazip.com/"]
-        for ip in ip_websites:
-            response = self.get(ip)
-            if response.status_code != 200:
-                logging.warning("Unable to connect to %s for IP.")
-                continue
+        ip_service = self.remote_service_api.replace("/api", "")
+        remote_service_api = self.url_join(ip_service, "/ip")
+        response = self.get(remote_service_api)
+        if response.status_code != 200:
+            logging.warning("Unable to connect to %s for IP." % remote_service_api)
 
-            if response.text != self.outbound_ip:
-                self.outbound_ip = response.text.strip()
-            return self.outbound_ip
+        response_body = json.loads(response.text)
 
-        logging.error("Could not get outbound ip address.")
+        if response_body['ip'] != self.outbound_ip:
+            self.outbound_ip = response_body['ip']
+
+        return self.outbound_ip
+
+        # logging.error("Could not get outbound ip address.")
 
         return False
 

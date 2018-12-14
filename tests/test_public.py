@@ -65,9 +65,11 @@ class TestPublic(object):
 
         """
         bagger = CarpetBag()
+        bagger.remote_service_api = 'http://bad-actor-services_bad-actor-services-web_1:5000/api'
         with vcr.use_cassette(os.path.join(CASSET_DIR, "public_outbound_ip.yaml")):
             ip = bagger.get_outbound_ip()
-            assert ip == "73.203.37.237"
+            assert ip == "172.26.0.2"
+            assert bagger.outbound_ip == "172.26.0.2"
 
     # Removing this test for the time being, the constanly rotating proxies is casuing false negatives on the test
     # def test_reset_identity(self):

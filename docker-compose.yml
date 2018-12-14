@@ -4,13 +4,13 @@ services:
     build: ./
     command: tail -f /dev/null
     volumes:
-      - ./:/opt/cartpetbag
-  tor:
-    image: zeta0/alpine-tor
-    environment:
-      - privoxy=1
-      - tors=25
-    ports:
-      - 8118:8118
-      - 2090:2090
+      - ./:/opt/carpetbag
 
+#  tor:
+#    image: zeta0/alpine-tor
+#    environment:
+#      - privoxy=1
+#      - tors=25
+#    ports:
+#      - 8118:8118
+#      - 2090:2090
