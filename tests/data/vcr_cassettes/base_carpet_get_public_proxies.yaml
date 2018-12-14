@@ -5,7 +5,7 @@ interactions:
       Accept: ['*/*']
       Accept-Encoding: ['gzip, deflate']
       Connection: [keep-alive]
-      User-Agent: [CarpetBag v.001]
+      User-Agent: [CarpetBag v.0.0.1]
     method: GET
     uri: https://www.bad-actor.services/api/proxies
   response:
@@ -54,15 +54,15 @@ interactions:
       Connection: [keep-alive]
       Content-Length: ['2682']
       Content-Type: [application/json]
-      Date: ['Thu, 13 Dec 2018 23:44:12 GMT']
+      Date: ['Fri, 14 Dec 2018 05:23:03 GMT']
       Link: ['<https://www.bad-actor.services/api/proxies?page=2&results_per_page=10>;
           rel="next", <https://www.bad-actor.services/api/proxies?page=30&results_per_page=10>;
           rel="last"', '<https://www.bad-actor.services/api/proxies?page=2&results_per_page=10>;
           rel="next", <https://www.bad-actor.services/api/proxies?page=30&results_per_page=10>;
           rel="last"']
       Server: [nginx/1.13.12]
-      Set-Cookie: ['session=dfba30d3-bf3a-4eb7-a165-9866be0a50bd; Expires=Sun, 13-Jan-2019
-          23:44:12 GMT; HttpOnly; Path=/']
+      Set-Cookie: ['session=5197bb85-a44f-44d2-862c-f2740631d3d9; Expires=Mon, 14-Jan-2019
+          05:23:03 GMT; HttpOnly; Path=/']
       Strict-Transport-Security: [max-age=31536000]
       Vary: [Accept]
     status: {code: 200, message: OK}

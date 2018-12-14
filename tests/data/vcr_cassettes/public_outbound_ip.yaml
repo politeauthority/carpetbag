@@ -5,7 +5,7 @@ interactions:
       Accept: ['*/*']
       Accept-Encoding: ['gzip, deflate']
       Connection: [keep-alive]
-      User-Agent: [CarpetBag v.001]
+      User-Agent: [CarpetBag v.0.0.1]
     method: GET
     uri: http://bad-actor-services_bad-actor-services-web_1:5000/ip
   response:
@@ -13,9 +13,9 @@ interactions:
     headers:
       Content-Length: ['25']
       Content-Type: [application/json]
-      Date: ['Fri, 14 Dec 2018 01:19:11 GMT']
+      Date: ['Fri, 14 Dec 2018 05:23:05 GMT']
       Server: [Werkzeug/0.12.2 Python/3.6.6]
-      Set-Cookie: ['session=40244e39-23ef-4ef6-8fb4-111c1bb350bd; Expires=Mon, 14-Jan-2019
-          01:19:11 GMT; HttpOnly; Path=/']
+      Set-Cookie: ['session=6e2ac531-66ed-4510-8f2a-d67e867927d1; Expires=Mon, 14-Jan-2019
+          05:23:05 GMT; HttpOnly; Path=/']
     status: {code: 200, message: OK}
 version: 1

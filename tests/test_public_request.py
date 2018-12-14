@@ -20,9 +20,11 @@ class TestGet(object):
         Tests CarpetBag's main public method, currently only for a GET Response
 
         """
-        scraper = CarpetBag()
+        bagger = CarpetBag()
+        bagger.use_skip_ssl_verify()
+        success_url = bagger.url_join(bagger.remote_service_api, "/proxies")
         with vcr.use_cassette(os.path.join(CASSET_DIR, "request_successful.yaml")):
-            response = scraper.request("GET", "http://www.bad-actor.services/api/symbols/1")
+            response = bagger.request("GET", success_url)
             assert response.status_code == 200
             assert response.text
 

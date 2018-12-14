@@ -5,54 +5,65 @@ interactions:
       Accept: ['*/*']
       Accept-Encoding: ['gzip, deflate']
       Connection: [keep-alive]
-      User-Agent: ['Mozilla/5.0 (X11; Linux i586; rv:31.0) Gecko/20100101 Firefox/31.0']
+      User-Agent: [CarpetBag v.0.0.1]
     method: GET
-    uri: http://www.bad-actor.services/api/symbols/1
+    uri: https://www.bad-actor.services/api/proxies
   response:
-    body: {string: "{\n  \"id\": 1, \n  \"name\": \"111, Inc.\", \n  \"quotes_daily\"\
-        : [\n    {\n      \"date\": \"2018-09-20T00:00:00\", \n      \"id\": 347598,\
-        \ \n      \"price_close\": 13.51, \n      \"price_high\": 13.82, \n      \"\
-        price_low\": 13.12, \n      \"price_open\": 13.82, \n      \"symbol_id\":\
-        \ 1, \n      \"ts_created\": \"2018-09-21T04:20:44.871035\", \n      \"ts_updated\"\
-        : \"2018-09-21T04:20:44.871035\", \n      \"volume\": 55959\n    }, \n   \
-        \ {\n      \"date\": \"2018-09-19T00:00:00\", \n      \"id\": 347601, \n \
-        \     \"price_close\": 13.82, \n      \"price_high\": 13.82, \n      \"price_low\"\
-        : 12.71, \n      \"price_open\": 13.26, \n      \"symbol_id\": 1, \n     \
-        \ \"ts_created\": \"2018-09-21T04:20:44.994591\", \n      \"ts_updated\":\
-        \ \"2018-09-21T04:20:44.994591\", \n      \"volume\": 96016\n    }, \n   \
-        \ {\n      \"date\": \"2018-09-18T00:00:00\", \n      \"id\": 347604, \n \
-        \     \"price_close\": 13.06, \n      \"price_high\": 13.85, \n      \"price_low\"\
-        : 12.7, \n      \"price_open\": 13.85, \n      \"symbol_id\": 1, \n      \"\
-        ts_created\": \"2018-09-21T04:20:45.116021\", \n      \"ts_updated\": \"2018-09-21T04:20:45.116021\"\
-        , \n      \"volume\": 259155\n    }, \n    {\n      \"date\": \"2018-09-17T00:00:00\"\
-        , \n      \"id\": 1, \n      \"price_close\": 13.72, \n      \"price_high\"\
-        : 13.919, \n      \"price_low\": 13.25, \n      \"price_open\": 13.61, \n\
-        \      \"symbol_id\": 1, \n      \"ts_created\": \"2018-09-17T23:06:00.165239\"\
-        , \n      \"ts_updated\": \"2018-09-17T23:06:00.165239\", \n      \"volume\"\
-        : 198023\n    }, \n    {\n      \"date\": \"2018-09-14T00:00:00\", \n    \
-        \  \"id\": 2, \n      \"price_close\": 13.99, \n      \"price_high\": 14.73,\
-        \ \n      \"price_low\": 13.051, \n      \"price_open\": 14.6, \n      \"\
-        symbol_id\": 1, \n      \"ts_created\": \"2018-09-17T23:06:00.195295\", \n\
-        \      \"ts_updated\": \"2018-09-17T23:06:00.195295\", \n      \"volume\"\
-        : 773447\n    }, \n    {\n      \"date\": \"2018-09-13T00:00:00\", \n    \
-        \  \"id\": 3, \n      \"price_close\": 14.0, \n      \"price_high\": 14.22,\
-        \ \n      \"price_low\": 13.0, \n      \"price_open\": 13.9, \n      \"symbol_id\"\
-        : 1, \n      \"ts_created\": \"2018-09-17T23:06:00.223150\", \n      \"ts_updated\"\
-        : \"2018-09-17T23:06:00.223150\", \n      \"volume\": 685158\n    }, \n  \
-        \  {\n      \"date\": \"2018-09-12T00:00:00\", \n      \"id\": 4, \n     \
-        \ \"price_close\": 13.8, \n      \"price_high\": 16.83, \n      \"price_low\"\
-        : 11.575, \n      \"price_open\": 16.75, \n      \"symbol_id\": 1, \n    \
-        \  \"ts_created\": \"2018-09-17T23:06:00.264074\", \n      \"ts_updated\"\
-        : \"2018-09-17T23:06:00.264074\", \n      \"volume\": 1302171\n    }\n  ],\
-        \ \n  \"symbol\": \"YI\", \n  \"ts_updated\": \"2018-09-21T20:31:23\"\n}\n"}
+    body: {string: "{\n  \"num_results\": 300, \n  \"objects\": [\n    {\n      \"\
+        address\": \"https://93.171.242.60:40971\", \n      \"continent\": \"Europe\"\
+        , \n      \"country\": \"Ukraine\", \n      \"id\": 1, \n      \"ip\": \"\
+        93.171.242.60\", \n      \"last_tested\": null, \n      \"port\": 40971, \n\
+        \      \"quality\": null, \n      \"ssl\": true\n    }, \n    {\n      \"\
+        address\": \"http://88.202.44.210:32086\", \n      \"continent\": \"Europe\"\
+        , \n      \"country\": \"Italy\", \n      \"id\": 2, \n      \"ip\": \"88.202.44.210\"\
+        , \n      \"last_tested\": null, \n      \"port\": 32086, \n      \"quality\"\
+        : null, \n      \"ssl\": false\n    }, \n    {\n      \"address\": \"http://118.172.201.158:43729\"\
+        , \n      \"continent\": \"Asia\", \n      \"country\": \"Thailand\", \n \
+        \     \"id\": 3, \n      \"ip\": \"118.172.201.158\", \n      \"last_tested\"\
+        : null, \n      \"port\": 43729, \n      \"quality\": null, \n      \"ssl\"\
+        : false\n    }, \n    {\n      \"address\": \"http://47.90.125.157:8080\"\
+        , \n      \"continent\": \"Asia\", \n      \"country\": \"Hong Kong\", \n\
+        \      \"id\": 4, \n      \"ip\": \"47.90.125.157\", \n      \"last_tested\"\
+        : null, \n      \"port\": 8080, \n      \"quality\": null, \n      \"ssl\"\
+        : false\n    }, \n    {\n      \"address\": \"http://41.223.66.73:8080\",\
+        \ \n      \"continent\": \"Africa\", \n      \"country\": \"Nigeria\", \n\
+        \      \"id\": 5, \n      \"ip\": \"41.223.66.73\", \n      \"last_tested\"\
+        : null, \n      \"port\": 8080, \n      \"quality\": null, \n      \"ssl\"\
+        : false\n    }, \n    {\n      \"address\": \"http://5.8.114.240:60560\",\
+        \ \n      \"continent\": \"Europe\", \n      \"country\": \"Italy\", \n  \
+        \    \"id\": 6, \n      \"ip\": \"5.8.114.240\", \n      \"last_tested\":\
+        \ null, \n      \"port\": 60560, \n      \"quality\": null, \n      \"ssl\"\
+        : false\n    }, \n    {\n      \"address\": \"http://109.160.77.166:34227\"\
+        , \n      \"continent\": \"Europe\", \n      \"country\": \"Bulgaria\", \n\
+        \      \"id\": 7, \n      \"ip\": \"109.160.77.166\", \n      \"last_tested\"\
+        : null, \n      \"port\": 34227, \n      \"quality\": null, \n      \"ssl\"\
+        : false\n    }, \n    {\n      \"address\": \"http://196.13.208.22:8080\"\
+        , \n      \"continent\": \"Unknown\", \n      \"country\": \"Seychelles\"\
+        , \n      \"id\": 8, \n      \"ip\": \"196.13.208.22\", \n      \"last_tested\"\
+        : null, \n      \"port\": 8080, \n      \"quality\": null, \n      \"ssl\"\
+        : false\n    }, \n    {\n      \"address\": \"https://178.128.112.62:8080\"\
+        , \n      \"continent\": \"Asia\", \n      \"country\": \"Singapore\", \n\
+        \      \"id\": 9, \n      \"ip\": \"178.128.112.62\", \n      \"last_tested\"\
+        : null, \n      \"port\": 8080, \n      \"quality\": null, \n      \"ssl\"\
+        : true\n    }, \n    {\n      \"address\": \"http://85.163.99.210:39546\"\
+        , \n      \"continent\": \"Europe\", \n      \"country\": \"Czech Republic\"\
+        , \n      \"id\": 10, \n      \"ip\": \"85.163.99.210\", \n      \"last_tested\"\
+        : null, \n      \"port\": 39546, \n      \"quality\": null, \n      \"ssl\"\
+        : false\n    }\n  ], \n  \"page\": 1, \n  \"total_pages\": 30\n}\n"}
     headers:
       Connection: [keep-alive]
-      Content-Length: ['2428']
+      Content-Length: ['2682']
       Content-Type: [application/json]
-      Date: ['Fri, 21 Sep 2018 22:21:17 GMT']
+      Date: ['Fri, 14 Dec 2018 05:23:07 GMT']
+      Link: ['<https://www.bad-actor.services/api/proxies?page=2&results_per_page=10>;
+          rel="next", <https://www.bad-actor.services/api/proxies?page=30&results_per_page=10>;
+          rel="last"', '<https://www.bad-actor.services/api/proxies?page=2&results_per_page=10>;
+          rel="next", <https://www.bad-actor.services/api/proxies?page=30&results_per_page=10>;
+          rel="last"']
       Server: [nginx/1.13.12]
-      Set-Cookie: ['session=263b0983-8c7d-4971-8d34-14f75948debd; Expires=Mon, 22-Oct-2018
-          22:21:17 GMT; HttpOnly; Path=/']
+      Set-Cookie: ['session=7d24f61c-32f1-44b8-92b6-6cfcb676fe55; Expires=Mon, 14-Jan-2019
+          05:23:07 GMT; HttpOnly; Path=/']
+      Strict-Transport-Security: [max-age=31536000]
       Vary: [Accept]
     status: {code: 200, message: OK}
 version: 1

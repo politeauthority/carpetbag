@@ -86,6 +86,17 @@ class TestPublic(object):
             assert ip == "172.26.0.2"
             assert bagger.outbound_ip == "172.26.0.2"
 
+    def test_search_one(self):
+        """
+        Tests CarpetBag's search, which runs a search on DuckDuckGo and parses the response.
+        @note: If this test refetches data its very likely this test can fail, beware!
+
+        """
+        scraper = CarpetBag()
+        with vcr.use_cassette(os.path.join(CASSET_DIR, 'search_one.yaml')):
+            response = scraper.search('learn python')
+            assert response['results'][0]['title'] == 'Learn Python - Free Interactive Python Tutorial'
+
     # Removing this test for the time being, the constanly rotating proxies is casuing false negatives on the test
     # def test_reset_identity(self):
     #     """
