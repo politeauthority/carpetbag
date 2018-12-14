@@ -194,7 +194,7 @@ class CarpetBag(BaseCarpetBag):
         logging.debug("Filling proxy bag")
         proxies_url = self.url_join(self.remote_service_api, "proxies")
         response = self.get(proxies_url)
-        bad_actor_proxies = response.json()['objects']
+        bad_actor_proxies = response.json()["objects"]
 
         if continents or ssl_only:
             if continents and isinstance(continents, string_types):
@@ -213,7 +213,7 @@ class CarpetBag(BaseCarpetBag):
         @todo: NEEDS UNIT TEST!
 
         :param continents: Filters proxies to either  just a single continent, or if list is used, orders proxies in
-            based off of the order contients are listed within the 'contenient' list.
+            based off of the order contients are listed within the "contenient" list.
         :type continents: str or list
         :param ssl_only: Select only proxies fully supporting SSL.
         :type ssl_only: bool
@@ -377,8 +377,8 @@ class CarpetBag(BaseCarpetBag):
 
         response_body = json.loads(response.text)
 
-        if response_body['ip'] != self.outbound_ip:
-            self.outbound_ip = response_body['ip']
+        if response_body["ip"] != self.outbound_ip:
+            self.outbound_ip = response_body["ip"]
 
         return self.outbound_ip
 
