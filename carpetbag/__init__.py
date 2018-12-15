@@ -184,7 +184,7 @@ class CarpetBag(BaseCarpetBag):
 
 
         :param continents: Filters proxies to either  just a single continent, or if list is used, orders proxies in
-            based off of the order contients are listed within the 'contenient' list.
+            based off of the order contients are listed within the "contenient" list.
         :type continents: str or list
         :param ssl_only: Select only proxies fully supporting SSL.
         :type ssl_only: bool

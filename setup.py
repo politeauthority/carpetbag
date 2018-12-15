@@ -13,6 +13,7 @@ with open("README.md", "r") as fh:
 setuptools.setup(
     name="CarpetBag",
     version="0.0.1",
+    packages=["carpetbag"],
     author="politeauthority",
     description="A python scraper that wont take no for an answer",
     long_description=long_description,
