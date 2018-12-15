@@ -28,7 +28,6 @@ def public_proxy_with_reset():
 
     print('Configure the bagger to use a random public proxy.')
     bagger.use_random_public_proxy()
-    import pdb; pdb.set_trace()
 
     try:
         response = bagger.get('http://www.google.com')
@@ -46,7 +45,14 @@ def public_proxy_continent():
     bagger.use_random_public_proxy(continents=['North America'], ssl_only=True)
 
 
+def get_outbound_ip():
+    bagger = CarpetBag()
+    print(bagger.get_outbound_ip())
+
+
 if __name__ == '__main__':
     public_proxy_with_reset()
+    get_outbound_ip()
+
 
 # EndFile: carpetbag/example.py

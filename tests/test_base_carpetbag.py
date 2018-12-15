@@ -56,8 +56,8 @@ class TestBaseCarpetBag(object):
 
         """
         bager = CarpetBag()
-        with vcr.use_cassette(os.path.join(CASSET_DIR, "google.com.yaml")):
-            request = bager._make_request("GET", "https://www.google.com/")
+        # with vcr.use_cassette(os.path.join(CASSET_DIR, "google.com.yaml")):
+        request = bager._make_request("GET", "https://www.google.com/")
         assert request
         assert request.text
         assert request.status_code == 200
@@ -146,10 +146,10 @@ class TestBaseCarpetBag(object):
         """
 
         # Load the test proxies
-        with vcr.use_cassette(os.path.join(CASSET_DIR, "base_carpet_get_public_proxies.yaml")):
-            bagger = CarpetBag()
-            bagger.use_skip_ssl_verify()
-            test_proxies = bagger.get_public_proxies()
+        # with vcr.use_cassette(os.path.join(CASSET_DIR, "base_carpet_get_public_proxies.yaml")):
+        bagger = CarpetBag()
+        bagger.use_skip_ssl_verify()
+        test_proxies = bagger.get_public_proxies()
 
         # Check that we return a list.
         assert isinstance(bagger._filter_public_proxies(test_proxies, [], False), list)
@@ -212,23 +212,23 @@ class TestBaseCarpetBag(object):
 
         """
         scraper = CarpetBag()
-        with vcr.use_cassette(os.path.join(CASSET_DIR, "test__make_1.yaml")):
-            response = scraper._make(
-                method="GET",
-                url="http://www.google.com",
-                headers={"Content-Type": "application/html"},
-                payload={},
-                retry=0)
-            assert response
-            assert response.status_code == 200
-            response = scraper._make(
-                method="GET",
-                url="http://www.google.com",
-                headers={"Content-Type": "application/html"},
-                payload={},
-                retry=0)
-            assert response
-            assert response.status_code == 200
+        # with vcr.use_cassette(os.path.join(CASSET_DIR, "test__make_1.yaml")):
+        response = scraper._make(
+            method="GET",
+            url="http://www.google.com",
+            headers={"Content-Type": "application/html"},
+            payload={},
+            retry=0)
+        assert response
+        assert response.status_code == 200
+        response = scraper._make(
+            method="GET",
+            url="http://www.google.com",
+            headers={"Content-Type": "application/html"},
+            payload={},
+            retry=0)
+        assert response
+        assert response.status_code == 200
 
     # def test_reset_proxy_from_bag(self):
     #     """
@@ -282,9 +282,9 @@ class TestBaseCarpetBag(object):
 
 
 if __name__ == "__main__":
-    with vcr.use_cassette(os.path.join(CASSET_DIR, "base_carpet_get_public_proxies.yaml")):
-        bagger = CarpetBag()
-        test_proxies = bagger.get_public_proxies()
+    # with vcr.use_cassette(os.path.join(CASSET_DIR, "base_carpet_get_public_proxies.yaml")):
+    bagger = CarpetBag()
+    test_proxies = bagger.get_public_proxies()
 
 
 # End File carpetbag/tests/test_base_carpetbag.py

@@ -15,7 +15,7 @@ import urllib3
 from urllib3.exceptions import InsecureRequestWarning
 
 from .parse_response import ParseResponse
-from .errors import InvalidContinent
+from .errors import InvalidContinent, NoRemoteServicesConnection
 
 
 class BaseCarpetBag(object):
@@ -131,6 +131,9 @@ class BaseCarpetBag(object):
         self._handle_sleep(url)
 
         response = self._make(method, url, headers, payload, ssl_verify)
+
+        if not response:
+            return False
 
         if response.status_code >= 500:
             self.logger.warning("Recieved a server error response %s" % response.status_code)
@@ -415,6 +418,43 @@ class BaseCarpetBag(object):
                 raise ChunkedEncodingError
 
         return response
+
+    def _make_internal(self, uri_segment, payload=None):
+        """
+        Makes requests to bad-actor.services. For getting data like current_ip, proxies and sending usage data if
+        enabled and you have an API key.
+
+        :param uri_segment: The url to fetch/ post to.
+        :type: uri_segment: str
+        :param payload: The data to be sent over the POST request.
+        :type payload: dict
+        :returns: The json response from the remote service API
+        :rtype: dict
+        """
+        if uri_segment == 'ip':
+            api_url = self.url_join(self.remote_service_api.replace('api', 'ip'))
+        else:
+            api_url = self.url_join(self.remote_service_api, uri_segment)
+        headers = {
+            "Content-Type": "application/json",
+            "User-Agent": 'CarpetBag v%s' % self.__version__
+        }
+        request_args = {
+            "method": "GET",
+            "url": api_url,
+            "headers": headers,
+            "proxies": self.proxy,
+            "verify": False
+        }
+        try:
+
+            response = requests.request(**request_args)
+        except requests.exceptions.ConnectionError:
+            raise NoRemoteServicesConnection
+
+        print(api_url)
+        print(response)
+        return response.json()
 
     def _handle_connection_error(self, method, url, headers, payload, retry):
         """
