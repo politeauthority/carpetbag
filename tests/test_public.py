@@ -23,7 +23,7 @@ class TestPublic(object):
         """
         bagger = CarpetBag()
         assert bagger.use_skip_ssl_verify()
-        assert bagger.ssl_verify == False
+        assert not bagger.ssl_verify
         assert not bagger.use_skip_ssl_verify(False)
         assert bagger.ssl_verify
 
@@ -80,7 +80,7 @@ class TestPublic(object):
 
         """
         bagger = CarpetBag()
-        bagger.remote_service_api = 'http://bad-actor-services_bad-actor-services-web_1:5000/api'
+        bagger.remote_service_api = "http://bad-actor-services_bad-actor-services-web_1:5000/api"
         with vcr.use_cassette(os.path.join(CASSET_DIR, "public_outbound_ip.yaml")):
             ip = bagger.get_outbound_ip()
             assert ip == "172.26.0.2"
@@ -93,9 +93,9 @@ class TestPublic(object):
 
         """
         scraper = CarpetBag()
-        with vcr.use_cassette(os.path.join(CASSET_DIR, 'search_one.yaml')):
-            response = scraper.search('learn python')
-            assert response['results'][0]['title'] == 'Learn Python - Free Interactive Python Tutorial'
+        with vcr.use_cassette(os.path.join(CASSET_DIR, "search_one.yaml")):
+            response = scraper.search("learn python")
+            assert response['results'][0]['title'] == "Learn Python - Free Interactive Python Tutorial"
 
     # Removing this test for the time being, the constanly rotating proxies is casuing false negatives on the test
     # def test_reset_identity(self):
@@ -117,16 +117,5 @@ class TestPublic(object):
     #         assert first_proxy != bagger.user_agent
     #         assert first_ip != second_ip
 
-
-if __name__ == '__main__':
-    bagger = CarpetBag()
-    assert bagger.user_agent == "CarpetBag v%s" % bagger.__version__
-    assert bagger.use_random_user_agent()
-    assert bagger.user_agent in user_agent.get_flattened_uas()
-    assert not bagger.use_random_user_agent(False)
-    assert bagger.user_agent == ""
-    with vcr.use_cassette(os.path.join(CASSET_DIR, "public_use_random_user_agent__unset.yaml")):
-        test_get = bagger.get(bagger.remote_service_api)
-    assert bagger.send_user_agent == ""
 
 # End File carpetbag/tests/test_public.py

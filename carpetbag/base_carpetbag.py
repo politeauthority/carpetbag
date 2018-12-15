@@ -18,7 +18,7 @@ from .errors import EmptyProxyBag, InvalidContinent
 
 class BaseCarpetBag(object):
 
-    __version__ = '.0.0.1'
+    __version__ = "0.0.1"
 
     def __init__(self):
         """
@@ -444,7 +444,7 @@ class BaseCarpetBag(object):
         """
         self.logger.debug("Changing proxy")
         if len(self.proxy_bag) == 0:
-            self.logger.error('Proxy bag is empty! Cannot reset Proxy from Proxy Bag.')
+            self.logger.error("Proxy bag is empty! Cannot reset Proxy from Proxy Bag.")
             raise EmptyProxyBag
 
         self.proxy_bag.pop(0)

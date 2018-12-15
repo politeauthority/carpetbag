@@ -28,4 +28,4 @@ class TestGet(object):
             assert response.status_code == 200
             assert response.text
 
-# End File carpetbag/tests/test_request.py
+# End File carpetbag/tests/test_public_request.py
