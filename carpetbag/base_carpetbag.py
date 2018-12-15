@@ -20,7 +20,7 @@ from .errors import InvalidContinent
 
 class BaseCarpetBag(object):
 
-    __version__ = '0.0.1'
+    __version__ = "0.0.1"
 
     def __init__(self):
         """

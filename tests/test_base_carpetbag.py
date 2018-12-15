@@ -31,7 +31,7 @@ class TestBaseCarpetBag(object):
         assert bagger.headers == {}
         assert bagger.user_agent == "CarpetBag v%s" % bagger.__version__
         assert bagger.ssl_verify
-        assert bagger.remote_service_api == 'https://www.bad-actor.services/api'
+        assert bagger.remote_service_api == "https://www.bad-actor.services/api"
         assert bagger.change_identity_interval == 0
         assert not bagger.outbound_ip
         assert bagger.request_attempts == {}
@@ -157,22 +157,22 @@ class TestBaseCarpetBag(object):
         # Check that we get only SSL supporting proxies.
         filtered_proxies = bagger._filter_public_proxies(test_proxies, continents=[], ssl_only=True)
         for proxy in filtered_proxies:
-            assert proxy['ssl']
+            assert proxy["ssl"]
 
         # Check that we can filter proxies based on a single contintent.
         filtered_proxies = bagger._filter_public_proxies(test_proxies, continents=["North America"])
         for proxy in filtered_proxies:
-            assert proxy['continent'] == "North America"
+            assert proxy["continent"] == "North America"
 
         # Check that we can filter proxies based on a multiple contintents.
         filtered_proxies = bagger._filter_public_proxies(test_proxies, continents=["North America", "South America"])
         for proxy in filtered_proxies:
-            assert proxy['continent'] in ["North America", "South America"]
+            assert proxy["continent"] in ["North America", "South America"]
 
         # Check that we grab proxies from multiple continents, ordered appropriately.
-        filtered_proxies = bagger._filter_public_proxies(test_proxies, continents=["North America", 'South America'])
-        # assert filtered_proxies[0]['continent'] == "North America"
-        # assert filtered_proxies[len(filtered_proxies) - 1]['continent'] == "South America"
+        filtered_proxies = bagger._filter_public_proxies(test_proxies, continents=["North America", "South America"])
+        # assert filtered_proxies[0]["continent"] == "North America"
+        # assert filtered_proxies[len(filtered_proxies) - 1]["continent"] == "South America"
 
         # Test that we raise the InvalidContinent exception if we get a bad continent name.
         with pytest.raises(errors.InvalidContinent):
@@ -279,5 +279,12 @@ class TestBaseCarpetBag(object):
         bagger._increment_counters()
         assert bagger.request_count == 2
         assert bagger.request_total == 2
+
+
+if __name__ == "__main__":
+    with vcr.use_cassette(os.path.join(CASSET_DIR, "base_carpet_get_public_proxies.yaml")):
+        bagger = CarpetBag()
+        test_proxies = bagger.get_public_proxies()
+
 
 # End File carpetbag/tests/test_base_carpetbag.py

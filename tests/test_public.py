@@ -23,7 +23,7 @@ class TestPublic(object):
         """
         bagger = CarpetBag()
         assert bagger.use_skip_ssl_verify()
-        assert bagger.ssl_verify == False
+        assert not bagger.ssl_verify
         assert not bagger.use_skip_ssl_verify(False)
         assert bagger.ssl_verify
 
@@ -124,5 +124,6 @@ if __name__ == '__main__':
     # with vcr.use_cassette(os.path.join(CASSET_DIR, "public_outbound_ip.yaml")):
     ip = bagger.get_outbound_ip()
     print(ip)
+
 
 # End File carpetbag/tests/test_public.py
