@@ -2,20 +2,26 @@
 """
 Builds packages so that each package can be imported (and allow relative imports)
 
-Usage:
-    python setup.py build
-    python setup.py install
-
-Depending on whether there is a virtualenv, packages may be installed in a location like:
-    /usr/local/lib/python2.7/dist-packages/
-    /usr/local/lib/python2.7/site-packages/
 """
 
-from distutils.core import setup
-setup(
+
+import setuptools
+
+with open("README.md", "r") as fh:
+    long_description = fh.read()
+
+setuptools.setup(
     name="CarpetBag",
     version="0.0.1",
-    packages=["carpetbag"],
-    author="""politeauthority""",
+    author="politeauthority",
     description="A python scraper that wont take no for an answer",
-    url="https://github.com/politeauthority/carpetbag")
+    long_description=long_description,
+    long_description_content_type="text/markdown",
+    url="https://github.com/politeauthority/carpetbag",
+    packages=setuptools.find_packages(),
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+    ],
+)
