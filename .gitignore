@@ -2,6 +2,7 @@
 .AppleDouble*
 .idea/*
 .DS_Store
+.AppleDouble*
 # Byte-compiled / optimized / DLL files
 *~
 __pycache__/

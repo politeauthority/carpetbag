@@ -25,17 +25,19 @@ class TestTimings(object):
         """
         start = datetime.now()
 
-        scraper = CarpetBag()
-        scraper.mininum_wait_time = 3
+        bagger = CarpetBag()
+        bagger.use_skip_ssl_verify()
+
+        bagger.mininum_wait_time = 3
         with vcr.use_cassette(os.path.join(CASSET_DIR, "timings_minimum_wait.yaml")):
-            scraper.get("http://www.bad-actor.services/api/symbols/1")
-            scraper.get("http://www.bad-actor.services/api/symbols/2")
-            scraper.get("http://www.bad-actor.services/api/something-wont-work/1")
+            bagger.get(bagger.url_join(bagger.remote_service_api, "symbols/1"))
+            bagger.get(bagger.url_join(bagger.remote_service_api, "symbols/2"))
+            bagger.get(bagger.url_join(bagger.remote_service_api, "something-wont-work/1"))
 
         end = datetime.now()
         run_time = (end - start).seconds
-        assert run_time >= scraper.mininum_wait_time * 2
-        assert scraper.mininum_wait_time == 3
+        assert run_time >= bagger.mininum_wait_time * 2
+        assert bagger.mininum_wait_time == 3
 
     def test_retry_on_bad_connection(self):
         """
@@ -47,9 +49,9 @@ class TestTimings(object):
 
         scraper = CarpetBag()
         scraper.wait_and_retry_on_connection_error = 3
-        with vcr.use_cassette(os.path.join(CASSET_DIR, "timings_2.yaml")):
+        with vcr.use_cassette(os.path.join(CASSET_DIR, "timings_retry_bad_conn.yaml")):
             with pytest.raises(requests.exceptions.ConnectionError):
-                scraper.get("http://www.asdasdasdkgljaSDF.com/api/symbols/1")
+                scraper.get("http://0.0.0.0:90/api/symbols/1")
 
         end = datetime.now()
         run_time = (end - start).seconds

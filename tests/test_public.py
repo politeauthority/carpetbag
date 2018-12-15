@@ -16,6 +16,33 @@ CASSET_DIR = os.path.join(
 
 class TestPublic(object):
 
+    def test_use_ssl_verify(self):
+        """
+        Tests CarpetBag"s main public method to make sure we're getting the responses we expect.
+
+        """
+        bagger = CarpetBag()
+        assert bagger.use_skip_ssl_verify()
+        assert bagger.ssl_verify == False
+        assert not bagger.use_skip_ssl_verify(False)
+        assert bagger.ssl_verify
+
+    def test_use_random_user_agent(self):
+        """
+        Tests CarpetBag"s main public method to make sure we're getting the responses we expect.
+
+        """
+        bagger = CarpetBag()
+        bagger.use_skip_ssl_verify()
+        assert bagger.user_agent == "CarpetBag v%s" % bagger.__version__
+        assert bagger.use_random_user_agent()
+        assert bagger.user_agent in user_agent.get_flattened_uas()
+        assert not bagger.use_random_user_agent(False)
+        assert bagger.user_agent == ""
+        with vcr.use_cassette(os.path.join(CASSET_DIR, "public_use_random_user_agent__unset.yaml")):
+            bagger.get(bagger.remote_service_api)
+        assert bagger.send_user_agent == ""
+
     def test_json_date(self):
         """
         Tests the JSON date method to try and convert the information to JSON friendly output.
@@ -37,18 +64,6 @@ class TestPublic(object):
         # assert Scrapy.url_concat("http://www.google.com/", "/") == "http://www.google.com/"
         assert CarpetBag.url_concat("http://www.google.com", "/") == "http://www.google.com/"
 
-    def test_use_random_user_agent(self):
-        """
-        Tests CarpetBag"s main public method to make sure we're getting the responses we expect.
-
-        """
-        bagger = CarpetBag()
-        assert bagger.user_agent == "CarpetBag v.001"
-        bagger.use_random_user_agent()
-        with vcr.use_cassette(os.path.join(CASSET_DIR, "public_random_user_agent.yaml")):
-            bagger.get("http://www.bad-actor.services")
-        assert bagger.user_agent in user_agent.get_flattened_uas()
-
     def test_check_tor_fail(self):
         """
         Tests the method CarpetBag().check_tor(), this test mocks out a failure of connecting to tor.
@@ -65,9 +80,23 @@ class TestPublic(object):
 
         """
         bagger = CarpetBag()
+        bagger.use_skip_ssl_verify()
         with vcr.use_cassette(os.path.join(CASSET_DIR, "public_outbound_ip.yaml")):
             ip = bagger.get_outbound_ip()
-            assert ip == "73.203.37.237"
+            assert ip == "172.26.0.2"
+            assert bagger.outbound_ip == "172.26.0.2"
+
+    def test_search_one(self):
+        """
+        Tests CarpetBag's search, which runs a search on DuckDuckGo and parses the response.
+        @note: If this test refetches data its very likely this test can fail, beware!
+
+        """
+        bagger = CarpetBag()
+        bagger.use_skip_ssl_verify()
+        with vcr.use_cassette(os.path.join(CASSET_DIR, 'search_one.yaml')):
+            response = bagger.search('learn python')
+            assert response['results'][0]['title'] == 'Learn Python - Free Interactive Python Tutorial'
 
     # Removing this test for the time being, the constanly rotating proxies is casuing false negatives on the test
     # def test_reset_identity(self):
@@ -89,20 +118,11 @@ class TestPublic(object):
     #         assert first_proxy != bagger.user_agent
     #         assert first_ip != second_ip
 
-    # def test_use_random_public_proxy(self):
-    #     """
-    #     Tests the CarpetBag().use_random_public_proxy method. Makes sure that it parses the proxy list and sets a
-    #     proxy to be used.
-    #     """
-    #     bagger = CarpetBag()
-    #     assert not bagger.random_proxy_bag
-    #     with vcr.use_cassette(os.path.join(CASSET_DIR, "public_use_random_public_proxy.yaml")):
-    #         bagger.use_random_public_proxy()
-    #         proxy_ips = []
-    #         for prx in bagger.proxy_bag:
-    #             proxy_ips.append(prx["ip"])
-    #     assert bagger.proxy["http"] in proxy_ips
-    #     assert len(bagger.proxy_bag) > 100
-    #     assert bagger.random_proxy_bag
+
+if __name__ == '__main__':
+    bagger = CarpetBag()
+    # with vcr.use_cassette(os.path.join(CASSET_DIR, "public_outbound_ip.yaml")):
+    ip = bagger.get_outbound_ip()
+    print(ip)
 
 # End File carpetbag/tests/test_public.py

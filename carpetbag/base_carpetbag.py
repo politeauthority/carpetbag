@@ -20,6 +20,8 @@ from .errors import InvalidContinent
 
 class BaseCarpetBag(object):
 
+    __version__ = '0.0.1'
+
     def __init__(self):
         """
         CarpetBag constructor. Here we set the default, user changable class vars.
@@ -69,7 +71,7 @@ class BaseCarpetBag(object):
             Authentication needs to be implemented.
         """
         self.headers = {}
-        self.user_agent = "CarpetBag v.001"
+        self.user_agent = "CarpetBag v%s" % self.__version__
         self.random_user_agent = False
         self.mininum_wait_time = 0  # Sets the minumum wait time per domain to make a new request in seconds.
         self.wait_and_retry_on_connection_error = 0
@@ -80,6 +82,7 @@ class BaseCarpetBag(object):
         self.password = None
         self.auth_type = None
         self.change_identity_interval = 0
+        self.remote_service_api = "https://www.bad-actor.services/api"
 
         # These are private reserved class vars, don"t use these!
         self.outbound_ip = None
@@ -97,8 +100,11 @@ class BaseCarpetBag(object):
 
     def __repr__(self):
         proxy = ""
-        if self.proxy.get("http"):
+        if self.get("http"):
             proxy = " Proxy:%s" % self.proxy.get("http")
+        else:
+            proxy = " Proxy:%s" % self.proxy.get("https")
+
         return "<CarpetBag%s>" % proxy
 
     def _make_request(self, method, url, payload={}, ssl_verify=True):
@@ -258,10 +264,10 @@ class BaseCarpetBag(object):
         filtered_proxies = []
         for proxy in proxies:
             proxy_add = True
-            if ssl_only and not proxy['ssl']:
+            if ssl_only and not proxy["ssl"]:
                 proxy_add = False
                 continue
-            if continents and proxy['continent'] not in continents:
+            if continents and proxy["continent"] not in continents:
                 proxy_add = False
                 continue
             if proxy_add:
@@ -285,7 +291,7 @@ class BaseCarpetBag(object):
         valid_continents = ["North America", "South America", "Asia", "Europe", "Africa", "Austrailia", "Antarctica"]
         for continent in requested_continents:
             if continent not in valid_continents:
-                self.logger.error('Unknown continent: %s' % continent)
+                self.logger.error("Unknown continent: %s" % continent)
                 raise InvalidContinent(continent)
         return True
 
@@ -307,10 +313,10 @@ class BaseCarpetBag(object):
         """
         proxy_set = {}
         for proxy in proxies:
-            if proxy['continent'] in continents:
-                if proxy['continent'] not in proxy_set:
-                    proxy_set[proxy['continent']] = []
-                proxy_set[proxy['continent']].append(proxy)
+            if proxy["continent"] in continents:
+                if proxy["continent"] not in proxy_set:
+                    proxy_set[proxy["continent"]] = []
+                proxy_set[proxy["continent"]].append(proxy)
         proxy_order = []
         for continent in continents:
             for prx_continent, proxies in proxy_set.items():

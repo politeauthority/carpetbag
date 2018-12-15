@@ -16,16 +16,21 @@ CASSET_DIR = os.path.join(
     'data/vcr_cassettes')
 
 
-class TestGet(object):
+SUCCESS_RETURN_CASSET = os.path.join(CASSET_DIR, "public_get_success.yaml")
+
+
+class TestPublicGet(object):
 
     def test_get_successful(self):
         """
         Tests CarpetBag's main public method to make sure we're getting the responses we expect.
 
         """
-        scraper = CarpetBag()
-        with vcr.use_cassette(os.path.join(CASSET_DIR, 'get_standard.yaml')):
-            response = scraper.get('http://www.bad-actor.services/api/symbols/1')
+        bagger = CarpetBag()
+        bagger.use_skip_ssl_verify()
+        api_url = CarpetBag.url_join(bagger.remote_service_api, 'proxies/1')
+        with vcr.use_cassette(SUCCESS_RETURN_CASSET):
+            response = bagger.get(api_url)
             assert response.status_code == 200
 
     def test_get_user_agent(self):
@@ -33,38 +38,45 @@ class TestGet(object):
         Tests CarpetBag's main public method to make sure we're getting the responses we expect.
 
         """
-        scraper = CarpetBag()
-        scraper.user_agent = 'Some-User-Agent'
-        with vcr.use_cassette(os.path.join(CASSET_DIR, 'get_user_agent.yaml')):
-            response = scraper.get('http://www.bad-actor.services/api/symbols/1')
+        bagger = CarpetBag()
+        bagger.use_skip_ssl_verify()
+        bagger.user_agent = "Some-User-Agent"
+        api_url = CarpetBag.url_join(bagger.remote_service_api, 'proxies/1')
+        with vcr.use_cassette(SUCCESS_RETURN_CASSET):
+            response = bagger.get(api_url)
             assert response.status_code == 200
-            assert scraper.send_user_agent == 'Some-User-Agent'
-            assert scraper.user_agent == 'Some-User-Agent'
+            assert bagger.send_user_agent == 'Some-User-Agent'
+            assert bagger.user_agent == 'Some-User-Agent'
 
     def test_get_last_response_info(self):
         """
         Tests CarpetBag's main public method to make sure we're getting the responses we expect.
 
         """
-        scraper = CarpetBag()
-        with vcr.use_cassette(os.path.join(CASSET_DIR, 'get_last_response.yaml')):
-            assert not scraper.last_response
-            response = scraper.get('http://www.bad-actor.services/api/symbols/1')
+        bagger = CarpetBag()
+        bagger.use_skip_ssl_verify()
+        bagger.user_agent = "Some-User-Agent"
+        api_url = CarpetBag.url_join(bagger.remote_service_api, 'proxies/1')
+        with vcr.use_cassette(SUCCESS_RETURN_CASSET):
+            assert not bagger.last_response
+            response = bagger.get(api_url)
             assert response.status_code == 200
             # assert scraper.last_response.status_code == 200
-            assert scraper.request_total == 1
-            assert scraper.request_count == 1
-            assert type(scraper.last_request_time) == datetime
+            assert bagger.request_total == 1
+            assert bagger.request_count == 1
+            assert type(bagger.last_request_time) == datetime
 
     def test_get_404_response(self):
         """
         Tests CarpetBag's main public method to make sure we're getting the responses we expect.
 
         """
-        scraper = CarpetBag()
-        scraper.user_agent = 'Some-User-Agent'
+        bagger = CarpetBag()
+        bagger.user_agent = 'Some-User-Agent'
+        bagger.use_skip_ssl_verify()
+        api_url = CarpetBag.url_join(bagger.remote_service_api, 'a_404')
         with vcr.use_cassette(os.path.join(CASSET_DIR, 'get_404.yaml')):
-            response = scraper.get('http://www.bad-actor.services/api/symbol/1')
+            response = bagger.get(api_url)
             assert response.status_code == 404
 
     def test_get_host_unknown(self):
@@ -76,16 +88,6 @@ class TestGet(object):
         scraper.user_agent = 'Some-User-Agent'
         with vcr.use_cassette(os.path.join(CASSET_DIR, 'get_cant_find_host.yaml')):
             with pytest.raises(requests.exceptions.ConnectionError):
-                scraper.get('http://www.12345151dfsdf.com/api/symbol/1')
-
-    def test_search_one(self):
-        """
-        Tests CarpetBag's search, which runs a search on DuckDuckGo and parses the response.
-
-        """
-        scraper = CarpetBag()
-        with vcr.use_cassette(os.path.join(CASSET_DIR, 'search_one.yaml')):
-            response = scraper.search('learn python')
-            assert response['results'][0]['title'] == 'Learn Python | Udemy.com\nAd'
+                scraper.get('http://0.0.0.0:90/api/symbol/1')
 
 # End File carpetbag/tests/test_get.py

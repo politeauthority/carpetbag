@@ -5,24 +5,17 @@ interactions:
       Accept: ['*/*']
       Accept-Encoding: ['gzip, deflate']
       Connection: [keep-alive]
-      User-Agent: ['Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko)
-          Chrome/41.0.2228.0 Safari/537.36']
+      User-Agent: [CarpetBag v.0.0.1]
     method: GET
-    uri: http://icanhazip.com/
+    uri: http://bad-actor-services_bad-actor-services-web_1:5000/ip
   response:
-    body: {string: '73.203.37.237
-
-        '}
+    body: {string: "{\n  \"ip\": \"172.26.0.2\"\n}\n"}
     headers:
-      Access-Control-Allow-Methods: [GET]
-      Access-Control-Allow-Origin: ['*']
-      Connection: [close]
-      Content-Length: ['14']
-      Content-Type: [text/plain; charset=UTF-8]
-      Date: ['Sat, 22 Sep 2018 01:02:33 GMT']
-      Server: [nginx]
-      X-RTFM: ['Learn about this site at http://bit.ly/icanhazip-faq and do not abuse
-          the service.']
-      X-SECURITY: ['This site DOES NOT distribute malware. Get the facts. https://goo.gl/1FhVpg']
+      Content-Length: ['25']
+      Content-Type: [application/json]
+      Date: ['Fri, 14 Dec 2018 05:23:05 GMT']
+      Server: [Werkzeug/0.12.2 Python/3.6.6]
+      Set-Cookie: ['session=6e2ac531-66ed-4510-8f2a-d67e867927d1; Expires=Mon, 14-Jan-2019
+          05:23:05 GMT; HttpOnly; Path=/']
     status: {code: 200, message: OK}
 version: 1

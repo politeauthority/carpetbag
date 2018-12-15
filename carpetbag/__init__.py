@@ -11,6 +11,7 @@ import os
 from random import shuffle
 from six import string_types
 
+import json
 import requests
 
 from .base_carpetbag import BaseCarpetBag
@@ -20,6 +21,8 @@ from .errors import EmptyProxyBag
 
 
 class CarpetBag(BaseCarpetBag):
+
+    __version__ = BaseCarpetBag.__version__
 
     def __init__(self):
         """
@@ -76,6 +79,7 @@ class CarpetBag(BaseCarpetBag):
         self.username = None
         self.password = None
         self.auth_type = None
+        self.__version__ = "0.0.1"
         super().__init__()
 
     def request(self, method, url, payload={}):
@@ -156,27 +160,43 @@ class CarpetBag(BaseCarpetBag):
 
         return response
 
-    def use_random_user_agent(self):
+    def use_random_user_agent(self, val=True):
         """
         Sets a random, common browser's User Agent string as our own.
 
+        :param val: Whether or not to enable random user agents.
+        :type val: bool
+        :returns: Whether or not random public proxying is happening.
+        :rtype: bool
         """
-        self.random_user_agent = True
-        self.user_agent = user_agent.get_random_ua()
-
-        return True
+        if val:
+            self.random_user_agent = True
+            self.user_agent = user_agent.get_random_ua()
+            return True
+        else:
+            self.random_user_agent = False
+            self.user_agent = ""
+            return False
 
     def get_public_proxies(self, continents=[], ssl_only=False):
         """
         Gets list of free public proxies and loads them into a list, currently just selecting from free-proxy-list.
         @todo: Add filtering by country/ continent.
 
+
+        :param continents: Filters proxies to either  just a single continent, or if list is used, orders proxies in
+            based off of the order contients are listed within the 'contenient' list.
+        :type continents: str or list
+        :param ssl_only: Select only proxies fully supporting SSL.
+        :type ssl_only: bool
         :returns: The proxies to be used.
         :rtype: list
         """
-        proxies_url = "https://free-proxy-list.net/"
+        logging.debug("Filling proxy bag")
+        proxies_url = self.url_join(self.remote_service_api, "proxies")
         response = self.get(proxies_url)
-        proxies = ParseResponse(response).freeproxylistdotnet()
+        proxies = response.json()["objects"]
+
         if continents or ssl_only:
             if continents and isinstance(continents, string_types):
                 continents = [continents]
@@ -191,17 +211,18 @@ class CarpetBag(BaseCarpetBag):
         """
         Gets proxies from free-proxy-list.net and loads them into the self.proxy_bag. The first element in the
         proxy_bag is the currently used proxy.
+        @todo: NEEDS UNIT TEST!
 
         :param continents: Filters proxies to either  just a single continent, or if list is used, orders proxies in
-            based off of the order contients are listed within the 'contenient' list.
-        :type continents: stror list
+            based off of the order contients are listed within the "contenient" list.
+        :type continents: str or list
         :param ssl_only: Select only proxies fully supporting SSL.
         :type ssl_only: bool
         :param test_proxy: Tests the proxy to see if it's up and working.
         :type test_proxy: bool
+        :returns: Whether or not random public proxying is happening.
+        :rtype: bool
         """
-        logging.debug("Filling proxy bag")
-        self.random_proxy_bag = True
         if continents and isinstance(continents, string_types):
             continents = [continents]
 
@@ -211,11 +232,11 @@ class CarpetBag(BaseCarpetBag):
         if not test_proxy:
             return True
 
-        logging.info("Testing Proxy: %s (%s)" % (self.proxy_bag[0]["ip"], self.proxy_bag[0]["location"]))
+        logging.info("Testing Proxy: %s (%s)" % (self.proxy_bag[0]["ip"], self.proxy_bag[0]["country"]))
         proxy_test_urls = ["http://www.google.com"]
         for url in proxy_test_urls:
             self.get(url)
-        logging.debug("Registered Proxy %s (%s)" % (self.proxy_bag[0]["ip"], self.proxy_bag[0]["location"]))
+        logging.debug("Registered Proxy %s (%s)" % (self.proxy_bag[0]["ip"], self.proxy_bag[0]["country"]))
 
         return True
 
@@ -233,29 +254,27 @@ class CarpetBag(BaseCarpetBag):
 
         self._remove_proxy_from_bag()
         chosen_proxy = self.proxy_bag[0]
-        self.proxy = {"http": chosen_proxy["ip"]}
+        self.proxy = {"http": chosen_proxy["address"]}
 
         if chosen_proxy["ssl"]:
-            self.proxy = {"https": chosen_proxy["ip"]}
+            self.proxy = {"https": chosen_proxy["address"]}
 
-    def use_skip_ssl_verify(self):
+    def use_skip_ssl_verify(self, val=True):
         """
         Sets CarpetBag up to not force a valid certificate return from the server. This exists mostly because I was
         running into some issues with self signed certs. This can be enabled/disabled at anytime through execution.
 
+        :param val: Whether or not to enable or disable skipping SSL Cert validation.
+        :type val: bool
+        :returns: The value CarpetBag is configured to use for self.ssl_verify
+        :rtype: bool
         """
-        self.ssl_verify = False
+        if val:
+            self.ssl_verify = False
+        else:
+            self.ssl_verify = True
 
-        return True
-
-    def stop_skip_ssl(self):
-        """
-        Sets CarpetBag up to go back to throwing an error on SSL validation errors.
-
-        """
-        self.ssl_verify = True
-
-        return True
+        return val
 
     def save(self, url, destination, payload={}):
         """
@@ -369,18 +388,20 @@ class CarpetBag(BaseCarpetBag):
         :returns: The outbound ip address for the proxy.
         :rtype: str
         """
-        ip_websites = ["http://icanhazip.com/"]
-        for ip in ip_websites:
-            response = self.get(ip)
-            if response.status_code != 200:
-                logging.warning("Unable to connect to %s for IP.")
-                continue
+        ip_service = self.remote_service_api.replace("/api", "")
+        remote_service_api = self.url_join(ip_service, "/ip")
+        response = self.get(remote_service_api)
+        if response.status_code != 200:
+            logging.warning("Unable to connect to %s for IP." % remote_service_api)
 
-            if response.text != self.outbound_ip:
-                self.outbound_ip = response.text.strip()
-            return self.outbound_ip
+        response_body = json.loads(response.text)
 
-        logging.error("Could not get outbound ip address.")
+        if response_body["ip"] != self.outbound_ip:
+            self.outbound_ip = response_body["ip"]
+
+        return self.outbound_ip
+
+        # logging.error("Could not get outbound ip address.")
 
         return False
 
@@ -397,6 +418,19 @@ class CarpetBag(BaseCarpetBag):
             self.reset_proxy_from_bag()
 
         return True
+
+    @staticmethod
+    def url_join(*args):
+        """
+        Concats all args with slashes as needed.
+        @note this will probably move to a utility class sometime in the near future.
+
+        :param args: All the url components to join.
+        :type args: list
+        :returns: Ready to use url.
+        :rtype: str
+        """
+        return CarpetBag.url_concat(*args)
 
     @staticmethod
     def url_concat(*args):

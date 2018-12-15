@@ -5,9 +5,9 @@ interactions:
       Accept: ['*/*']
       Accept-Encoding: ['gzip, deflate']
       Connection: [keep-alive]
-      User-Agent: [Some-User-Agent]
+      User-Agent: [python-requests/2.18.1]
     method: GET
-    uri: https://www.bad-actor.services/api/a_404
+    uri: https://www.bad-actor.services/api
   response:
     body: {string: '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">
 
@@ -23,10 +23,10 @@ interactions:
       Connection: [keep-alive]
       Content-Length: ['233']
       Content-Type: [text/html]
-      Date: ['Fri, 14 Dec 2018 05:23:07 GMT']
+      Date: ['Fri, 14 Dec 2018 05:23:03 GMT']
       Server: [nginx/1.13.12]
-      Set-Cookie: ['session=9651cac6-e59d-4577-91f6-b653b8a30129; Expires=Mon, 14-Jan-2019
-          05:23:07 GMT; HttpOnly; Path=/']
+      Set-Cookie: ['session=51bdca9d-195f-4791-8c41-80ccf7d87a10; Expires=Mon, 14-Jan-2019
+          05:23:03 GMT; HttpOnly; Path=/']
       Strict-Transport-Security: [max-age=31536000]
     status: {code: 404, message: NOT FOUND}
 version: 1
