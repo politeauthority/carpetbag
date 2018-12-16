@@ -35,7 +35,23 @@ def url_concat(*args):
             url_segment = "/" + url_segment
         url += url_segment
 
-    return url
+    if '://' not in url:
+        url = "https://" + url
+
+    protocol = url[:url.find('://') + 3]
+    protocolless_url = url[url.find('://') + 3:]
+    query_params = ''
+    if '?' in protocolless_url:
+        query_params = url[url.find('?'):]
+        protocolless_url = url[:url.find('?')]
+    if '//' in protocolless_url:
+        protocolless_url = protocolless_url.replace('//', '/')
+
+    return "%(protocol)s%(url)s%(params)s" % {
+        'protocol': protocol,
+        'url': protocolless_url,
+        'params': query_params
+    }
 
 
 def json_date(the_date=None):

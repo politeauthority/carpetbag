@@ -1,10 +1,47 @@
 """Tests Carpet Tools
 
 """
+from datetime import datetime
+
 from carpetbag import carpet_tools
 
 
 class TestCarpetTools(object):
+
+
+    def test_url_join(self):
+        """
+        Tests the url_join method. This is just an alias of url_concat.
+        We check to make sure we're not adding any extra slashes or making weird urls.
+
+        """
+        assert carpet_tools.url_join("www.bad-actor.services", "api") == "https://www.bad-actor.services/api"
+        assert carpet_tools.url_join("https://www.bad-actor.services", "api") == "https://www.bad-actor.services/api"
+        assert carpet_tools.url_join("https://www.bad-actor.services", "/api") == "https://www.bad-actor.services/api"
+        assert carpet_tools.url_join("https://www.bad-actor.services", "/") == "https://www.bad-actor.services/"
+        assert carpet_tools.url_join("https://www.bad-actor.services/", "/") == "https://www.bad-actor.services/"
+
+    def test_url_concat(self):
+        """
+        Tests the url_concat method, to make sure we're not adding any extra slashes or making weird urls.
+
+        """
+        assert carpet_tools.url_join("www.bad-actor.services", "api") == "https://www.bad-actor.services/api"
+        assert carpet_tools.url_concat("https://www.bad-actor.services", "api") == "https://www.bad-actor.services/api"
+        assert carpet_tools.url_concat("https://www.bad-actor.services", "/api") == "https://www.bad-actor.services/api"
+        assert carpet_tools.url_concat("https://www.bad-actor.services", "/") == "https://www.bad-actor.services/"
+        assert carpet_tools.url_concat("https://www.bad-actor.services/", "/") == "https://www.bad-actor.services/"
+
+    def test_json_date(self):
+        """
+        Tests the JSON date method to try and convert the information to JSON friendly output.
+
+        """
+        now = datetime.now()
+        the_date = datetime(2018, 10, 13, 12, 12, 12)
+        assert carpet_tools.json_date(the_date) == "2018-10-13 12:12:12"
+        assert isinstance(carpet_tools.json_date(), str)
+        assert carpet_tools.json_date()[:4] == str(now.year)
 
     def test_remove_protocol(self):
         """
