@@ -527,14 +527,14 @@ class BaseCarpetBag(object):
         :returns: Success or failure of pepping destination.
         :rtype: bool
         """
-        if os.path.exists(os.path.exists(destination)):
+        if os.path.exists(destination):
             return True
-        else:
-            try:
-                os.makedirs(destination)
-                return True
-            except Exception:
-                self.logger.error("Could not create directory: %s" % destination)
-                return False
+
+        try:
+            os.makedirs(destination)
+            return True
+        except Exception:
+            self.logger.error("Could not create directory: %s" % destination)
+            return False
 
 # EndFile: carpetbag/carpetbag/base_carpetbag.py

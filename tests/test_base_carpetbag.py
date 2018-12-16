@@ -325,12 +325,13 @@ class TestBaseCarpetBag(object):
         if os.path.exists(new_dirs):
             shutil.rmtree(new_dirs)
 
+        # Check that we build the dir
         bagger._prep_destination(new_dirs)
         path_existance = os.path.isdir(new_dirs)
-        import pdb; pdb.set_trace()
         assert path_existance
 
+        # Remove the dir we must made.
         if os.path.exists(new_dirs):
-            shutil.rmtree(new_dirs)
+            shutil.rmtree(os.path.join(dirname, "..", "one"))
 
 # End File carpetbag/tests/test_base_carpetbag.py
