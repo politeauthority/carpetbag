@@ -5,6 +5,8 @@ Handles parsing various html pages. This module is pretty expiremental right now
 from bs4 import BeautifulSoup
 import tld
 
+from . import carpet_tools
+
 
 class ParseResponse(object):
 
@@ -93,42 +95,10 @@ class ParseResponse(object):
                 {
                     "title": link.h2.text.strip(),
                     "description": link.find("a", {"class": "result__snippet"}).text.strip(),
-                    "url": self.add_missing_protocol(link.find("a", {"class": "result__url"}).text.strip())
+                    "url": carpet_tools.add_missing_protocol(link.find("a", {"class": "result__url"}).text.strip())
                 }
             )
         return results
-
-    @staticmethod
-    def add_missing_protocol(url):
-        """
-        Adds the protocol "http://" if a protocal is not present.
-
-        :param url: The url that may or may not be missing a protocol.
-        :type url: str
-        :returns: Safe url with protocal.
-        :rtype: str
-        """
-        if url[:8] == "https://" or url[:7] == "http://":
-            return url
-        else:
-            return "%s%s" % ("http://", url)
-
-    @staticmethod
-    def remove_protocol(url):
-        """
-        Adds the protocol "http://" if a protocal is not present.
-
-        :param url: The url that may or may not be missing a protocol.
-        :type url: str
-        :returns: Safe url with protocal.
-        :rtype: str
-        """
-        url = url.replace("https", "")
-        url = url.replace("http", "")
-        url = url.replace("://", "")
-        if "/" in url:
-            url = url[: url.find("/")]
-        return url
 
     def _make_soup(self):
         """

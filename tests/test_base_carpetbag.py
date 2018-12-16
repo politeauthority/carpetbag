@@ -27,28 +27,30 @@ class TestBaseCarpetBag(object):
 
         """
         bagger = CarpetBag()
-        assert bagger.proxy == {}
         assert bagger.headers == {}
         assert bagger.user_agent == "CarpetBag v%s" % bagger.__version__
-        assert bagger.ssl_verify
-        assert bagger.remote_service_api == "https://www.bad-actor.services/api"
+        assert not bagger.random_user_agent
+        assert bagger.mininum_wait_time == 0
+        assert bagger.wait_and_retry_on_connection_error == 0
+        assert bagger.retries_on_connection_failure == 5
+        assert bagger.max_content_length == 200000000
+
+        assert not bagger.username
+        assert not bagger.password
+        assert not bagger.auth_type
         assert bagger.change_identity_interval == 0
+        assert bagger.remote_service_api == "https://www.bad-actor.services/api"
         assert not bagger.outbound_ip
-        assert bagger.request_attempts == {}
         assert bagger.request_count == 0
         assert bagger.request_total == 0
         assert not bagger.last_request_time
         assert not bagger.last_response
-        assert bagger.send_user_agent == ""
-        assert bagger.max_content_length == 200000000
-        assert bagger.mininum_wait_time == 0
-        assert bagger.wait_and_retry_on_connection_error == 0
-        assert not bagger.username
-        assert not bagger.password
-        assert not bagger.auth_type
-        assert not bagger.random_proxy_bag
+        assert bagger.manifest == []
+        assert bagger.proxy == {}
         assert bagger.proxy_bag == []
-        assert bagger.manifest == {}
+        assert not bagger.random_proxy_bag
+        assert bagger.send_user_agent == ""
+        assert bagger.ssl_verify
 
     def test__make_request(self):
         """

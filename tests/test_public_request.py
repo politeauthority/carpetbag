@@ -4,16 +4,16 @@ This uses the vcr module to mimick responses to http requests. This tests the mo
 """
 import os
 
-import vcr
+# import vcr
 
-from carpetbag import CarpetBag
+from carpetbag import CarpetBag, carpet_tools
 
 CASSET_DIR = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
     "data/vcr_cassettes")
 
 
-class TestGet(object):
+class TestPublicGet(object):
 
     def test_request_successful(self):
         """
@@ -22,10 +22,11 @@ class TestGet(object):
         """
         bagger = CarpetBag()
         bagger.use_skip_ssl_verify()
-        success_url = bagger.url_join(bagger.remote_service_api, "/proxies")
+        success_url = carpet_tools.url_join(bagger.remote_service_api, "/proxies")
         # with vcr.use_cassette(os.path.join(CASSET_DIR, "request_successful.yaml")):
         response = bagger.request("GET", success_url)
         assert response.status_code == 200
         assert response.text
+
 
 # End File carpetbag/tests/test_public_request.py

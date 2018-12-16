@@ -9,7 +9,7 @@ import requests
 import pytest
 import vcr
 
-from carpetbag import CarpetBag
+from carpetbag import CarpetBag, carpet_tools
 
 CASSET_DIR = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
@@ -28,7 +28,7 @@ class TestPublicGet(object):
         """
         bagger = CarpetBag()
         bagger.use_skip_ssl_verify()
-        api_url = CarpetBag.url_join(bagger.remote_service_api, "proxies/1")
+        api_url = carpet_tools.url_join(bagger.remote_service_api, "proxies/1")
         # with vcr.use_cassette(SUCCESS_RETURN_CASSET):
         response = bagger.get(api_url)
         assert response.status_code == 200
@@ -41,7 +41,7 @@ class TestPublicGet(object):
         bagger = CarpetBag()
         bagger.use_skip_ssl_verify()
         bagger.user_agent = "Some-User-Agent"
-        api_url = CarpetBag.url_join(bagger.remote_service_api, "proxies/1")
+        api_url = carpet_tools.url_join(bagger.remote_service_api, "proxies/1")
         response = bagger.get(api_url)
         assert response.status_code == 200
         assert bagger.send_user_agent == "Some-User-Agent"
@@ -55,7 +55,7 @@ class TestPublicGet(object):
         bagger = CarpetBag()
         bagger.use_skip_ssl_verify()
         bagger.user_agent = "Some-User-Agent"
-        api_url = CarpetBag.url_join(bagger.remote_service_api, "proxies/1")
+        api_url = carpet_tools.url_join(bagger.remote_service_api, "proxies/1")
         assert not bagger.last_response
         response = bagger.get(api_url)
         assert response.status_code == 200

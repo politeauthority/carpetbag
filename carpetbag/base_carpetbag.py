@@ -14,7 +14,8 @@ import tld
 import urllib3
 from urllib3.exceptions import InsecureRequestWarning
 
-from .parse_response import ParseResponse
+# from .parse_response import ParseResponse
+from . import carpet_tools
 from .errors import InvalidContinent, NoRemoteServicesConnection
 
 
@@ -77,7 +78,6 @@ class BaseCarpetBag(object):
         self.wait_and_retry_on_connection_error = 0
         self.retries_on_connection_failure = 5
         self.max_content_length = 200000000  # Sets the maximum downloard size, default 200 MegaBytes, in bytes.
-        self.proxy = {}
         self.username = None
         self.password = None
         self.auth_type = None
@@ -86,12 +86,12 @@ class BaseCarpetBag(object):
 
         # These are private reserved class vars, don"t use these!
         self.outbound_ip = None
-        self.request_attempts = {}
         self.request_count = 0
         self.request_total = 0
         self.last_request_time = None
         self.last_response = None
-        self.manifest = {}
+        self.manifest = []
+        self.proxy = {}
         self.proxy_bag = []
         self.random_proxy_bag = False
         self.send_user_agent = ""
@@ -109,7 +109,7 @@ class BaseCarpetBag(object):
 
     def _make_request(self, method, url, payload={}, ssl_verify=True):
         """
-        Makes the response, over GET, POST or PUT.
+        Makes the URL request, over your choosen HTTP verb.
 
         :param method: The method for the request action to use. "GET", "POST", "PUT", "DELETE"
         :type method: string
@@ -124,7 +124,7 @@ class BaseCarpetBag(object):
         :rtype: <Requests.response> obj
         """
         ts_start = int(round(time.time() * 1000))
-        url = ParseResponse.add_missing_protocol(url)
+        url = carpet_tools.add_missing_protocol(url)
         headers = self._get_headers()
         urllib3.disable_warnings(InsecureRequestWarning)
         self._increment_counters()
@@ -432,9 +432,9 @@ class BaseCarpetBag(object):
         :rtype: dict
         """
         if uri_segment == 'ip':
-            api_url = self.url_join(self.remote_service_api.replace('api', 'ip'))
+            api_url = carpet_tools.url_join(self.remote_service_api.replace('api', 'ip'))
         else:
-            api_url = self.url_join(self.remote_service_api, uri_segment)
+            api_url = carpet_tools.url_join(self.remote_service_api, uri_segment)
         headers = {
             "Content-Type": "application/json",
             "User-Agent": 'CarpetBag v%s' % self.__version__

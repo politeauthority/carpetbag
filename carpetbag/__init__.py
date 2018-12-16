@@ -5,7 +5,6 @@ information check out the README.md or https://www.github.com/politeauthority/ca
 Author: @politeauthority
 """
 
-from datetime import datetime
 import logging
 import os
 from random import shuffle
@@ -15,6 +14,7 @@ import requests
 
 from .base_carpetbag import BaseCarpetBag
 from .parse_response import ParseResponse
+from . import carpet_tools
 from . import user_agent
 from .errors import EmptyProxyBag, NoRemoteServicesConnection
 
@@ -416,54 +416,5 @@ class CarpetBag(BaseCarpetBag):
             self.reset_proxy_from_bag()
 
         return True
-
-    @staticmethod
-    def url_join(*args):
-        """
-        Concats all args with slashes as needed.
-        @note this will probably move to a utility class sometime in the near future.
-
-        :param args: All the url components to join.
-        :type args: list
-        :returns: Ready to use url.
-        :rtype: str
-        """
-        return CarpetBag.url_concat(*args)
-
-    @staticmethod
-    def url_concat(*args):
-        """
-        Concats all args with slashes as needed.
-        @note this will probably move to a utility class sometime in the near future.
-
-        :param args: All the url components to join.
-        :type args: list
-        :returns: Ready to use url.
-        :rtype: str
-        """
-        url = ""
-        for url_segment in args:
-            if url and url[len(url) - 1] != "/" and url_segment[0] != "/":
-                url_segment = "/" + url_segment
-            url += url_segment
-
-        return url
-
-    @staticmethod
-    def json_date(the_date=None):
-        """
-        Concats all args with slashes as needed.
-        @note this will probably move to a utility class sometime in the near future.
-
-        :param the_date: Datetime to convert, or if None, will use now.
-        :type the_date: <DateTime> or None
-        :returns: Jsonable date time string
-        :rtype: str
-        """
-        if not the_date:
-            the_date = datetime.now()
-        ret = the_date.strftime("%Y-%m-%d %H:%M:%S")
-
-        return ret
 
 # End File: carpetbag/carpetbag/__init__.py
