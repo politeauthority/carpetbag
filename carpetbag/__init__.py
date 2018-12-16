@@ -14,14 +14,11 @@ import requests
 
 from .base_carpetbag import BaseCarpetBag
 from .parse_response import ParseResponse
-from . import carpet_tools
 from . import user_agent
 from .errors import EmptyProxyBag, NoRemoteServicesConnection
 
 
 class CarpetBag(BaseCarpetBag):
-
-    __version__ = BaseCarpetBag.__version__
 
     def __init__(self):
         """
@@ -255,6 +252,10 @@ class CarpetBag(BaseCarpetBag):
         if len(self.proxy_bag) == 0:
             self.logger.error("Proxy bag is empty! Cannot reset Proxy from Proxy Bag.")
             raise EmptyProxyBag
+
+        # Remove the current proxy if one is set.
+        if self.proxy:
+            del self.proxy_bag[0]
 
         self._remove_proxy_from_bag()
         chosen_proxy = self.proxy_bag[0]

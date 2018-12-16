@@ -2,6 +2,8 @@
 
 """
 from datetime import datetime
+import tld
+import re
 
 
 def url_join(*args):
@@ -83,5 +85,33 @@ def remove_protocol(url):
     if "/" in url:
         url = url[: url.find("/")]
     return url
+
+
+def get_domain(url):
+    """
+    Tries to get the domain/ip and port from the url we are requesting to.
+    @todo: There looks to be an issue with getting an ip address from the url.
+
+    :param url:
+    :type urls: str
+    :returns: The domain/ip of the server being requested to.
+    :rtype: str
+    """
+    regex = r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}"
+    matches = re.finditer(regex, url)
+    for matchNum, match in enumerate(matches):
+        try:
+            return match.group()
+        except AttributeError:
+            pass
+
+    if "//localhost" in url:
+        return "localhost"
+
+    try:
+        return tld.get_fld(url)
+    except tld.exceptions.TldDomainNotFound:
+        return ""
+
 
 # EndFile: carpetbag/carpetbag/carpet_tools.py
