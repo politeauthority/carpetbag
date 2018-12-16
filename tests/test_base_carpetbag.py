@@ -6,7 +6,7 @@ import time
 import os
 
 import pytest
-import vcr
+# import vcr
 
 from carpetbag import CarpetBag
 from carpetbag import errors
