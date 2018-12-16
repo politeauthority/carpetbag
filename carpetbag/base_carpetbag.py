@@ -452,8 +452,6 @@ class BaseCarpetBag(object):
         except requests.exceptions.ConnectionError:
             raise NoRemoteServicesConnection
 
-        print(api_url)
-        print(response)
         return response.json()
 
     def _handle_connection_error(self, method, url, headers, payload, retry):
