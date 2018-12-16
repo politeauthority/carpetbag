@@ -16,7 +16,7 @@ setuptools.setup(
     author="politeauthority",
     description="A python scraper that wont take no for an answer",
     long_description=long_description,
-    long_description_content_type="text/markdown",
+    # long_description_content_type="text/markdown",
     url="https://github.com/politeauthority/carpetbag",
     packages=setuptools.find_packages(),
     classifiers=[

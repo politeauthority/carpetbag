@@ -29,9 +29,9 @@ class TestPublicGet(object):
         bagger = CarpetBag()
         bagger.use_skip_ssl_verify()
         api_url = CarpetBag.url_join(bagger.remote_service_api, "proxies/1")
-        with vcr.use_cassette(SUCCESS_RETURN_CASSET):
-            response = bagger.get(api_url)
-            assert response.status_code == 200
+        # with vcr.use_cassette(SUCCESS_RETURN_CASSET):
+        response = bagger.get(api_url)
+        assert response.status_code == 200
 
     def test_get_user_agent(self):
         """
@@ -42,11 +42,10 @@ class TestPublicGet(object):
         bagger.use_skip_ssl_verify()
         bagger.user_agent = "Some-User-Agent"
         api_url = CarpetBag.url_join(bagger.remote_service_api, "proxies/1")
-        with vcr.use_cassette(SUCCESS_RETURN_CASSET):
-            response = bagger.get(api_url)
-            assert response.status_code == 200
-            assert bagger.send_user_agent == "Some-User-Agent"
-            assert bagger.user_agent == "Some-User-Agent"
+        response = bagger.get(api_url)
+        assert response.status_code == 200
+        assert bagger.send_user_agent == "Some-User-Agent"
+        assert bagger.user_agent == "Some-User-Agent"
 
     def test_get_last_response_info(self):
         """
@@ -57,27 +56,13 @@ class TestPublicGet(object):
         bagger.use_skip_ssl_verify()
         bagger.user_agent = "Some-User-Agent"
         api_url = CarpetBag.url_join(bagger.remote_service_api, "proxies/1")
-        with vcr.use_cassette(SUCCESS_RETURN_CASSET):
-            assert not bagger.last_response
-            response = bagger.get(api_url)
-            assert response.status_code == 200
-            # assert scraper.last_response.status_code == 200
-            assert bagger.request_total == 1
-            assert bagger.request_count == 1
-            assert type(bagger.last_request_time) == datetime
-
-    def test_get_404_response(self):
-        """
-        Tests CarpetBag's main public method to make sure we're getting the responses we expect.
-
-        """
-        bagger = CarpetBag()
-        bagger.user_agent = "Some-User-Agent"
-        bagger.use_skip_ssl_verify()
-        api_url = CarpetBag.url_join(bagger.remote_service_api, "a_404")
-        with vcr.use_cassette(os.path.join(CASSET_DIR, "get_404.yaml")):
-            response = bagger.get(api_url)
-            assert response.status_code == 404
+        assert not bagger.last_response
+        response = bagger.get(api_url)
+        assert response.status_code == 200
+        # assert scraper.last_response.status_code == 200
+        assert bagger.request_total == 1
+        assert bagger.request_count == 1
+        assert type(bagger.last_request_time) == datetime
 
     def test_get_host_unknown(self):
         """

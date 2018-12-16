@@ -1,6 +1,7 @@
 """BaseCarpetBag
 
 """
+
 from datetime import datetime
 import logging
 import os
@@ -8,12 +9,13 @@ import time
 import re
 
 import requests
-from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from requests.exceptions import ChunkedEncodingError
 import tld
+import urllib3
+from urllib3.exceptions import InsecureRequestWarning
 
 from .parse_response import ParseResponse
-from .errors import EmptyProxyBag, InvalidContinent
+from .errors import InvalidContinent, NoRemoteServicesConnection
 
 
 class BaseCarpetBag(object):
@@ -94,13 +96,15 @@ class BaseCarpetBag(object):
         self.random_proxy_bag = False
         self.send_user_agent = ""
         self.ssl_verify = True
-        self._setup_proxies()
         self.logger = logging.getLogger(__name__)
 
     def __repr__(self):
         proxy = ""
-        if self.proxy.get("http"):
+        if self.get("http"):
             proxy = " Proxy:%s" % self.proxy.get("http")
+        else:
+            proxy = " Proxy:%s" % self.proxy.get("https")
+
         return "<CarpetBag%s>" % proxy
 
     def _make_request(self, method, url, payload={}, ssl_verify=True):
@@ -122,11 +126,14 @@ class BaseCarpetBag(object):
         ts_start = int(round(time.time() * 1000))
         url = ParseResponse.add_missing_protocol(url)
         headers = self._get_headers()
-        requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+        urllib3.disable_warnings(InsecureRequestWarning)
         self._increment_counters()
         self._handle_sleep(url)
 
         response = self._make(method, url, headers, payload, ssl_verify)
+
+        if not response:
+            return False
 
         if response.status_code >= 500:
             self.logger.warning("Recieved a server error response %s" % response.status_code)
@@ -208,18 +215,33 @@ class BaseCarpetBag(object):
 
         return send_headers
 
-    def _setup_proxies(self):
+    def _remove_proxy_from_bag(self):
         """
-        If an HTTPS proxy is not specified but an HTTP is, use the same for both by default.
+        Remvoes the current proxy from the Proxy Bag.
+        @todo: unit test
 
+        :returns: True if current proxy was remove, false if their is no currnet proxy.
+        :rtype: bool
         """
-        if not self.proxy:
-            return
+        if not self.proxy_bag:
+            return False
 
-        if "http" in self.proxy and "https" not in self.proxy:
-            self.proxy["https"] = self.proxy["http"]
+        remove_item = None
+        if "http" in self.proxy:
+            c = 0
+            for prx in self.proxy_bag:
+                if prx["ip"] == self.proxy["http"]:
+                    remove_item = c
+                c += 1
 
-        return True
+        if isinstance(remove_item, int):
+            logging.debug("Removing: %s - %s from proxy bag." % (
+                self.proxy_bag[c]["ip"],
+                self.proxy_bag[c]["location"]))
+            self.proxy_bag.pop(c)
+            return True
+
+        return False
 
     def _filter_public_proxies(self, proxies, continents=None, ssl_only=False):
         """
@@ -261,7 +283,7 @@ class BaseCarpetBag(object):
 
     def _validate_continents(self, requested_continents):
         """
-        Cheks that the user selected continents are usable strings, not just some garbage.
+        Checks that the user selected continents are usable strings, not just some garbage.
 
         :param requested_continents: User selected list of continents.
         :type requested_continents: list
@@ -397,6 +419,41 @@ class BaseCarpetBag(object):
 
         return response
 
+    def _make_internal(self, uri_segment, payload=None):
+        """
+        Makes requests to bad-actor.services. For getting data like current_ip, proxies and sending usage data if
+        enabled and you have an API key.
+
+        :param uri_segment: The url to fetch/ post to.
+        :type: uri_segment: str
+        :param payload: The data to be sent over the POST request.
+        :type payload: dict
+        :returns: The json response from the remote service API
+        :rtype: dict
+        """
+        if uri_segment == 'ip':
+            api_url = self.url_join(self.remote_service_api.replace('api', 'ip'))
+        else:
+            api_url = self.url_join(self.remote_service_api, uri_segment)
+        headers = {
+            "Content-Type": "application/json",
+            "User-Agent": 'CarpetBag v%s' % self.__version__
+        }
+        request_args = {
+            "method": "GET",
+            "url": api_url,
+            "headers": headers,
+            "proxies": self.proxy,
+            "verify": False
+        }
+        try:
+
+            response = requests.request(**request_args)
+        except requests.exceptions.ConnectionError:
+            raise NoRemoteServicesConnection
+
+        return response.json()
+
     def _handle_connection_error(self, method, url, headers, payload, retry):
         """
         Handles a connection error. If self.wait_and_retry_on_connection_error has a value other than 0 we will wait
@@ -434,22 +491,6 @@ class BaseCarpetBag(object):
             return self._make(method, url, headers, payload, retry)
 
         return None
-
-    def reset_proxy_from_bag(self):
-        """
-        Grabs the next proxy inline from the self.proxy_bag, and removes the currently used proxy. If proxy bag is
-        empty, raises the EmptyProxyBag error.
-
-        :raises: CarpetBag.erros.EmptyProxyBag
-        """
-        self.logger.debug("Changing proxy")
-        if len(self.proxy_bag) == 0:
-            self.logger.error("Proxy bag is empty! Cannot reset Proxy from Proxy Bag.")
-            raise EmptyProxyBag
-
-        self.proxy_bag.pop(0)
-        self.proxy = {"http": self.proxy_bag[0]["ip"]}
-        self._setup_proxies()
 
     def _handle_ssl_error(self, method, url, headers, payload, retry):
         """
@@ -526,4 +567,4 @@ class BaseCarpetBag(object):
                 self.logger.error("Could not create directory: %s" % destination)
                 return False
 
-# EndFile: carpetbag/CarpetBag/base_carpetbag.py
+# EndFile: carpetbag/carpetbag/base_carpetbag.py

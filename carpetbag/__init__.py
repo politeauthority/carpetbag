@@ -11,12 +11,12 @@ import os
 from random import shuffle
 from six import string_types
 
-import json
 import requests
 
 from .base_carpetbag import BaseCarpetBag
 from .parse_response import ParseResponse
 from . import user_agent
+from .errors import EmptyProxyBag, NoRemoteServicesConnection
 
 
 class CarpetBag(BaseCarpetBag):
@@ -78,7 +78,7 @@ class CarpetBag(BaseCarpetBag):
         self.username = None
         self.password = None
         self.auth_type = None
-        self.__version__ = ".0.0.1"
+        self.__version__ = "0.0.1"
         super().__init__()
 
     def request(self, method, url, payload={}):
@@ -192,19 +192,24 @@ class CarpetBag(BaseCarpetBag):
         :rtype: list
         """
         logging.debug("Filling proxy bag")
-        proxies_url = self.url_join(self.remote_service_api, "proxies")
-        response = self.get(proxies_url)
-        bad_actor_proxies = response.json()["objects"]
+
+        try:
+            response = self._make_internal('proxies')
+        except NoRemoteServicesConnection:
+            logging.error("Unable to connect to Bad-Actor.Services")
+            return False
+
+        proxies = response["objects"]
 
         if continents or ssl_only:
             if continents and isinstance(continents, string_types):
                 continents = [continents]
-            bad_actor_proxies = self._filter_public_proxies(bad_actor_proxies, continents, ssl_only)
+            proxies = self._filter_public_proxies(proxies, continents, ssl_only)
 
         # Shuffle the proxies so concurrent instances of CarpetBag wont use the same proxy
-        shuffle(bad_actor_proxies)
+        shuffle(self.proxy_bag)
 
-        return bad_actor_proxies
+        return proxies
 
     def use_random_public_proxy(self, continents=[], ssl_only=False, test_proxy=True):
         """
@@ -228,7 +233,6 @@ class CarpetBag(BaseCarpetBag):
         self.proxy_bag = self.get_public_proxies(continents, ssl_only)
 
         self.reset_proxy_from_bag()
-        self._setup_proxies()
         if not test_proxy:
             return True
 
@@ -239,6 +243,25 @@ class CarpetBag(BaseCarpetBag):
         logging.debug("Registered Proxy %s (%s)" % (self.proxy_bag[0]["ip"], self.proxy_bag[0]["country"]))
 
         return True
+
+    def reset_proxy_from_bag(self):
+        """
+        Grabs the next proxy inline from the self.proxy_bag, and removes the currently used proxy. If proxy bag is
+        empty, raises the EmptyProxyBag error.
+
+        :raises: carpetbag.erros.EmptyProxyBag
+        """
+        self.logger.debug("Changing proxy")
+        if len(self.proxy_bag) == 0:
+            self.logger.error("Proxy bag is empty! Cannot reset Proxy from Proxy Bag.")
+            raise EmptyProxyBag
+
+        self._remove_proxy_from_bag()
+        chosen_proxy = self.proxy_bag[0]
+        self.proxy = {"http": chosen_proxy["address"]}
+
+        if chosen_proxy["ssl"]:
+            self.proxy = {"https": chosen_proxy["address"]}
 
     def use_skip_ssl_verify(self, val=True):
         """
@@ -369,22 +392,16 @@ class CarpetBag(BaseCarpetBag):
         :returns: The outbound ip address for the proxy.
         :rtype: str
         """
-        ip_service = self.remote_service_api.replace("/api", "")
-        remote_service_api = self.url_join(ip_service, "/ip")
-        response = self.get(remote_service_api)
-        if response.status_code != 200:
-            logging.warning("Unable to connect to %s for IP." % remote_service_api)
+        try:
+            response = self._make_internal('ip')
+        except NoRemoteServicesConnection:
+            logging.error("Unable to connect to Bad-Actor.Services")
+            return False
 
-        response_body = json.loads(response.text)
-
-        if response_body["ip"] != self.outbound_ip:
-            self.outbound_ip = response_body["ip"]
+        if response["ip"] != self.outbound_ip:
+            self.outbound_ip = response["ip"]
 
         return self.outbound_ip
-
-        # logging.error("Could not get outbound ip address.")
-
-        return False
 
     def reset_identity(self):
         """

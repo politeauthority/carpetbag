@@ -17,4 +17,9 @@ class InvalidContinent(Error):
     """Raised when an unknwon continent is supplied by the user"""
     pass
 
+
+class NoRemoteServicesConnection(Error):
+    """Raised when CarpetBag cannot talk to bad-actor.services"""
+    pass
+
 # EndFile: carpetbag/carpetbag/errors.py

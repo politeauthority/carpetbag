@@ -75,5 +75,4 @@ def get_flattened_uas():
 
     return flattend_user_agents
 
-
 # EndFile: carpetbag/carpetbag/user_agent.py

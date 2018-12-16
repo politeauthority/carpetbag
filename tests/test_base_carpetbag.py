@@ -6,7 +6,7 @@ import time
 import os
 
 import pytest
-import vcr
+# import vcr
 
 from carpetbag import CarpetBag
 from carpetbag import errors
@@ -51,9 +51,13 @@ class TestBaseCarpetBag(object):
         assert bagger.manifest == {}
 
     def test__make_request(self):
-        bagger = CarpetBag()
-        with vcr.use_cassette(os.path.join(CASSET_DIR, "test__make_request.yaml")):
-            request = bagger._make_request("GET", "http://www.google.com/news")
+        """
+        Tests the BaseCarpetBag._make_request() method.
+
+        """
+        bager = CarpetBag()
+        # with vcr.use_cassette(os.path.join(CASSET_DIR, "google.com.yaml")):
+        request = bager._make_request("GET", "https://www.google.com/")
         assert request
         assert request.text
         assert request.status_code == 200
@@ -63,16 +67,16 @@ class TestBaseCarpetBag(object):
         Tests the _handle_sleep() method to make sure sleep isnt used if mininum_wait_time is not set.
 
         """
-        bagger = CarpetBag()
+        scraper = CarpetBag()
         start_1 = datetime.now()
-        bagger._handle_sleep("https://www.google.com/")
+        scraper._handle_sleep("https://www.google.com/")
         end_1 = datetime.now()
         run_time_1 = (end_1 - start_1).seconds
         assert run_time_1 < 3
 
-        bagger = CarpetBag()
+        scraper = CarpetBag()
         start_2 = datetime.now()
-        bagger._handle_sleep("https://www.google.com/")
+        scraper._handle_sleep("https://www.google.com/")
         end_2 = datetime.now()
         run_time_2 = (end_2 - start_2).seconds
         assert run_time_2 < 3
@@ -83,26 +87,26 @@ class TestBaseCarpetBag(object):
         request of a new domain.
 
         """
-        bagger = CarpetBag()
-        bagger.mininum_wait_time = 5
+        scraper = CarpetBag()
+        scraper.mininum_wait_time = 5
 
         start_1 = datetime.now()
-        bagger._handle_sleep("https://www.google.com/")
+        scraper._handle_sleep("https://www.google.com/")
         end_1 = datetime.now()
         run_time_1 = (end_1 - start_1).seconds
         assert run_time_1 < 3
 
         start_2 = datetime.now()
-        bagger.last_request_time = start_1
-        bagger.last_response = GoogleDotComResponse()
-        bagger._handle_sleep("https://www.google.com/")
+        scraper.last_request_time = start_1
+        scraper.last_response = GoogleDotComResponse()
+        scraper._handle_sleep("https://www.google.com/")
         end_2 = datetime.now()
         run_time_2 = (end_2 - start_2).seconds
         assert run_time_2 >= 4
 
         start_3 = datetime.now()
-        bagger.last_request_time = start_1
-        bagger._handle_sleep("https://www.example.com/")
+        scraper.last_request_time = start_1
+        scraper._handle_sleep("https://www.example.com/")
         end_3 = datetime.now()
         run_time_3 = (end_3 - start_3).seconds
         assert run_time_3 < 3
@@ -112,37 +116,23 @@ class TestBaseCarpetBag(object):
         Tests the BaseCarpetBag._get_domain method to see if it properly picks the domain from a url.
 
         """
-        bagger = CarpetBag()
-        assert bagger._get_domain("http://192.168.50.137:5000") == "192.168.50.137"
-        assert bagger._get_domain("http://www.google.com") == "google.com"
-        assert bagger._get_domain("http://localhost") == "localhost"
-        assert bagger._get_domain("http://192.168.1.19:5010") == "192.168.1.19"
+        scraper = CarpetBag()
+        assert scraper._get_domain("http://192.168.50.137:5000") == "192.168.50.137"
+        assert scraper._get_domain("http://www.google.com") == "google.com"
+        assert scraper._get_domain("http://localhost") == "localhost"
+        assert scraper._get_domain("http://192.168.1.19:5010") == "192.168.1.19"
 
     def test__get_headers(self):
         """
         Tests that headers can be set by the CarpetBag application, and by the end-user.
 
         """
-        bagger = CarpetBag()
-        bagger.headers = {"Content-Type": "application/html"}
-        bagger.user_agent = "Mozilla/5.0 (Windows NT 10.0)"
-        set_headers = bagger._get_headers()
-
-        assert isinstance(set_headers, dict)
-        assert len(set_headers) == 2
-        assert "User-Agent" in set_headers
-
-    def test__setup_proxy(self):
-        """
-        Tests that proxies are defaulted to http and https if not specified.
-
-        """
-        bagger = CarpetBag()
-        assert not bagger.proxy
-        bagger.proxy = {"http": "localhost:8118"}
-        bagger._setup_proxies()
-        assert bagger.proxy["https"] == "localhost:8118"
-        assert bagger.proxy["http"] == "localhost:8118"
+        scraper = CarpetBag()
+        scraper.headers = {"Content-Type": "application/html"}
+        scraper.user_agent = "Mozilla/5.0 (Windows NT 10.0)"
+        set_headers = scraper._get_headers()
+        assert set_headers["Content-Type"] == "application/html"
+        assert set_headers["User-Agent"] == "Mozilla/5.0 (Windows NT 10.0)"
 
     def test__filter_public_proxies(self):
         """
@@ -156,10 +146,10 @@ class TestBaseCarpetBag(object):
         """
 
         # Load the test proxies
-        with vcr.use_cassette(os.path.join(CASSET_DIR, "base_carpet_get_public_proxies.yaml")):
-            bagger = CarpetBag()
-            bagger.use_skip_ssl_verify()
-            test_proxies = bagger.get_public_proxies()
+        # with vcr.use_cassette(os.path.join(CASSET_DIR, "base_carpet_get_public_proxies.yaml")):
+        bagger = CarpetBag()
+        bagger.use_skip_ssl_verify()
+        test_proxies = bagger.get_public_proxies()
 
         # Check that we return a list.
         assert isinstance(bagger._filter_public_proxies(test_proxies, [], False), list)
@@ -205,15 +195,15 @@ class TestBaseCarpetBag(object):
         Tests to make sure _set_user_agent will not override a manually set user_agent.
 
         """
-        bagger = CarpetBag()
-        bagger.user_agent = "My test user agent"
-        bagger._set_user_agent()
-        assert bagger.send_user_agent == "My test user agent"
+        scraper = CarpetBag()
+        scraper.user_agent = "My test user agent"
+        scraper._set_user_agent()
+        assert scraper.send_user_agent == "My test user agent"
 
-        bagger.request_count = 2
-        bagger.change_user_agent_interval = 2
-        bagger._set_user_agent()
-        assert bagger.send_user_agent == "My test user agent"
+        scraper.request_count = 2
+        scraper.change_user_agent_interval = 2
+        scraper._set_user_agent()
+        assert scraper.send_user_agent == "My test user agent"
 
     def test__make_1(self):
         """
@@ -221,24 +211,24 @@ class TestBaseCarpetBag(object):
         more tests!
 
         """
-        bagger = CarpetBag()
-        with vcr.use_cassette(os.path.join(CASSET_DIR, "test__make_1.yaml")):
-            response = bagger._make(
-                method="GET",
-                url="http://www.google.com",
-                headers={"Content-Type": "application/html"},
-                payload={},
-                retry=0)
-            assert response
-            assert response.status_code == 200
-            response = bagger._make(
-                method="GET",
-                url="http://www.google.com",
-                headers={"Content-Type": "application/html"},
-                payload={},
-                retry=0)
-            assert response
-            assert response.status_code == 200
+        scraper = CarpetBag()
+        # with vcr.use_cassette(os.path.join(CASSET_DIR, "test__make_1.yaml")):
+        response = scraper._make(
+            method="GET",
+            url="http://www.google.com",
+            headers={"Content-Type": "application/html"},
+            payload={},
+            retry=0)
+        assert response
+        assert response.status_code == 200
+        response = scraper._make(
+            method="GET",
+            url="http://www.google.com",
+            headers={"Content-Type": "application/html"},
+            payload={},
+            retry=0)
+        assert response
+        assert response.status_code == 200
 
     # def test_reset_proxy_from_bag(self):
     #     """
@@ -272,8 +262,8 @@ class TestBaseCarpetBag(object):
 
         """
         fake_start = int(round(time.time() * 1000)) - 5000
-        bagger = CarpetBag()
-        bagger._after_request(fake_start, "https://www.google.com", GoogleDotComResponse())
+        scraper = CarpetBag()
+        scraper._after_request(fake_start, "https://www.google.com", GoogleDotComResponse())
 
     def test__increment_counters(self):
         """
@@ -292,8 +282,9 @@ class TestBaseCarpetBag(object):
 
 
 if __name__ == "__main__":
-    with vcr.use_cassette(os.path.join(CASSET_DIR, "base_carpet_get_public_proxies.yaml")):
-        bagger = CarpetBag()
-        test_proxies = bagger.get_public_proxies()
+    # with vcr.use_cassette(os.path.join(CASSET_DIR, "base_carpet_get_public_proxies.yaml")):
+    bagger = CarpetBag()
+    test_proxies = bagger.get_public_proxies()
+
 
 # End File carpetbag/tests/test_base_carpetbag.py
