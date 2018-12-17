@@ -183,7 +183,6 @@ class TestBaseCarpetBag(object):
         response = bagger._make_internal("ip")
         assert str(response["ip"])
 
-        # @todo: Need to capture the NoRemoteServicesConnection on a bad url.
         bagger.remote_service_api = 'http://0.0.0.0:90/api'
         with pytest.raises(errors.NoRemoteServicesConnection):
             response = bagger._make_internal('ip')
