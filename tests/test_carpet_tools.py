@@ -22,7 +22,8 @@ class TestCarpetTools(object):
 
     def test_url_concat(self):
         """
-        Tests the carpet_tools.url_concat() method, to make sure we're not adding any extra slashes or making weird urls.
+        Tests the carpet_tools.url_concat() method, to make sure we're not adding any extra slashes or making weird
+        urls.
 
         """
         assert ct.url_join("www.bad-actor.services", "api") == "https://www.bad-actor.services/api"

@@ -313,8 +313,9 @@ class BaseCarpetBag(object):
 
                 return self._make(method, url, headers, payload, retry)
             else:
-                msg = """There was an error with the SSL cert, this happens a lot with LetsEncrypt certificates. Use the """
-                msg += """carpetbag.use_skip_ssl_verify() method to enable skipping of SSL Certificate checks"""
+                msg = """There was an error with the SSL cert, this happens a lot with LetsEncrypt certificates."""
+                msg += """ Use the carpetbag.use_skip_ssl_verify() method to enable skipping of SSL Certificate """
+                msg += """checks"""
                 logging.error(msg)
                 raise requests.exceptions.SSLError
 

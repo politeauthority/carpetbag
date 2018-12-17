@@ -4,7 +4,6 @@
 import os
 
 import pytest
-import shutil
 # import vcr
 
 from carpetbag import CarpetBag
