@@ -22,4 +22,9 @@ class NoRemoteServicesConnection(Error):
     """Raised when CarpetBag cannot talk to bad-actor.services"""
     pass
 
+
+class CannotOverwriteFile(Error):
+    """Raised when trying to download a file to a local location that already has a file"""
+    pass
+
 # EndFile: carpetbag/carpetbag/errors.py

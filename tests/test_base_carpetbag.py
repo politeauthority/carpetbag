@@ -104,49 +104,6 @@ class TestBaseCarpetBag(object):
         assert set_headers["Content-Type"] == "application/html"
         assert set_headers["User-Agent"] == "Mozilla/5.0 (Windows NT 10.0)"
 
-    def test__filter_public_proxies(self):
-        """
-        Tests the BaseCarpetBag.__filter_public_proxies() method, which filters public proxies CarpetBag is using.
-        First assertion makes sure we filter SSL only proxies
-        Second assert makes sure we grab proxies only from North America
-        Third assertion checks that the first proxies is from North Amercia
-        Fourth assertion checks that we order South America after North America
-
-        @todo: This test is passing, but I dont believe it's checking as many points as it needs to be.
-
-        """
-
-        # Load the test proxies
-        # with vcr.use_cassette(os.path.join(CASSET_DIR, "base_carpet_get_public_proxies.yaml")):
-        bagger = CarpetBag()
-
-        # Check that we return a list.
-        assert isinstance(bagger._filter_public_proxies(test_proxy_bag.proxies, [], False), list)
-
-        # Check that we get only SSL supporting proxies.
-        filtered_proxies = bagger._filter_public_proxies(test_proxy_bag.proxies, continents=[], ssl_only=True)
-        for proxy in filtered_proxies:
-            assert proxy["ssl"]
-
-        # Check that we can filter proxies based on a single contintent.
-        filtered_proxies = bagger._filter_public_proxies(test_proxy_bag.proxies, continents=["North America"])
-        for proxy in filtered_proxies:
-            assert proxy["continent"] == "North America"
-
-        # Check that we can filter proxies based on a multiple contintents.
-        filtered_proxies = bagger._filter_public_proxies(test_proxy_bag.proxies, continents=["North America", "South America"])
-        for proxy in filtered_proxies:
-            assert proxy["continent"] in ["North America", "South America"]
-
-        # Check that we grab proxies from multiple continents, ordered appropriately.
-        filtered_proxies = bagger._filter_public_proxies(test_proxy_bag.proxies, continents=["North America", "South America"])
-        # assert filtered_proxies[0]["continent"] == "North America"
-        # assert filtered_proxies[len(filtered_proxies) - 1]["continent"] == "South America"
-
-        # Test that we raise the InvalidContinent exception if we get a bad continent name.
-        with pytest.raises(errors.InvalidContinent):
-            filtered_proxies = bagger._filter_public_proxies(test_proxy_bag.proxies, continents=["Nortf America"])
-
     def test__validate_continents(self):
         """
         Tests the BaseCarpetBag._validate_continents() method to make sure we only are using valid contintent names.

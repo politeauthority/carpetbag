@@ -2,6 +2,7 @@
 
 """
 from datetime import datetime
+import json
 import logging
 import os
 import time
@@ -18,7 +19,7 @@ from carpetbag import errors
 
 class BaseCarpetBag(object):
 
-    __version__ = "0.0.1"
+    __version__ = "0.0.2"
 
     def __init__(self):
         """
@@ -127,9 +128,6 @@ class BaseCarpetBag(object):
 
         response = self._make(method, url, headers, payload)
 
-        if not response:
-            return False
-
         if response.status_code >= 500:
             self.logger.warning("Recieved a server error response %s" % response.status_code)
 
@@ -183,39 +181,6 @@ class BaseCarpetBag(object):
             send_headers[key] = value
 
         return send_headers
-
-    def _filter_public_proxies(self, proxies, continents=None, ssl_only=False):
-        """
-        Pairs down the proxy list based on user requirements. Currently supports a list of continents, ordered by
-        requested priority. Also supports filter proxies which will support SSL traffic. @note Defaulting ssl_only to
-        True might be a good idea going forward.
-
-        :param proxies: Currated dictionary of public proxies.
-        :type: proxies: list
-        :param continents: User selected list of continents to filter proxy set to.
-        :type: continents: list
-        :param ssl_only:
-        :type: ssl_only: bool
-        :returns: Set of public proxies, filtered to user specs.
-        :rtype: list
-        """
-        if not continents and not ssl_only:
-            return proxies
-
-        if continents:
-            self._validate_continents(continents)
-
-        filtered_proxies = []
-        for proxy in proxies:
-            proxy_add = True
-            if ssl_only and not proxy["ssl"]:
-                proxy_add = False
-            if continents and proxy["continent"] not in continents:
-                proxy_add = False
-            if proxy_add:
-                filtered_proxies.append(proxy)
-
-        return filtered_proxies
 
     def _validate_continents(self, requested_continents):
         """
@@ -293,7 +258,7 @@ class BaseCarpetBag(object):
 
         return request_args
 
-    def _make(self, method, url, headers, payload, retry=0):
+    def _make(self, method, url, headers, payload={}, retry=0):
         """
         Just about every CarpetBag requesmisct comes through this method. It makes the request and handles different
         errors that may come about.
@@ -345,6 +310,7 @@ class BaseCarpetBag(object):
             if not self.ssl_verify:
                 logging.warning("Re-running request without SSL cert verification.")
                 retry += 1
+
                 return self._make(method, url, headers, payload, retry)
             else:
                 msg = """There was an error with the SSL cert, this happens a lot with LetsEncrypt certificates. Use the """
@@ -369,7 +335,7 @@ class BaseCarpetBag(object):
 
         return response
 
-    def _make_internal(self, uri_segment, payload={}):
+    def _make_internal(self, uri_segment, payload={}, page=1):
         """
         Makes requests to bad-actor.services. For getting data like current_ip, proxies and sending usage data if
         enabled and you have an API key.
@@ -381,21 +347,57 @@ class BaseCarpetBag(object):
         :returns: The json response from the remote service API
         :rtype: dict
         """
+        # This is a hack because BadActor does not have the IP /api route set up yet.
         if uri_segment == 'ip':
             api_url = carpet_tools.url_join(self.remote_service_api.replace('api', 'ip'))
         else:
             api_url = carpet_tools.url_join(self.remote_service_api, uri_segment)
         headers = {
             "Content-Type": "application/json",
-            "User-Agent": 'CarpetBag v%s' % self.__version__
+            "User-Agent": "CarpetBag v%s" % self.__version__
         }
+
+        params = {}
+        if uri_segment == "proxies":
+            params = {"q": {}}
+            if payload:
+                params["filters"] = []
+
+                # Add continent filter
+                # @todo: Continent filtering is not working currently, looks like an API problem though.
+                if payload.get("continent"):
+                    filter_continent = {
+                        "name": "continent",
+                        "op": "eq",
+                        "val": payload["continent"]
+                    }
+                    params["filters"].append(filter_continent)
+
+                # Add ssl filter
+                # @todo: SSL filtering is not working currently, looks like an API problem though.
+                if payload.get("ssl_only"):
+                    filters_ssl = {
+                        "name": "ssl",
+                        "op": "eq",
+                        "ssl": 1
+                    }
+                    params["filters"].append(filters_ssl)
+
+            params["q"]["order_by"] = {
+                "field": "quality",
+                "direction": "desc"
+            }
+
+            params["q"]["limit"] = 100
+            params["q"]["page"] = 1
 
         request_args = self._fmt_request_args(
             method="GET",
             headers=headers,
             url=api_url,
-            payload=payload,
+            payload=json.dumps(params),
             internal=True)
+
         try:
             response = requests.request(**request_args)
         except requests.exceptions.ConnectionError:
@@ -419,7 +421,7 @@ class BaseCarpetBag(object):
         :returns: A Requests module instance of the response.
         :rtype: <Requests.response> obj or None
         """
-        self.logger.error("Unabled to connect to: %s" % url)
+        self.logger.error("Unable to connect to: %s" % url)
 
         if retry > self.retries_on_connection_failure:
             raise requests.exceptions.ConnectionError
@@ -460,6 +462,7 @@ class BaseCarpetBag(object):
         roundtrip = ts_end - ts_start
         self.last_request_time = datetime.now()
         if response:
+            print('ROUNDTRIP: %s %s' % (url, roundtrip))
             response.roundtrip = roundtrip
             response.domain = carpet_tools.get_domain(response.url)
         self.ts_start = None
@@ -536,5 +539,9 @@ class BaseCarpetBag(object):
         except Exception:
             self.logger.error("Could not create directory: %s" % destination)
             return False
+
+    def _content_type_to_extension(self, content_type):
+        if content_type == "image/jpg":
+            return "jpg"
 
 # EndFile: carpetbag/carpetbag/base_carpetbag.py
