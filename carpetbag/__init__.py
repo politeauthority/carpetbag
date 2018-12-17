@@ -5,23 +5,20 @@ information check out the README.md or https://www.github.com/politeauthority/ca
 Author: @politeauthority
 """
 
-from datetime import datetime
 import logging
 import os
 from random import shuffle
-from six import string_types
 
 import requests
 
 from .base_carpetbag import BaseCarpetBag
 from .parse_response import ParseResponse
+from . import carpet_tools as ct
 from . import user_agent
-from .errors import EmptyProxyBag, NoRemoteServicesConnection
+from . import errors
 
 
 class CarpetBag(BaseCarpetBag):
-
-    __version__ = BaseCarpetBag.__version__
 
     def __init__(self):
         """
@@ -177,15 +174,15 @@ class CarpetBag(BaseCarpetBag):
             self.user_agent = ""
             return False
 
-    def get_public_proxies(self, continents=[], ssl_only=False):
+    def get_public_proxies(self, continent="", ssl_only=False):
         """
         Gets list of free public proxies and loads them into a list, currently just selecting from free-proxy-list.
         @todo: Add filtering by country/ continent.
 
 
-        :param continents: Filters proxies to either  just a single continent, or if list is used, orders proxies in
+        :param continent: Filters proxies to either  just a single continent, or if list is used, orders proxies in
             based off of the order contients are listed within the "contenient" list.
-        :type continents: str or list
+        :type continent: str or list
         :param ssl_only: Select only proxies fully supporting SSL.
         :type ssl_only: bool
         :returns: The proxies to be used.
@@ -194,55 +191,50 @@ class CarpetBag(BaseCarpetBag):
         logging.debug("Filling proxy bag")
 
         try:
-            response = self._make_internal('proxies')
-        except NoRemoteServicesConnection:
+            payload = {
+                "continent": continent,
+                "ssl_only": ssl_only
+            }
+            response = self._make_internal("proxies", payload)
+        except errors.NoRemoteServicesConnection:
             logging.error("Unable to connect to Bad-Actor.Services")
-            return False
+            raise errors.NoRemoteServicesConnection
 
-        proxies = response["objects"]
-
-        if continents or ssl_only:
-            if continents and isinstance(continents, string_types):
-                continents = [continents]
-            proxies = self._filter_public_proxies(proxies, continents, ssl_only)
+        self.proxy_bag = response["objects"]
 
         # Shuffle the proxies so concurrent instances of CarpetBag wont use the same proxy
         shuffle(self.proxy_bag)
 
-        return proxies
+        return self.proxy_bag
 
-    def use_random_public_proxy(self, continents=[], ssl_only=False, test_proxy=True):
+    def use_random_public_proxy(self, val=True, test_proxy=False):
         """
         Gets proxies from free-proxy-list.net and loads them into the self.proxy_bag. The first element in the
         proxy_bag is the currently used proxy.
-        @todo: NEEDS UNIT TEST!
 
-        :param continents: Filters proxies to either  just a single continent, or if list is used, orders proxies in
-            based off of the order contients are listed within the "contenient" list.
-        :type continents: str or list
-        :param ssl_only: Select only proxies fully supporting SSL.
-        :type ssl_only: bool
+        :param val: Whether or not to enable random public proxies.
+        :type val: bool
         :param test_proxy: Tests the proxy to see if it's up and working.
         :type test_proxy: bool
         :returns: Whether or not random public proxying is happening.
         :rtype: bool
         """
-        if continents and isinstance(continents, string_types):
-            continents = [continents]
+        if not val:
+            self.random_proxy_bag = False
+            return False
+        self.random_proxy_bag = True
 
-        self.proxy_bag = self.get_public_proxies(continents, ssl_only)
+        if not self.proxy_bag:
+            self.proxy_bag = self.get_public_proxies()
 
         self.reset_proxy_from_bag()
         if not test_proxy:
             return True
 
-        logging.info("Testing Proxy: %s (%s)" % (self.proxy_bag[0]["ip"], self.proxy_bag[0]["country"]))
-        proxy_test_urls = ["http://www.google.com"]
-        for url in proxy_test_urls:
-            self.get(url)
-        logging.debug("Registered Proxy %s (%s)" % (self.proxy_bag[0]["ip"], self.proxy_bag[0]["country"]))
+        if self.test_public_proxy():
+            return True
 
-        return True
+        return False
 
     def reset_proxy_from_bag(self):
         """
@@ -254,9 +246,12 @@ class CarpetBag(BaseCarpetBag):
         self.logger.debug("Changing proxy")
         if len(self.proxy_bag) == 0:
             self.logger.error("Proxy bag is empty! Cannot reset Proxy from Proxy Bag.")
-            raise EmptyProxyBag
+            raise errors.EmptyProxyBag
 
-        self._remove_proxy_from_bag()
+        # Remove the current proxy if one is set.
+        if self.proxy:
+            del self.proxy_bag[0]
+
         chosen_proxy = self.proxy_bag[0]
         self.proxy = {"http": chosen_proxy["address"]}
 
@@ -280,7 +275,7 @@ class CarpetBag(BaseCarpetBag):
 
         return val
 
-    def save(self, url, destination, payload={}):
+    def save(self, url, destination, payload={}, overwrite=False):
         """
         Saves a file to a destination on the local drive. Good for quickly grabbing images from a remote site.
 
@@ -290,14 +285,17 @@ class CarpetBag(BaseCarpetBag):
         :type: destination: str
         :param payload: The data to be sent over GET.
         :type payload: dict
+        :param overwrite: Overwrite if file already exists in the destination.
+        :type overwrite: bool
+        :returns: The file path of the file written.
+        :rtype: str
         """
-        h = requests.head(url, allow_redirects=True)
+        head_args = self._fmt_request_args("GET", self.headers, url, payload)
+        head_args.pop("method")
+        head_args["verify"] = False
+        h = requests.head(allow_redirects=True, **head_args)
         header = h.headers
         content_type = header.get("content-type")
-        if "text" in content_type.lower():
-            return False
-        if "html" in content_type.lower():
-            return False
 
         # Check content length
         content_length = header.get("content-length", None)
@@ -305,18 +303,55 @@ class CarpetBag(BaseCarpetBag):
             content_length = int(content_length)
             if content_length > self.max_content_length:
                 logging.warning("Remote content-length: %s is greater then current max: %s")
-                return
+                return False
 
-        # Get the file
+        # Get the file.
         response = self.get(url, payload=payload)
 
         # Figure out where to save the file.
-        self._prep_destination(destination)
         if os.path.isdir(destination):
-            phile_name = url[url.rfind("/") + 1:]
-            full_phile_name = os.path.join(destination, phile_name)
+            destination_dir = destination
+
+        elif destination[len(destination) - 1] == "/":
+            destination_dir = destination
         else:
-            full_phile_name = destination
+            destination_dir = destination[:destination.rfind("/")]
+
+        destination_last = destination[destination.rfind("/") + 1:]
+        self._prep_destination(destination_dir)
+
+        # Decide the file name.
+        file_extension = self._content_type_to_extension(content_type)
+        url_disect = ct.url_disect(url)
+
+        # If the chosen destination is a directory, find a name for the file.
+        if os.path.isdir(destination):
+            phile_name = url_disect["last"]
+            if "." not in phile_name:
+                if file_extension:
+                    phile_name = phile_name + file_extension
+
+            elif "." in url_disect["last"]:
+                file_extension = url_disect["url"][:url_disect["url"].rfind(".") + 1]
+                phile_name = url_disect["last"]
+                full_phile_name = os.path.join(destination, phile_name)
+
+        else:
+
+            # If the choosen drop is not a directory, use the name given.
+            if "." in destination_last:
+                full_phile_name = os.path.join(destination_dir, destination_last)
+
+            elif "." in url_disect["last"]:
+                phile_name = url_disect["last"][:url_disect["last"].rfind(".")]
+                file_extension = url_disect["last"][url_disect["last"].rfind(".") + 1:]
+
+                full_phile_name = destination_dir + "%s.%s" % (phile_name, file_extension)
+
+        if os.path.exists(full_phile_name) and not overwrite:
+            logging.error("File %s already exists, use carpetbag.save(overwrite=True) to overwrite." % full_phile_name)
+            raise errors.CannotOverwriteFile
+
         open(full_phile_name, "wb").write(response.content)
 
         return full_phile_name
@@ -393,13 +428,12 @@ class CarpetBag(BaseCarpetBag):
         :rtype: str
         """
         try:
-            response = self._make_internal('ip')
-        except NoRemoteServicesConnection:
+            response = self._make_internal("ip")
+        except errors.NoRemoteServicesConnection:
             logging.error("Unable to connect to Bad-Actor.Services")
             return False
 
-        if response["ip"] != self.outbound_ip:
-            self.outbound_ip = response["ip"]
+        self.outbound_ip = response["ip"]
 
         return self.outbound_ip
 
@@ -417,53 +451,34 @@ class CarpetBag(BaseCarpetBag):
 
         return True
 
-    @staticmethod
-    def url_join(*args):
+    def test_public_proxy(self, retry_on_failure=True):
         """
-        Concats all args with slashes as needed.
-        @note this will probably move to a utility class sometime in the near future.
+        Tests the current public proxy to see if it is working. If it's not and the user is using proxy bag, we'll
+        find a new one.
+        @todo: Needs unit test.
 
-        :param args: All the url components to join.
-        :type args: list
-        :returns: Ready to use url.
-        :rtype: str
+        :param retry_on_failure: Whether or not to get a new proxy and retry if a proxy fails.
+        :type retry_on_failure: bool
+        :returns: Success or failure of a proxy.
+        :rtype: bool
         """
-        return CarpetBag.url_concat(*args)
+        logging.info("Testing Proxy: %s (%s)" % (self.proxy_bag[0]["ip"], self.proxy_bag[0]["country"]))
+        self.use_skip_ssl_verify()
+        self.headers = {"Content-Type": "application/json"}
+        test_url = self.remote_service_api.replace("api", "test")
 
-    @staticmethod
-    def url_concat(*args):
-        """
-        Concats all args with slashes as needed.
-        @note this will probably move to a utility class sometime in the near future.
+        test_response = self.get(test_url)
+        self.use_skip_ssl_verify(False)
 
-        :param args: All the url components to join.
-        :type args: list
-        :returns: Ready to use url.
-        :rtype: str
-        """
-        url = ""
-        for url_segment in args:
-            if url and url[len(url) - 1] != "/" and url_segment[0] != "/":
-                url_segment = "/" + url_segment
-            url += url_segment
+        # if not test_response:
+        #     logging.error("Could not find a working proxy.")
+        #     return False
 
-        return url
+        logging.debug("Registered Proxy %s (%s) Test Request Took: %s" % (
+            self.proxy_bag[0]["ip"],
+            self.proxy_bag[0]["country"],
+            test_response.roundtrip))
 
-    @staticmethod
-    def json_date(the_date=None):
-        """
-        Concats all args with slashes as needed.
-        @note this will probably move to a utility class sometime in the near future.
-
-        :param the_date: Datetime to convert, or if None, will use now.
-        :type the_date: <DateTime> or None
-        :returns: Jsonable date time string
-        :rtype: str
-        """
-        if not the_date:
-            the_date = datetime.now()
-        ret = the_date.strftime("%Y-%m-%d %H:%M:%S")
-
-        return ret
+        return True
 
 # End File: carpetbag/carpetbag/__init__.py
