@@ -15,7 +15,6 @@ from carpetbag import CarpetBag
 from carpetbag import errors
 
 from .data.response_data import GoogleDotComResponse
-from .data import proxy_bag as test_proxy_bag
 
 CASSET_DIR = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
@@ -185,9 +184,9 @@ class TestBaseCarpetBag(object):
         assert str(response["ip"])
 
         # @todo: Need to capture the NoRemoteServicesConnection on a bad url.
-        # bagger.remote_service_api = 'http://0.0.0.0:90/api'
-        # with pytest.raises(errors.NoRemoteServicesConnection):
-        #     response = bagger._make_internal('ip')
+        bagger.remote_service_api = 'http://0.0.0.0:90/api'
+        with pytest.raises(errors.NoRemoteServicesConnection):
+            response = bagger._make_internal('ip')
 
     def test__handle_connection_error(self):
         """
