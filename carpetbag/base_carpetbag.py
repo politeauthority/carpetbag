@@ -501,7 +501,7 @@ class BaseCarpetBag(object):
             "roundtrip": None,
             "response": None,
             "retry": 0,
-            "errors": []
+            "attempts": []
         }
         self.manifest.insert(0, new_manifest)
         return new_manifest
@@ -545,13 +545,15 @@ class BaseCarpetBag(object):
         """
         Takes a content type and tries to map it to an extension.
         @todo: Needs unit test.
+        @todo: Needs more content types!
+        @note: This method is a good candiate for carpet_tools.
 
         :param content_type: Content type from a request
         :type content_type: str
         :returns: The extension translation from the content-type.
         :rtype: str
         """
-        if content_type == "image/jpg":
+        if content_type == "image/jpg" or content_type == "image/jpeg":
             return "jpg"
         return ""
 

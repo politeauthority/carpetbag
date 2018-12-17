@@ -75,7 +75,6 @@ class CarpetBag(BaseCarpetBag):
         self.username = None
         self.password = None
         self.auth_type = None
-        self.__version__ = "0.0.1"
         super().__init__()
 
     def request(self, method, url, payload={}):

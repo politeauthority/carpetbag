@@ -241,6 +241,7 @@ class TestBaseCarpetBag(object):
         # assert isinstance(new_manifest["date_start"], arrow)
         assert not new_manifest["date_end"]
         assert not new_manifest["response"]
+        assert not new_manifest["attempts"]
         assert len(bagger.manifest) == 1
 
     def test__end_manifest(self):
