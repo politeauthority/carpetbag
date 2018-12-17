@@ -348,8 +348,8 @@ class BaseCarpetBag(object):
         :rtype: dict
         """
         # This is a hack because BadActor does not have the IP /api route set up yet.
-        if uri_segment == 'ip':
-            api_url = carpet_tools.url_join(self.remote_service_api.replace('api', 'ip'))
+        if uri_segment == "ip":
+            api_url = carpet_tools.url_join(self.remote_service_api.replace("api", "ip"))
         else:
             api_url = carpet_tools.url_join(self.remote_service_api, uri_segment)
         headers = {
@@ -357,6 +357,7 @@ class BaseCarpetBag(object):
             "User-Agent": "CarpetBag v%s" % self.__version__
         }
 
+        # @todo: Break this up into sub methods!
         params = {}
         if uri_segment == "proxies":
             params = {"q": {}}
@@ -462,7 +463,7 @@ class BaseCarpetBag(object):
         roundtrip = ts_end - ts_start
         self.last_request_time = datetime.now()
         if response:
-            print('ROUNDTRIP: %s %s' % (url, roundtrip))
+            print("ROUNDTRIP: %s %s" % (url, roundtrip))
             response.roundtrip = roundtrip
             response.domain = carpet_tools.get_domain(response.url)
         self.ts_start = None
@@ -523,7 +524,6 @@ class BaseCarpetBag(object):
     def _prep_destination(self, destination):
         """
         Attempts to create the destintion directory path if needed.
-        @todo: create unit tests.
 
         :param destination:
         :type destination: str
@@ -541,7 +541,17 @@ class BaseCarpetBag(object):
             return False
 
     def _content_type_to_extension(self, content_type):
+        """
+        Takes a content type and tries to map it to an extension.
+        @todo: Needs unit test.
+
+        :param content_type: Content type from a request
+        :type content_type: str
+        :returns: The extension translation from the content-type.
+        :rtype: str
+        """
         if content_type == "image/jpg":
             return "jpg"
+        return ""
 
 # EndFile: carpetbag/carpetbag/base_carpetbag.py

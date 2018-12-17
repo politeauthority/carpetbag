@@ -195,7 +195,7 @@ class CarpetBag(BaseCarpetBag):
                 "continent": continent,
                 "ssl_only": ssl_only
             }
-            response = self._make_internal('proxies', payload)
+            response = self._make_internal("proxies", payload)
         except errors.NoRemoteServicesConnection:
             logging.error("Unable to connect to Bad-Actor.Services")
             raise errors.NoRemoteServicesConnection
@@ -211,8 +211,6 @@ class CarpetBag(BaseCarpetBag):
         """
         Gets proxies from free-proxy-list.net and loads them into the self.proxy_bag. The first element in the
         proxy_bag is the currently used proxy.
-        @todo: NEEDS UNIT TEST!
-
 
         :param val: Whether or not to enable random public proxies.
         :type val: bool
@@ -294,7 +292,7 @@ class CarpetBag(BaseCarpetBag):
         """
         head_args = self._fmt_request_args("GET", self.headers, url, payload)
         head_args.pop("method")
-        head_args['verify'] = False
+        head_args["verify"] = False
         h = requests.head(allow_redirects=True, **head_args)
         header = h.headers
         content_type = header.get("content-type")
@@ -314,10 +312,10 @@ class CarpetBag(BaseCarpetBag):
         if os.path.isdir(destination):
             destination_dir = destination
 
-        elif destination[len(destination) - 1] == '/':
+        elif destination[len(destination) - 1] == "/":
             destination_dir = destination
         else:
-            destination_dir = destination[:destination.rfind('/')]
+            destination_dir = destination[:destination.rfind("/")]
 
         destination_last = destination[destination.rfind("/") + 1:]
         self._prep_destination(destination_dir)
@@ -329,7 +327,7 @@ class CarpetBag(BaseCarpetBag):
         # If the chosen destination is a directory, find a name for the file.
         if os.path.isdir(destination):
             phile_name = url_disect["last"]
-            if '.' not in phile_name:
+            if "." not in phile_name:
                 if file_extension:
                     phile_name = phile_name + file_extension
 
@@ -430,7 +428,7 @@ class CarpetBag(BaseCarpetBag):
         :rtype: str
         """
         try:
-            response = self._make_internal('ip')
+            response = self._make_internal("ip")
         except errors.NoRemoteServicesConnection:
             logging.error("Unable to connect to Bad-Actor.Services")
             return False
@@ -457,12 +455,17 @@ class CarpetBag(BaseCarpetBag):
         """
         Tests the current public proxy to see if it is working. If it's not and the user is using proxy bag, we'll
         find a new one.
+        @todo: Needs unit test.
 
+        :param retry_on_failure: Whether or not to get a new proxy and retry if a proxy fails.
+        :type retry_on_failure: bool
+        :returns: Success or failure of a proxy.
+        :rtype: bool
         """
         logging.info("Testing Proxy: %s (%s)" % (self.proxy_bag[0]["ip"], self.proxy_bag[0]["country"]))
         self.use_skip_ssl_verify()
         self.headers = {"Content-Type": "application/json"}
-        test_url = self.remote_service_api.replace('api', 'test')
+        test_url = self.remote_service_api.replace("api", "test")
 
         test_response = self.get(test_url)
         self.use_skip_ssl_verify(False)

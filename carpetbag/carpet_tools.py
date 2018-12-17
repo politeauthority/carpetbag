@@ -35,22 +35,22 @@ def url_concat(*args):
             url_segment = "/" + url_segment
         url += url_segment
 
-    if '://' not in url:
+    if "://" not in url:
         url = "https://" + url
 
-    protocol = url[:url.find('://') + 3]
-    protocolless_url = url[url.find('://') + 3:]
-    query_params = ''
-    if '?' in protocolless_url:
-        query_params = url[url.find('?'):]
-        protocolless_url = url[:url.find('?')]
-    if '//' in protocolless_url:
-        protocolless_url = protocolless_url.replace('//', '/')
+    protocol = url[:url.find("://") + 3]
+    protocolless_url = url[url.find("://") + 3:]
+    query_params = ""
+    if "?" in protocolless_url:
+        query_params = url[url.find("?"):]
+        protocolless_url = url[:url.find("?")]
+    if "//" in protocolless_url:
+        protocolless_url = protocolless_url.replace("//", "/")
 
     return "%(protocol)s%(url)s%(params)s" % {
-        'protocol': protocol,
-        'url': protocolless_url,
-        'params': query_params
+        "protocol": protocol,
+        "url": protocolless_url,
+        "params": query_params
     }
 
 
@@ -72,7 +72,7 @@ def url_disect(url):
         "last": "",
         "params": {},
     }
-    if '://' in url:
+    if "://" in url:
         url_pieces["protocol"] = url[:url.find("://")]
         url_pieces["url"] = url[url.find("://") + 3:]
     else:
@@ -83,7 +83,7 @@ def url_disect(url):
 
     tld_res = tld.get_tld(url, as_object=True)
     sub_domains = tld_res.subdomain
-    if '.' in sub_domains:
+    if "." in sub_domains:
         url_pieces["sub_domains"].split(".")
     else:
         url_pieces["sub_domains"] = [sub_domains]
@@ -148,7 +148,7 @@ def url_last(url, exclude_params=False):
     :returns: The last segment of a url.
     :rtype: str
     """
-    url = url[url.rfind('/') + 1:]
+    url = url[url.rfind("/") + 1:]
     if exclude_params and "?" in url:
         url = url[:url.find("?")]
     return url
