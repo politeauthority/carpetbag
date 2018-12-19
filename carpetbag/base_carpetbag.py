@@ -13,8 +13,8 @@ import arrow
 import requests
 from requests.exceptions import ChunkedEncodingError
 
-from . import carpet_tools
-from carpetbag import errors
+from . import carpet_tools as ct
+from . import errors
 
 
 class BaseCarpetBag(object):
@@ -97,10 +97,13 @@ class BaseCarpetBag(object):
         self.logger = logging.getLogger(__name__)
 
     def __repr__(self):
+        """
+        CarpetBag's representation.
+        """
         proxy = ""
-        if self.get("http"):
+        if self.proxy.get("http"):
             proxy = " Proxy:%s" % self.proxy.get("http")
-        else:
+        elif self.proxy.get("https"):
             proxy = " Proxy:%s" % self.proxy.get("https")
 
         return "<CarpetBag%s>" % proxy
@@ -119,10 +122,10 @@ class BaseCarpetBag(object):
         :rtype: <Requests.response> obj
         """
         ts_start = int(round(time.time() * 1000))
-        url = carpet_tools.add_missing_protocol(url)
+        url = ct.add_missing_protocol(url)
         headers = self._get_headers()
         urllib3.disable_warnings(InsecureRequestWarning)
-        self._start_new_manifest(method, url, payload)
+        self._start_request_manifest(method, url, payload)
         self._increment_counters()
         self._handle_sleep(url)
 
@@ -153,7 +156,7 @@ class BaseCarpetBag(object):
 
         # Checks that the next server we're making a request to is the same as the previous request.
         # tld.get_fld(self.last_response.url)
-        if self.last_response.domain != carpet_tools.get_domain(url):
+        if self.last_response.domain != ct.get_domain(url):
             return
 
         # Checks the time of the last request and sets the sleep timer for the difference.
@@ -350,9 +353,9 @@ class BaseCarpetBag(object):
         """
         # This is a hack because BadActor does not have the IP /api route set up yet.
         if uri_segment == "ip":
-            api_url = carpet_tools.url_join(self.remote_service_api.replace("api", "ip"))
+            api_url = ct.url_join(self.remote_service_api.replace("api", "ip"))
         else:
-            api_url = carpet_tools.url_join(self.remote_service_api, uri_segment)
+            api_url = ct.url_join(self.remote_service_api, uri_segment)
         headers = {
             "Content-Type": "application/json",
             "User-Agent": "CarpetBag v%s" % self.__version__
@@ -466,7 +469,7 @@ class BaseCarpetBag(object):
         if response:
             print("ROUNDTRIP: %s %s" % (url, roundtrip))
             response.roundtrip = roundtrip
-            response.domain = carpet_tools.get_domain(response.url)
+            response.domain = ct.get_domain(response.url)
         self.ts_start = None
 
         return roundtrip
@@ -479,7 +482,7 @@ class BaseCarpetBag(object):
         self.request_count += 1
         self.request_total += 1
 
-    def _start_new_manifest(self, method, url, payload={}):
+    def _start_request_manifest(self, method, url, payload={}):
         """
         Starts a new manifest for the url being requested, and saves it into the self.manifest var.
 
@@ -522,6 +525,59 @@ class BaseCarpetBag(object):
 
         return True
 
+    def _determine_save_file_name(self, url, content_type, destination):
+        """
+        Determines the local file name, based on the url, the content_type and the user requested destination.
+
+        :param url: The url to fetch.
+        :type: url: str
+        :param content_type: The content type header from the response.
+        :type content_type: str
+        :param destination: Where on the local filestem to store the image.
+        :type: destination: str
+        :returns: The absolute path for the file.
+        :rtype: str
+        """
+        # Figure out the save directory
+        if os.path.isdir(destination):
+            destination_dir = destination
+
+        elif destination[len(destination) - 1] == "/":
+            destination_dir = destination
+        else:
+            destination_dir = destination[:destination.rfind("/")]
+        destination_last = destination[destination.rfind("/") + 1:]
+        self._prep_destination(destination_dir)
+
+        # Decide the file name.
+        file_extension = ct.content_type_to_extension(content_type)
+        url_disect = ct.url_disect(url)
+
+        # If the chosen destination is a directory, find a name for the file.
+        if os.path.isdir(destination):
+            phile_name = url_disect["last"]
+            if "." not in phile_name:
+                if file_extension:
+                    phile_name = phile_name + file_extension
+
+            elif "." in url_disect["last"]:
+                file_extension = url_disect["url"][:url_disect["url"].rfind(".") + 1]
+                phile_name = url_disect["last"]
+                full_phile_name = os.path.join(destination, phile_name)
+
+        else:
+            # If the choosen drop is not a directory, use the name given.
+            if "." in destination_last:
+                full_phile_name = os.path.join(destination_dir, destination_last)
+
+            elif "." in url_disect["last"]:
+                phile_name = url_disect["last"][:url_disect["last"].rfind(".")]
+                file_extension = url_disect["last"][url_disect["last"].rfind(".") + 1:]
+
+                full_phile_name = destination_dir + "%s.%s" % (phile_name, file_extension)
+
+        return full_phile_name
+
     def _prep_destination(self, destination):
         """
         Attempts to create the destintion directory path if needed.
@@ -540,21 +596,5 @@ class BaseCarpetBag(object):
         except Exception:
             self.logger.error("Could not create directory: %s" % destination)
             return False
-
-    def _content_type_to_extension(self, content_type):
-        """
-        Takes a content type and tries to map it to an extension.
-        @todo: Needs unit test.
-        @todo: Needs more content types!
-        @note: This method is a good candiate for carpet_tools.
-
-        :param content_type: Content type from a request
-        :type content_type: str
-        :returns: The extension translation from the content-type.
-        :rtype: str
-        """
-        if content_type == "image/jpg" or content_type == "image/jpeg":
-            return "jpg"
-        return ""
 
 # EndFile: carpetbag/carpetbag/base_carpetbag.py

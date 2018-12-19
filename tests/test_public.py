@@ -4,7 +4,7 @@
 import os
 
 import pytest
-# import vcr
+import vcr
 
 from carpetbag import CarpetBag
 from carpetbag import user_agent
@@ -169,15 +169,26 @@ class TestPublic(object):
     #         tor = bagger.check_tor()
     #         assert not tor
 
+    def test_parse(self):
+        """
+        Tests the CarpetBag().parse() method to make sure we're returning the correct object back.
+
+        """
+        bagger = CarpetBag()
+        bagger.user_agent = UNIT_TEST_AGENT
+        bagger.use_skip_ssl_verify()
+        bagger.get("https://www.bad-actor.services/")
+
     def test_get_outbound_ip(self):
         """
         Tests the CarpetBag().get_outbound_ip method to make sure we get and parse the outbound IP correctly.
 
         """
         bagger = CarpetBag()
+        bagger.get('reddit.com')
         ip = bagger.get_outbound_ip()
-        assert ip == "73.203.37.237"
-        assert bagger.outbound_ip == "73.203.37.237"
+        assert ip == "184.153.235.188"
+        assert bagger.outbound_ip == "184.153.235.188"
 
     def test_reset_identity(self):
         """

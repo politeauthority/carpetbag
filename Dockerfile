@@ -1,5 +1,6 @@
 FROM frolvlad/alpine-python3
 
+ENV BAD_ACTOR_URL = "http://www.bad-actor.services/"
 COPY ./ /opt/carpetbag
 
 RUN apk add --no-cache \

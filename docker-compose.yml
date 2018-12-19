@@ -5,6 +5,8 @@ services:
     command: tail -f /dev/null
     volumes:
       - ./:/opt/carpetbag
+    environment:
+      - BAD_ACTOR_URL=https://www.bad-actor.services/
 #  tor:
 #    image: zeta0/alpine-tor
 #    environment:

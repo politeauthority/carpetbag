@@ -3,6 +3,7 @@ Multi faceted scraping utility. All the public methods of the CarpetBag python m
 information check out the README.md or https://www.github.com/politeauthority/carpetbag
 
 Author: @politeauthority
+
 """
 
 import logging
@@ -296,6 +297,12 @@ class CarpetBag(BaseCarpetBag):
         header = h.headers
         content_type = header.get("content-type")
 
+        # Figure out the local file name and check if it's available.
+        local_phile_name = self._determine_save_file_name(url, content_type, destination)
+        if os.path.exists(local_phile_name) and not overwrite:
+            logging.error("File %s already exists, use carpetbag.save(overwrite=True) to overwrite." % local_phile_name)
+            raise errors.CannotOverwriteFile
+
         # Check content length
         content_length = header.get("content-length", None)
         if content_length.isdigit():
@@ -307,53 +314,9 @@ class CarpetBag(BaseCarpetBag):
         # Get the file.
         response = self.get(url, payload=payload)
 
-        # Figure out where to save the file.
-        if os.path.isdir(destination):
-            destination_dir = destination
+        open(local_phile_name, "wb").write(response.content)
 
-        elif destination[len(destination) - 1] == "/":
-            destination_dir = destination
-        else:
-            destination_dir = destination[:destination.rfind("/")]
-
-        destination_last = destination[destination.rfind("/") + 1:]
-        self._prep_destination(destination_dir)
-
-        # Decide the file name.
-        file_extension = self._content_type_to_extension(content_type)
-        url_disect = ct.url_disect(url)
-
-        # If the chosen destination is a directory, find a name for the file.
-        if os.path.isdir(destination):
-            phile_name = url_disect["last"]
-            if "." not in phile_name:
-                if file_extension:
-                    phile_name = phile_name + file_extension
-
-            elif "." in url_disect["last"]:
-                file_extension = url_disect["url"][:url_disect["url"].rfind(".") + 1]
-                phile_name = url_disect["last"]
-                full_phile_name = os.path.join(destination, phile_name)
-
-        else:
-
-            # If the choosen drop is not a directory, use the name given.
-            if "." in destination_last:
-                full_phile_name = os.path.join(destination_dir, destination_last)
-
-            elif "." in url_disect["last"]:
-                phile_name = url_disect["last"][:url_disect["last"].rfind(".")]
-                file_extension = url_disect["last"][url_disect["last"].rfind(".") + 1:]
-
-                full_phile_name = destination_dir + "%s.%s" % (phile_name, file_extension)
-
-        if os.path.exists(full_phile_name) and not overwrite:
-            logging.error("File %s already exists, use carpetbag.save(overwrite=True) to overwrite." % full_phile_name)
-            raise errors.CannotOverwriteFile
-
-        open(full_phile_name, "wb").write(response.content)
-
-        return full_phile_name
+        return local_phile_name
 
     def search(self, query, engine="duckduckgo"):
         """
@@ -406,16 +369,12 @@ class CarpetBag(BaseCarpetBag):
         Parses a response from the scraper with the ParseResponse module which leverages Beautiful Soup.
 
         :param response: Optional content to parse, or will use the last response.
-        :type response: Response obj
+        :type response: <Response> obj
         :returns: Parsed response, with bs4 parsed soup.
-        :type: ParsedResponse obj
+        :type: <ParseResponse> obj
         """
-        # if not self.last_response and not response:
-        #     logging.warning("No response to parse")
-        #     return
         if response:
-            x = ParseResponse(response)
-            return x
+            return ParseResponse(response)
         else:
             return ParseResponse(self.last_response)
 
