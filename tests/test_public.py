@@ -2,19 +2,17 @@
 
 """
 import os
+import re
 
 import pytest
-import vcr
 
 from carpetbag import CarpetBag
 from carpetbag import user_agent
 from carpetbag import errors
 from carpetbag import carpet_tools as ct
 
-CASSET_DIR = os.path.join(
-    os.path.dirname(os.path.realpath(__file__)),
-    "data/vcr_cassettes")
-
+UNIT_TEST_URL = os.environ.get('BAD_ACTOR_URL', 'https//www.bad-actor.services/')
+UNIT_TEST_URL_BROKEN = "http://0.0.0.0:90/"
 UNIT_TEST_AGENT = "CarpetBag v%s/ UnitTests" % CarpetBag.__version__
 
 
@@ -99,7 +97,7 @@ class TestPublic(object):
         current_ip = bagger.get_outbound_ip()
 
         # @todo: The ip check is not currently working. Need to fix!
-        # assert no_proxy_ip != current_ip
+        assert no_proxy_ip != current_ip
 
         assert bagger.use_random_public_proxy(test_proxy=True)
 
@@ -185,17 +183,19 @@ class TestPublic(object):
 
         """
         bagger = CarpetBag()
-        bagger.get('reddit.com')
         ip = bagger.get_outbound_ip()
-        assert ip == "184.153.235.188"
-        assert bagger.outbound_ip == "184.153.235.188"
+        assert re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", ip)  # Something to the tune of "184.153.235.188"
+        assert re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", bagger.outbound_ip)  # Something to the tune of "184.153.235.188"
 
     def test_reset_identity(self):
         """
+        Tests the CarpetBag().reset_identity() method, makeing sure:
+            - We reset the User-Agent if the use_random_user_agent() method has been invoked.
+            - We pick a new proxy if the use_random_public_proxy() method has been invoked.
+
         """
         bagger = CarpetBag()
         bagger.use_random_user_agent()
-        # with vcr.use_cassette(os.path.join(CASSET_DIR, "public_reset_identity.yaml")):
         bagger.use_random_public_proxy()
 
         first_ip = bagger.get_outbound_ip()
@@ -207,6 +207,6 @@ class TestPublic(object):
 
         assert first_ua != bagger.user_agent
         assert first_proxy != bagger.proxy
-        # assert first_ip != second_ip
+        assert first_ip != second_ip
 
 # End File carpetbag/tests/test_public.py

@@ -11,7 +11,6 @@ import shutil
 import arrow
 import pytest
 import requests
-# import vcr
 
 from carpetbag import CarpetBag
 from carpetbag import carpet_tools as ct
@@ -19,12 +18,9 @@ from carpetbag import errors
 
 from .data.response_data import GoogleDotComResponse
 
-UNIT_TEST_URL = os.environ.get('BAD_ACTOR_URL')
+UNIT_TEST_URL = os.environ.get('BAD_ACTOR_URL', 'https//www.bad-actor.services/')
 UNIT_TEST_URL_BROKEN = "http://0.0.0.0:90/"
 UNIT_TEST_AGENT = "CarpetBag v%s/ UnitTests" % CarpetBag.__version__
-CASSET_DIR = os.path.join(
-    os.path.dirname(os.path.realpath(__file__)),
-    "data/vcr_cassettes")
 
 
 class TestBaseCarpetBag(object):
@@ -156,7 +152,8 @@ class TestBaseCarpetBag(object):
 
         """
         bagger = CarpetBag()
-        bagger.use_skip_ssl_verify()
+        bagger.use_skip_ssl_verify()  # Test that "verify" is added to the args.
+        bagger.use_random_public_proxy()  # Test that "proxy" is added to the args.
 
         request_args = bagger._fmt_request_args(
             "GET",
@@ -168,6 +165,7 @@ class TestBaseCarpetBag(object):
         assert request_args["url"] == UNIT_TEST_URL
         assert request_args["headers"] == {"Content-Type": "application/json"}
         assert request_args["verify"]
+        assert (request_args["proxies"].get("http") or request_args["proxies"].get("https"))
 
     def test__make(self):
         """
