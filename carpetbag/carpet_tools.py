@@ -188,7 +188,8 @@ def add_missing_protocol(url):
 
 def remove_protocol(url):
     """
-    Adds the protocol "http://" if a protocal is not present.
+    Adds a url's protocol "http://" if a protocal is not present.
+    @note: This doesnt appear to even be used. Could probably be removed.
 
     :param url: The url that may or may not be missing a protocol.
     :type url: str
@@ -201,5 +202,24 @@ def remove_protocol(url):
     if "/" in url:
         url = url[: url.find("/")]
     return url
+
+
+def content_type_to_extension(content_type):
+    """
+    Takes a content type and tries to map it to an extension.
+    @todo: Needs more content types!
+
+    :param content_type: Content type from a request
+    :type content_type: str
+    :returns: The extension translation from the content-type.
+    :rtype: str
+    """
+    if content_type == "image/jpg" or content_type == "image/jpeg":
+        return "jpg"
+    elif content_type == "text/html":
+        return "html"
+    elif content_type == "text/css":
+        return "css"
+    return ""
 
 # EndFile: carpetbag/carpetbag/carpet_tools.py

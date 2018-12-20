@@ -1,5 +1,7 @@
 """Test Base CarpetBag for the private methods of CarpetBag.
 
+bagger.remote_service_api = ct.url_join(UNIT_TEST_URL, 'api')
+
 """
 from datetime import datetime
 import time
@@ -9,24 +11,24 @@ import shutil
 import arrow
 import pytest
 import requests
-# import vcr
 
 from carpetbag import CarpetBag
+from carpetbag import carpet_tools as ct
 from carpetbag import errors
 
 from .data.response_data import GoogleDotComResponse
-from .data import proxy_bag as test_proxy_bag
 
-CASSET_DIR = os.path.join(
-    os.path.dirname(os.path.realpath(__file__)),
-    "data/vcr_cassettes")
+UNIT_TEST_URL = os.environ.get('BAD_ACTOR_URL', 'https//www.bad-actor.services/')
+UNIT_TEST_URL_BROKEN = "http://0.0.0.0:90/"
+UNIT_TEST_AGENT = "CarpetBag v%s/ UnitTests" % CarpetBag.__version__
 
 
 class TestBaseCarpetBag(object):
 
     def test___init__(self):
         """
-        Tests that the module init has correct default values.
+        Tests that the module init has correct default values
+        This test makes no outbound requests.
 
         """
         bagger = CarpetBag()
@@ -55,15 +57,28 @@ class TestBaseCarpetBag(object):
         assert bagger.send_user_agent == ""
         assert bagger.ssl_verify
 
+    def test___repr__(self):
+        """
+        Test CarpetBag's object representation.
+
+        """
+        bagger = CarpetBag()
+        assert str(bagger) == "<CarpetBag>"
+        bagger.proxy["http"] = "http://1.20.101.234:33085"
+        assert str(bagger) == "<CarpetBag Proxy:http://1.20.101.234:33085>"
+        bagger.proxy.pop("http")
+        bagger.proxy["https"] = "https://1.20.101.234:33085"
+        assert str(bagger) == "<CarpetBag Proxy:https://1.20.101.234:33085>"
+
     def test__make_request(self):
         """
         Tests the BaseCarpetBag._make_request() method.
+        @note: This test DOES make outbound web requests.
 
         """
         bagger = CarpetBag()
         bagger.use_skip_ssl_verify()
-        # with vcr.use_cassette(os.path.join(CASSET_DIR, "google.com.yaml")):
-        request = bagger._make_request("GET", "https://www.bad-actor.services/")
+        request = bagger._make_request("GET", UNIT_TEST_URL)
         assert request
         assert request.text
         assert request.status_code == 200
@@ -71,6 +86,7 @@ class TestBaseCarpetBag(object):
     def test__handle_sleep(self):
         """
         Tests the _handle_sleep() method to make sure sleep isnt used if mininum_wait_time is not set.
+        @note: This test DOES make outbound web requests.
 
         """
         MINIMUM_WAIT = 10
@@ -80,14 +96,14 @@ class TestBaseCarpetBag(object):
 
         # Make the first request
         start_1 = datetime.now()
-        bagger.get("https://www.bad-actor.services/")
+        bagger.get(UNIT_TEST_URL)
         end_1 = datetime.now()
         run_time_1 = (end_1 - start_1).seconds
         assert run_time_1 < 5
 
         # Make the second request, to the same domain and check for a pause.
         start_2 = datetime.now()
-        bagger._handle_sleep("https://www.bad-actor.services/")
+        bagger._handle_sleep(UNIT_TEST_URL)
         end_2 = datetime.now()
         run_time_2 = (end_2 - start_2).seconds
         assert run_time_2 >= MINIMUM_WAIT - 1
@@ -97,10 +113,10 @@ class TestBaseCarpetBag(object):
         Tests that headers can be set by the CarpetBag application, and by the end-user.
 
         """
-        scraper = CarpetBag()
-        scraper.headers = {"Content-Type": "application/html"}
-        scraper.user_agent = "Mozilla/5.0 (Windows NT 10.0)"
-        set_headers = scraper._get_headers()
+        bagger = CarpetBag()
+        bagger.headers = {"Content-Type": "application/html"}
+        bagger.user_agent = "Mozilla/5.0 (Windows NT 10.0)"
+        set_headers = bagger._get_headers()
         assert set_headers["Content-Type"] == "application/html"
         assert set_headers["User-Agent"] == "Mozilla/5.0 (Windows NT 10.0)"
 
@@ -136,30 +152,34 @@ class TestBaseCarpetBag(object):
 
         """
         bagger = CarpetBag()
-        bagger.use_skip_ssl_verify()
+        bagger.use_skip_ssl_verify()  # Test that "verify" is added to the args.
+        bagger.use_random_public_proxy()  # Test that "proxy" is added to the args.
 
         request_args = bagger._fmt_request_args(
             "GET",
             {"Content-Type": "application/json"},
-            "https://bad-actor.services")
+            UNIT_TEST_URL)
 
         assert isinstance(request_args, dict)
         assert request_args["method"] == "GET"
-        assert request_args["url"] == "https://bad-actor.services"
+        assert request_args["url"] == UNIT_TEST_URL
         assert request_args["headers"] == {"Content-Type": "application/json"}
         assert request_args["verify"]
+        assert (request_args["proxies"].get("http") or request_args["proxies"].get("https"))
 
     def test__make(self):
         """
         Tests the _make() method of CarpetBag. This is one of the primary methods of CarpetBag, and could always use
         more tests!
+        @note: This test DOES make outbound web requests.
 
         """
         bagger = CarpetBag()
+        bagger.use_skip_ssl_verify()
         # with vcr.use_cassette(os.path.join(CASSET_DIR, "test__make_1.yaml")):
         response = bagger._make(
             method="GET",
-            url="http://www.google.com",
+            url=UNIT_TEST_URL,
             headers={"Content-Type": "application/html"},
             payload={},
             retry=0)
@@ -167,7 +187,7 @@ class TestBaseCarpetBag(object):
         assert response.status_code == 200
         response = bagger._make(
             method="GET",
-            url="http://www.google.com",
+            url=UNIT_TEST_URL,
             headers={"Content-Type": "application/html"},
             payload={},
             retry=0)
@@ -176,18 +196,18 @@ class TestBaseCarpetBag(object):
 
     def test_make_internal(self):
         """
-        Tests the BaseCarpetBagger._make_internal() method to make sure we're communicating with the bad-actor.services
-        API correctly.
+        Tests the BaseCarpetBagger()._make_internal() method to make sure we're communicating with the
+        Bad-Actor.Services API correctly.
+        @note: This test DOES make outbound web requests.
 
         """
         bagger = CarpetBag()
         response = bagger._make_internal("ip")
         assert str(response["ip"])
 
-        # @todo: Need to capture the NoRemoteServicesConnection on a bad url.
-        # bagger.remote_service_api = 'http://0.0.0.0:90/api'
-        # with pytest.raises(errors.NoRemoteServicesConnection):
-        #     response = bagger._make_internal('ip')
+        bagger.remote_service_api = UNIT_TEST_URL_BROKEN
+        with pytest.raises(errors.NoRemoteServicesConnection):
+            response = bagger._make_internal('ip')
 
     def test__handle_connection_error(self):
         """
@@ -200,7 +220,7 @@ class TestBaseCarpetBag(object):
         with pytest.raises(requests.exceptions.ConnectionError):
             bagger._handle_connection_error(
                 method="GET",
-                url="https://0.0.0.0:90/",
+                url=UNIT_TEST_URL_BROKEN,
                 headers={},
                 payload={},
                 retry=0)
@@ -213,7 +233,11 @@ class TestBaseCarpetBag(object):
         """
         fake_start = int(round(time.time() * 1000)) - 5000
         bagger = CarpetBag()
-        assert isinstance(bagger._after_request(fake_start, "https://www.google.com", GoogleDotComResponse()), int)
+        after_request = bagger._after_request(
+            fake_start,
+            UNIT_TEST_URL_BROKEN,
+            GoogleDotComResponse())
+        assert isinstance(after_request, int)
 
     def test__increment_counters(self):
         """
@@ -232,17 +256,18 @@ class TestBaseCarpetBag(object):
 
     def test__start_manifest(self):
         """
-        Tests the BaseCarpetBag._start_new_manifest() to make sure it creates the record manifest.
+        Tests the BaseCarpetBag._start_request_manifest() to make sure it creates the record manifest.
 
         """
         bagger = CarpetBag()
-        new_manifest = bagger._start_new_manifest("GET", "https://www.bad-actor.services")
+        new_manifest = bagger._start_request_manifest("GET", "https://www.bad-actor.services")
         assert isinstance(new_manifest, dict)
         assert new_manifest["method"] == "GET"
         assert new_manifest["url"] == "https://www.bad-actor.services"
         # assert isinstance(new_manifest["date_start"], arrow)
         assert not new_manifest["date_end"]
         assert not new_manifest["response"]
+        assert not new_manifest["attempts"]
         assert len(bagger.manifest) == 1
 
     def test__end_manifest(self):
@@ -270,7 +295,19 @@ class TestBaseCarpetBag(object):
         assert bagger.manifest[0]["date_end"]
         assert bagger.manifest[0]["roundtrip"] == 1.54
 
-    def test_prep_destination(self):
+    def test__determine_save_file_name(self):
+        """
+        Tests the BaseCarpetBag()._determine_save_file_name()
+
+        """
+        bagger = CarpetBag()
+        full_phile_name = bagger._determine_save_file_name(
+            ct.url_join(UNIT_TEST_URL, "test/download/hacker-man.gif"),
+            "image/gif",
+            "/opt/carpetbag/tests/data")
+        assert full_phile_name == "/opt/carpetbag/tests/data/hacker-man.gif"
+
+    def test__prep_destination(self):
         """
         Tests the BaseCarpetBag._prep_destination method to make sure we have dirs ready to go when needed to store
         files into.

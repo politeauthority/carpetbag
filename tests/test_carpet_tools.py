@@ -22,7 +22,8 @@ class TestCarpetTools(object):
 
     def test_url_concat(self):
         """
-        Tests the carpet_tools.url_concat() method, to make sure we're not adding any extra slashes or making weird urls.
+        Tests the carpet_tools.url_concat() method, to make sure we're not adding any extra slashes or making weird
+        urls.
 
         """
         assert ct.url_join("www.bad-actor.services", "api") == "https://www.bad-actor.services/api"
@@ -81,9 +82,19 @@ class TestCarpetTools(object):
 
     def test_get_domain(self):
         """
-        Tests the BaseCarpetBag._get_domain method to see if it properly picks the domain from a url.
+        Tests the CarpetBag.carpet_tools.get_domain() method to see if it properly picks the domain from a url.
 
         """
         assert ct.get_domain("http://www.google.com") == "google.com"
         assert ct.get_domain("http://localhost") == "localhost"
         assert ct.get_domain("http://192.168.1.19:5010") == "192.168.1.19"
+
+    def test_content_type_to_extension(self):
+        """
+        Tests the CarpetBag.carpet_tools.content_type_to_extension() method to make sure we're properly translatining.
+
+        """
+        ct.content_type_to_extension("image/jpg") == "jpg"
+        ct.content_type_to_extension("image/jpeg") == "jpg"
+        ct.content_type_to_extension("text/html") == "html"
+        ct.content_type_to_extension("text/css") == "css"
