@@ -181,7 +181,7 @@ class CarpetBag(BaseCarpetBag):
         :returns: A brand new user agent string.
         :rtype: str
         """
-        new_user_agent = user_agent.generate_navigator()['user_agent']
+        new_user_agent = user_agent.generate_navigator()["user_agent"]
         if new_user_agent == self.user_agent:
             self.get_new_user_agent()
 
@@ -265,9 +265,9 @@ class CarpetBag(BaseCarpetBag):
             del self.proxy_bag[0]
 
         if "http" in self.proxy:
-            self.proxy.pop('http')
+            self.proxy.pop("http")
         if "https" in self.proxy:
-            self.proxy.pop('https')
+            self.proxy.pop("https")
 
         chosen_proxy = self.proxy_bag[0]
 
@@ -380,7 +380,7 @@ class CarpetBag(BaseCarpetBag):
         elif title == "Congratulations. This browser is configured to use Tor.":
             return True
 
-        logging.error('There was an unexpected error checking if Tor is properly configured.')
+        logging.error("There was an unexpected error checking if Tor is properly configured.")
         return False
 
     def parse(self, response=None):
