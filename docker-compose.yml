@@ -1,4 +1,4 @@
-version: '3'
+version: '2'
 services:
   carpetbag:
     build: ./
@@ -7,11 +7,11 @@ services:
       - ./:/opt/carpetbag
     environment:
       - BAD_ACTOR_URL=https://www.bad-actor.services/
-#  tor:
-#    image: zeta0/alpine-tor
-#    environment:
-#      - privoxy=1
-#      - tors=25
-#    ports:
-#      - 8118:8118
-#      - 2090:2090
+  tor:
+    image: zeta0/alpine-tor
+    environment:
+      - privoxy=1
+      - tors=25
+    ports:
+      - 8118:8118
+      - 2090:2090

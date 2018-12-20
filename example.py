@@ -38,21 +38,20 @@ def public_proxy_with_reset():
     print(response)
 
 
-def public_proxy_continent():
-    """
-    """
+def demo_tor_usage():
     bagger = CarpetBag()
-    bagger.use_random_public_proxy(continents=["North America"], ssl_only=True)
+    bagger.proxy["https"] = "https://tor:8118"
+    tor = bagger.check_tor()
+    if tor:
+        print("Congratulations, Tor is working properly")
+    else:
+        print("Sorry, something is not working connecting to Tor.")
+
+    ip = bagger.get_outbound_ip()
+    print(ip)
 
 
-def get_outbound_ip():
-    bagger = CarpetBag()
-    print(bagger.get_outbound_ip())
-
-
-if __name__ == "__main__":
-    public_proxy_with_reset()
-    get_outbound_ip()
+demo_tor_usage()
 
 
 # EndFile: carpetbag/example.py

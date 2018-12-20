@@ -176,7 +176,6 @@ class TestBaseCarpetBag(object):
         """
         bagger = CarpetBag()
         bagger.use_skip_ssl_verify()
-        # with vcr.use_cassette(os.path.join(CASSET_DIR, "test__make_1.yaml")):
         response = bagger._make(
             method="GET",
             url=UNIT_TEST_URL,
@@ -298,6 +297,7 @@ class TestBaseCarpetBag(object):
     def test__determine_save_file_name(self):
         """
         Tests the BaseCarpetBag()._determine_save_file_name()
+        @todo: Needs more test cases
 
         """
         bagger = CarpetBag()

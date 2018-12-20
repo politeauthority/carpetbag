@@ -153,19 +153,20 @@ class TestPublic(object):
         """
         bagger = CarpetBag()
         bagger.use_skip_ssl_verify()
-        # with vcr.use_cassette(os.path.join(CASSET_DIR, 'search_one.yaml')):
         response = bagger.search('learn python')
         assert response['results'][0]['title'] == 'Learn Python - Free Interactive Python Tutorial'
 
-    # def test_check_tor(self):
-    #     """
-    #     Tests the method CarpetBag().check_tor(), this test mocks out a failure of connecting to tor.
+    def test_check_tor(self):
+        """
+        Tests the method CarpetBag().check_tor(), this test mocks out a failure of connecting to tor.
 
-    #     """
-    #     bagger = CarpetBag()
-    #     with vcr.use_cassette(os.path.join(CASSET_DIR, "public_tor_fail.yaml")):
-    #         tor = bagger.check_tor()
-    #         assert not tor
+        """
+        bagger = CarpetBag()
+        tor_1 = bagger.check_tor()
+        bagger.proxy["https"] = "https://tor:8118"
+        tor_2 = bagger.check_tor()
+        assert not tor_1
+        assert tor_2
 
     def test_parse(self):
         """
@@ -185,7 +186,9 @@ class TestPublic(object):
         bagger = CarpetBag()
         ip = bagger.get_outbound_ip()
         assert re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", ip)  # Something to the tune of "184.153.235.188"
-        assert re.match(r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$", bagger.outbound_ip)  # Something to the tune of "184.153.235.188"
+        assert re.match(
+            r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",
+            bagger.outbound_ip)  # Something to the tune of "184.153.235.188"
 
     def test_reset_identity(self):
         """

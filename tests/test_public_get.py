@@ -7,7 +7,6 @@ import os
 
 import requests
 import pytest
-import vcr
 
 from carpetbag import CarpetBag, carpet_tools
 
@@ -29,7 +28,6 @@ class TestPublicGet(object):
         bagger = CarpetBag()
         bagger.use_skip_ssl_verify()
         api_url = carpet_tools.url_join(bagger.remote_service_api, "proxies/1")
-        # with vcr.use_cassette(SUCCESS_RETURN_CASSET):
         response = bagger.get(api_url)
         assert response.status_code == 200
 
@@ -71,8 +69,7 @@ class TestPublicGet(object):
         """
         scraper = CarpetBag()
         scraper.user_agent = "Some-User-Agent"
-        with vcr.use_cassette(os.path.join(CASSET_DIR, "get_cant_find_host.yaml")):
-            with pytest.raises(requests.exceptions.ConnectionError):
-                scraper.get("http://0.0.0.0:90/api/symbol/")
+        with pytest.raises(requests.exceptions.ConnectionError):
+            scraper.get("http://0.0.0.0:90/api/symbol/")
 
 # End File carpetbag/tests/test_public_get.py

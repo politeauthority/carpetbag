@@ -3,17 +3,11 @@ This uses the vcr module to mimick responses to http requests. This tests the mo
 
 """
 from datetime import datetime
-import os
 
 import requests
 import pytest
-import vcr
 
 from carpetbag import CarpetBag
-
-CASSET_DIR = os.path.join(
-    os.path.dirname(os.path.realpath(__file__)),
-    "data/vcr_cassettes")
 
 
 class TestTimings(object):
@@ -50,9 +44,8 @@ class TestTimings(object):
 
         bagger = CarpetBag()
         bagger.wait_and_retry_on_connection_error = 3
-        with vcr.use_cassette(os.path.join(CASSET_DIR, "timings_retry_bad_conn.yaml")):
-            with pytest.raises(requests.exceptions.ConnectionError):
-                bagger.get("http://0.0.0.0:90/api/symbols/1")
+        with pytest.raises(requests.exceptions.ConnectionError):
+            bagger.get("http://0.0.0.0:90/api/symbols/1")
 
         end = datetime.now()
         run_time = (end - start).seconds

@@ -14,7 +14,6 @@ import requests
 
 from .base_carpetbag import BaseCarpetBag
 from .parse_response import ParseResponse
-from . import carpet_tools as ct
 from . import user_agent
 from . import errors
 
@@ -174,7 +173,7 @@ class CarpetBag(BaseCarpetBag):
             self.user_agent = ""
             return False
 
-    def get_public_proxies(self, continent="", ssl_only=False):
+    def get_public_proxies(self, continent=""):
         """
         Gets list of free public proxies and loads them into a list, currently just selecting from free-proxy-list.
         @todo: Add filtering by country/ continent.
@@ -193,7 +192,6 @@ class CarpetBag(BaseCarpetBag):
         try:
             payload = {
                 "continent": continent,
-                "ssl_only": ssl_only
             }
             response = self._make_internal("proxies", payload)
         except errors.NoRemoteServicesConnection:
@@ -248,15 +246,21 @@ class CarpetBag(BaseCarpetBag):
             self.logger.error("Proxy bag is empty! Cannot reset Proxy from Proxy Bag.")
             raise errors.EmptyProxyBag
 
-        # Remove the current proxy if one is set.
+        # Remove the current proxy from the proxy bag if one is set.
         if self.proxy:
             del self.proxy_bag[0]
 
+        if "http" in self.proxy:
+            self.proxy.pop('http')
+        if "https" in self.proxy:
+            self.proxy.pop('https')
+
         chosen_proxy = self.proxy_bag[0]
-        self.proxy = {"http": chosen_proxy["address"]}
 
         if chosen_proxy["ssl"]:
             self.proxy = {"https": chosen_proxy["address"]}
+        else:
+            self.proxy = {"http": chosen_proxy["address"]}
 
     def use_skip_ssl_verify(self, val=True):
         """
@@ -359,10 +363,11 @@ class CarpetBag(BaseCarpetBag):
         title = parsed.get_title()
         if title == "Sorry. You are not using Tor.":
             return False
-        elif title == "yeah":
+        elif title == "Congratulations. This browser is configured to use Tor.":
             return True
 
-        return None
+        logging.error('There was an unexpected error checking if Tor is properly configured.')
+        return False
 
     def parse(self, response=None):
         """

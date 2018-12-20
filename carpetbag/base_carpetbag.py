@@ -378,23 +378,14 @@ class BaseCarpetBag(object):
                     }
                     params["filters"].append(filter_continent)
 
-                # Add ssl filter
-                # @todo: SSL filtering is not working currently, looks like an API problem though.
-                if payload.get("ssl_only"):
-                    filters_ssl = {
-                        "name": "ssl",
-                        "op": "eq",
-                        "ssl": 1
-                    }
-                    params["filters"].append(filters_ssl)
-
             params["q"]["order_by"] = {
                 "field": "quality",
                 "direction": "desc"
             }
 
             params["q"]["limit"] = 100
-            params["q"]["page"] = 1
+            if page != 1:
+                params["q"]["page"] = page
 
         request_args = self._fmt_request_args(
             method="GET",
