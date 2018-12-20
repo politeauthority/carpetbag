@@ -11,10 +11,10 @@ import os
 from random import shuffle
 
 import requests
+import user_agent
 
 from .base_carpetbag import BaseCarpetBag
 from .parse_response import ParseResponse
-from . import user_agent
 from . import errors
 
 
@@ -166,12 +166,26 @@ class CarpetBag(BaseCarpetBag):
         """
         if val:
             self.random_user_agent = True
-            self.user_agent = user_agent.get_random_ua()
+            self.user_agent = self.get_new_user_agent()
             return True
         else:
             self.random_user_agent = False
             self.user_agent = ""
             return False
+
+    def get_new_user_agent(self):
+        """
+        Gets a new user agent string from the user_agent module, making sure that if one has already been selected, it's
+        not reused.
+
+        :returns: A brand new user agent string.
+        :rtype: str
+        """
+        new_user_agent = user_agent.generate_navigator()['user_agent']
+        if new_user_agent == self.user_agent:
+            self.get_new_user_agent()
+
+        return new_user_agent
 
     def get_public_proxies(self, continent=""):
         """
@@ -407,7 +421,7 @@ class CarpetBag(BaseCarpetBag):
 
         """
         if self.random_user_agent:
-            self.user_agent = user_agent.get_random_ua(except_user_agent=self.user_agent)
+            self.user_agent = self.get_new_user_agent()
 
         if self.random_proxy_bag:
             self.reset_proxy_from_bag()

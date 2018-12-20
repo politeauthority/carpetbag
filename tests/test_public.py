@@ -7,7 +7,6 @@ import re
 import pytest
 
 from carpetbag import CarpetBag
-from carpetbag import user_agent
 from carpetbag import errors
 from carpetbag import carpet_tools as ct
 
@@ -31,13 +30,26 @@ class TestPublic(object):
 
         assert bagger.use_random_user_agent()  # Turn on random user agent.
         assert bagger.random_user_agent
-        assert bagger.user_agent in user_agent.get_flattened_uas()  # Check that the user agent is a random one.
         assert not bagger.use_random_user_agent(False)
         assert bagger.user_agent == ""
 
         bagger.use_skip_ssl_verify()
         bagger.get(bagger.remote_service_api)
         assert bagger.send_user_agent == ""  # Test that we send the chosen user agent
+
+    def test_get_new_user_agent(self):
+        """
+        Tests the CarpetBag().get_new_user_agent() method to make sure gets user agents and does not retry the same user
+        agent that is currently being used by CarpetBag.
+
+        """
+        bagger = CarpetBag()
+        ua_1 = bagger.get_new_user_agent()
+        bagger.user_agent = ua_1
+        ua_2 = bagger.get_new_user_agent()
+
+        assert isinstance(ua_1, str)
+        assert ua_1 != ua_2
 
     def test_get_public_proxies(self):
         """
