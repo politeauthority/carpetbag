@@ -7,9 +7,8 @@ import os
 
 import requests
 import pytest
-import vcr
 
-from carpetbag import CarpetBag
+from carpetbag import CarpetBag, carpet_tools
 
 CASSET_DIR = os.path.join(
     os.path.dirname(os.path.realpath(__file__)),
@@ -28,10 +27,9 @@ class TestPublicGet(object):
         """
         bagger = CarpetBag()
         bagger.use_skip_ssl_verify()
-        api_url = CarpetBag.url_join(bagger.remote_service_api, 'proxies/1')
-        with vcr.use_cassette(SUCCESS_RETURN_CASSET):
-            response = bagger.get(api_url)
-            assert response.status_code == 200
+        api_url = carpet_tools.url_join(bagger.remote_service_api, "proxies/1")
+        response = bagger.get(api_url)
+        assert response.status_code == 200
 
     def test_get_user_agent(self):
         """
@@ -41,12 +39,11 @@ class TestPublicGet(object):
         bagger = CarpetBag()
         bagger.use_skip_ssl_verify()
         bagger.user_agent = "Some-User-Agent"
-        api_url = CarpetBag.url_join(bagger.remote_service_api, 'proxies/1')
-        with vcr.use_cassette(SUCCESS_RETURN_CASSET):
-            response = bagger.get(api_url)
-            assert response.status_code == 200
-            assert bagger.send_user_agent == 'Some-User-Agent'
-            assert bagger.user_agent == 'Some-User-Agent'
+        api_url = carpet_tools.url_join(bagger.remote_service_api, "proxies/1")
+        response = bagger.get(api_url)
+        assert response.status_code == 200
+        assert bagger.send_user_agent == "Some-User-Agent"
+        assert bagger.user_agent == "Some-User-Agent"
 
     def test_get_last_response_info(self):
         """
@@ -56,28 +53,14 @@ class TestPublicGet(object):
         bagger = CarpetBag()
         bagger.use_skip_ssl_verify()
         bagger.user_agent = "Some-User-Agent"
-        api_url = CarpetBag.url_join(bagger.remote_service_api, 'proxies/1')
-        with vcr.use_cassette(SUCCESS_RETURN_CASSET):
-            assert not bagger.last_response
-            response = bagger.get(api_url)
-            assert response.status_code == 200
-            # assert scraper.last_response.status_code == 200
-            assert bagger.request_total == 1
-            assert bagger.request_count == 1
-            assert type(bagger.last_request_time) == datetime
-
-    def test_get_404_response(self):
-        """
-        Tests CarpetBag's main public method to make sure we're getting the responses we expect.
-
-        """
-        bagger = CarpetBag()
-        bagger.user_agent = 'Some-User-Agent'
-        bagger.use_skip_ssl_verify()
-        api_url = CarpetBag.url_join(bagger.remote_service_api, 'a_404')
-        with vcr.use_cassette(os.path.join(CASSET_DIR, 'get_404.yaml')):
-            response = bagger.get(api_url)
-            assert response.status_code == 404
+        api_url = carpet_tools.url_join(bagger.remote_service_api, "proxies/1")
+        assert not bagger.last_response
+        response = bagger.get(api_url)
+        assert response.status_code == 200
+        # assert scraper.last_response.status_code == 200
+        assert bagger.request_total == 1
+        assert bagger.request_count == 1
+        assert type(bagger.last_request_time) == datetime
 
     def test_get_host_unknown(self):
         """
@@ -85,9 +68,8 @@ class TestPublicGet(object):
 
         """
         scraper = CarpetBag()
-        scraper.user_agent = 'Some-User-Agent'
-        with vcr.use_cassette(os.path.join(CASSET_DIR, 'get_cant_find_host.yaml')):
-            with pytest.raises(requests.exceptions.ConnectionError):
-                scraper.get('http://0.0.0.0:90/api/symbol/1')
+        scraper.user_agent = "Some-User-Agent"
+        with pytest.raises(requests.exceptions.ConnectionError):
+            scraper.get("http://0.0.0.0:90/api/symbol/")
 
-# End File carpetbag/tests/test_get.py
+# End File carpetbag/tests/test_public_get.py
