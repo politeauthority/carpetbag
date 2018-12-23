@@ -1,9 +1,11 @@
 """Test CarpetBag's public methods that are not the basic HTTP verbs.
 
 """
+from datetime import datetime
 import os
 import re
 
+import requests
 import pytest
 
 from carpetbag import CarpetBag
@@ -16,6 +18,59 @@ UNIT_TEST_AGENT = "CarpetBag v%s/ UnitTests" % CarpetBag.__version__
 
 
 class TestPublic(object):
+
+    def test_get(self):
+        """
+        Tests the CarpetBag.get() method and some of the many different ways that it can be used.
+
+        """
+        bagger = CarpetBag()
+        bagger.use_skip_ssl_verify()
+        bagger.user_agent = UNIT_TEST_AGENT
+        first_successful_response = bagger.get(UNIT_TEST_URL)
+        second_successful_response = bagger.get(ct.url_join(UNIT_TEST_URL, "api/proxies"))
+
+        self._run_get_successful_test(bagger, first_successful_response)
+        self._run_inspect_manifest(bagger)
+
+        self._run_unabled_to_connect(bagger)
+
+    def _run_get_successful_test(self, bagger, successful_response):
+        """
+        Tests CarpetBag.get() to make sure a successfull response sets and returns everything that it should.
+
+        :param bagger: The current CarpetBag instance running through the test.
+        :type bagger: <CarpetBag> obj
+        """
+        assert successful_response
+        assert successful_response.status_code == 200
+        assert isinstance(bagger.last_request_time, datetime)
+        assert bagger.user_agent == UNIT_TEST_AGENT
+
+    def _run_inspect_manifest(self, bagger):
+        """
+
+        :param bagger: The current CarpetBag instance running through the test.
+        :type bagger: <CarpetBag> obj
+        """
+        assert isinstance(bagger.manifest, list)
+        assert len(bagger.manifest) == 2
+        assert bagger.manifest[0]["method"] == "GET"
+        assert bagger.manifest[0]["roundtrip"] > 0
+        assert bagger.manifest[0]["attempt_count"] > 0
+        assert isinstance(bagger.manifest[0]["errors"], list)
+        assert len(bagger.manifest[0]["errors"]) == 0
+        assert bagger.manifest[1]["url"] == UNIT_TEST_URL
+
+    def _run_unabled_to_connect(self, bagger):
+        """
+        Tests Carpetbag().get() handling of ConnectionErrors
+
+        :param bagger: The current CarpetBag instance running through the test.
+        :type bagger: <CarpetBag> obj
+        """
+        with pytest.raises(requests.exceptions.ConnectionError):
+            bagger.get(UNIT_TEST_URL_BROKEN)
 
     def test_use_random_user_agent(self):
         """

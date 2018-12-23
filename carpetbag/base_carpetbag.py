@@ -5,6 +5,7 @@ from datetime import datetime
 import json
 import logging
 import os
+import sys
 import time
 import urllib3
 from urllib3.exceptions import InsecureRequestWarning
@@ -94,6 +95,8 @@ class BaseCarpetBag(object):
         self.random_proxy_bag = False
         self.send_user_agent = ""
         self.ssl_verify = True
+        self.send_usage_stats = False
+        self.usage_stats_API_KEY = ""
         self.logger = logging.getLogger(__name__)
 
     def __repr__(self):
@@ -136,6 +139,7 @@ class BaseCarpetBag(object):
 
         roundtrip = self._after_request(ts_start, url, response)
         self._end_manifest(response, roundtrip)
+        response.roundtrip = roundtrip
         self.logger.debug("Repsonse took %s for %s" % (roundtrip, url))
 
         return response
@@ -489,13 +493,13 @@ class BaseCarpetBag(object):
         new_manifest = {
             "method": method,
             "url": url,
-            "payload_size ": 0,
-            "date_start": arrow.utcnow(),
+            "payload_size ": sys.getsizeof(payload),
+            "date_start": arrow.utcnow().datetime,
             "date_end": None,
             "roundtrip": None,
             "response": None,
-            "retry": 0,
-            "attempts": []
+            "attempt_count": 1,
+            "errors": []
         }
         self.manifest.insert(0, new_manifest)
         return new_manifest
@@ -511,8 +515,9 @@ class BaseCarpetBag(object):
         :returns: True if everything worked.
         :type: bool
         """
-        self.manifest[0]["date_end"] = arrow.utcnow()
+        self.manifest[0]["date_end"] = arrow.utcnow().datetime
         self.manifest[0]["roundtrip"] = roundtrip
+        self.manifest[0]["response"] = response
 
         return True
 
