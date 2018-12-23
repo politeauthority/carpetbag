@@ -56,6 +56,9 @@ class TestBaseCarpetBag(object):
         assert not bagger.random_proxy_bag
         assert bagger.send_user_agent == ""
         assert bagger.ssl_verify
+        assert not bagger.send_usage_stats
+        assert isinstance(bagger.usage_stats_API_KEY, str)
+        assert not bagger.usage_stats_API_KEY
 
     def test___repr__(self):
         """
@@ -259,14 +262,14 @@ class TestBaseCarpetBag(object):
 
         """
         bagger = CarpetBag()
-        new_manifest = bagger._start_request_manifest("GET", "https://www.bad-actor.services")
+        new_manifest = bagger._start_request_manifest("GET", UNIT_TEST_URL)
         assert isinstance(new_manifest, dict)
         assert new_manifest["method"] == "GET"
-        assert new_manifest["url"] == "https://www.bad-actor.services"
-        # assert isinstance(new_manifest["date_start"], arrow)
+        assert new_manifest["url"] == UNIT_TEST_URL
+        assert isinstance(new_manifest["date_start"], datetime)
         assert not new_manifest["date_end"]
         assert not new_manifest["response"]
-        assert not new_manifest["attempts"]
+        assert not new_manifest["errors"]
         assert len(bagger.manifest) == 1
 
     def test__end_manifest(self):
@@ -278,7 +281,7 @@ class TestBaseCarpetBag(object):
         bagger = CarpetBag()
         current_manifest = {
             "method": "GET",
-            "url": "https://www.bad-actor.services/",
+            "url": UNIT_TEST_URL,
             "payload_size ": 0,
             "date_start": arrow.utcnow(),
             "date_end": None,
