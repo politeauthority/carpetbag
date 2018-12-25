@@ -44,7 +44,6 @@ def url_add_missing_protocal(url, default="http"):
     """
     Adds a protocal to a URL if one is not present
 
-
     :param url: URL that may or may not have a protocol.
     :type url: str
     :param default: The protocal to default to if one is not present.
@@ -53,7 +52,7 @@ def url_add_missing_protocal(url, default="http"):
     :rtype: str
     """
     if url[:6] != "https:" and url[:5] != "http":
-        url = "%s://%s" (default, url)
+        url = "%s://%s" % (default, url)
     return url
 
 

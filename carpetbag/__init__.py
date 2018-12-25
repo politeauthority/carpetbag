@@ -463,7 +463,6 @@ class CarpetBag(BaseCarpetBag):
     def set_header(self, key, value):
         """
         Sets the headers to be sent over requests.
-        @todo: Unit test.
 
         :param key: The header key.
         :type key: str
@@ -479,7 +478,6 @@ class CarpetBag(BaseCarpetBag):
     def set_header_once(self, key, value):
         """
         Sets a header once for a request that returns successfully.
-        @todo: Unit test.
 
         :param key: The header key.
         :type key: str
