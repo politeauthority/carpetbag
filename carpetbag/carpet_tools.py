@@ -40,7 +40,7 @@ def url_concat(*args):
     return url_create(url_segs)
 
 
-def url_add_missing_protocal(url, default="http"):
+def url_add_missing_protocol(url, default="http"):
     """
     Adds a protocal to a URL if one is not present
 
@@ -76,7 +76,7 @@ def url_disect(url):
         "last": "",
         "params": {},
     }
-    url = add_missing_protocol(url)
+    url = url_add_missing_protocol(url)
 
     url_pieces["protocol"] = url[:url.find("://")]
 
@@ -294,21 +294,6 @@ def json_date(the_date=None):
     ret = the_date.strftime("%Y-%m-%d %H:%M:%S")
 
     return ret
-
-
-def add_missing_protocol(url):
-    """
-    Adds the protocol "http://" if a protocal is not present.
-
-    :param url: The url that may or may not be missing a protocol.
-    :type url: str
-    :returns: Safe url with protocal.
-    :rtype: str
-    """
-    if url[:8] == "https://" or url[:7] == "http://":
-        return url
-    else:
-        return "%s%s" % ("http://", url)
 
 
 def content_type_to_extension(content_type):

@@ -127,9 +127,10 @@ class BaseCarpetBag(object):
         :rtype: <Requests.response> obj
         """
         ts_start = int(round(time.time() * 1000))
-        url = ct.add_missing_protocol(url)
+        url = ct.url_add_missing_protocol(url)
         headers = self._get_headers()
-        urllib3.disable_warnings(InsecureRequestWarning)
+        # urllib3.disable_warnings(InsecureRequestWarning)
+        urllib3.disable_warnings()
         self._start_request_manifest(method, url, payload)
         self._increment_counters()
         self._handle_sleep(url)

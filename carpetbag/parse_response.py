@@ -5,7 +5,7 @@ Handles parsing various html pages. This module is pretty expiremental right now
 from bs4 import BeautifulSoup
 import tld
 
-from . import carpet_tools
+from . import carpet_tools as ct
 
 
 class ParseResponse(object):
@@ -95,7 +95,7 @@ class ParseResponse(object):
                 {
                     "title": link.h2.text.strip(),
                     "description": link.find("a", {"class": "result__snippet"}).text.strip(),
-                    "url": carpet_tools.add_missing_protocol(link.find("a", {"class": "result__url"}).text.strip())
+                    "url": ct.url_add_missing_protocol(link.find("a", {"class": "result__url"}).text.strip())
                 }
             )
         return results

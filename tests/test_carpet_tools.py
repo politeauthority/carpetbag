@@ -34,14 +34,14 @@ class TestCarpetTools(object):
         assert ct.url_concat("https://www.bad-actor.services", "/") == "https://www.bad-actor.services/"
         assert ct.url_concat("https://www.bad-actor.services/", "/") == "https://www.bad-actor.services/"
 
-    def test_url_add_missing_protocal(self):
+    def test_url_add_missing_protocol(self):
         """
-        Tests CarpetBag.carpet_tools.url_add_missing_protocal() to make it adds protocals when it should.
+        Tests CarpetBag.carpet_tools.url_add_missing_protocol() to make it adds protocals when it should.
 
         """
-        assert ct.url_add_missing_protocal("https://www.bad-actor.services/") == "https://www.bad-actor.services/"
-        assert ct.url_add_missing_protocal("www.bad-actor.services/") == "http://www.bad-actor.services/"
-        assert ct.url_add_missing_protocal(
+        assert ct.url_add_missing_protocol("https://www.bad-actor.services/") == "https://www.bad-actor.services/"
+        assert ct.url_add_missing_protocol("www.bad-actor.services/") == "http://www.bad-actor.services/"
+        assert ct.url_add_missing_protocol(
             "www.bad-actor.services/",
             default="https") == "https://www.bad-actor.services/"
 
