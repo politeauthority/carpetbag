@@ -1,7 +1,5 @@
 """Test Base CarpetBag for the private methods of CarpetBag.
 
-bagger.remote_service_api = ct.url_join(UNIT_TEST_URL, 'api')
-
 """
 from datetime import datetime
 import time
@@ -18,7 +16,7 @@ from carpetbag import errors
 
 from .data.response_data import GoogleDotComResponse
 
-UNIT_TEST_URL = os.environ.get('BAD_ACTOR_URL', 'https//www.bad-actor.services/')
+UNIT_TEST_URL = os.environ.get("BAD_ACTOR_URL", "https//www.bad-actor.services/")
 UNIT_TEST_URL_BROKEN = "http://0.0.0.0:90/"
 UNIT_TEST_AGENT = "CarpetBag v%s/ UnitTests" % CarpetBag.__version__
 
@@ -35,15 +33,15 @@ class TestBaseCarpetBag(object):
         assert bagger.headers == {}
         assert bagger.user_agent == "CarpetBag v%s" % bagger.__version__
         assert not bagger.random_user_agent
-        assert bagger.mininum_wait_time == 0
-        assert bagger.wait_and_retry_on_connection_error == 0
-        assert bagger.retries_on_connection_failure == 5
-        assert bagger.max_content_length == 200000000
+        assert bagger.mininum_wait_time == 0  # @todo: cover usage in unit test
+        assert bagger.wait_and_retry_on_connection_error == 0  # @todo: cover usage in unit test
+        assert bagger.retries_on_connection_failure == 5  # @todo: cover usage in unit test
+        assert bagger.max_content_length == 200000000  # @todo: cover usage in unit test
 
         assert not bagger.username
         assert not bagger.password
         assert not bagger.auth_type
-        assert bagger.change_identity_interval == 0
+        assert bagger.change_identity_interval == 0  # @todo: build and test this functionality
         assert bagger.remote_service_api == "https://www.bad-actor.services/api"
         assert not bagger.outbound_ip
         assert bagger.request_count == 0
@@ -56,6 +54,10 @@ class TestBaseCarpetBag(object):
         assert not bagger.random_proxy_bag
         assert bagger.send_user_agent == ""
         assert bagger.ssl_verify
+        assert not bagger.send_usage_stats
+        assert isinstance(bagger.usage_stats_API_KEY, str)
+        assert not bagger.usage_stats_API_KEY
+        assert isinstance(bagger.one_time_headers, list)
 
     def test___repr__(self):
         """
@@ -176,12 +178,14 @@ class TestBaseCarpetBag(object):
         """
         bagger = CarpetBag()
         bagger.use_skip_ssl_verify()
+        bagger._start_request_manifest("GET", UNIT_TEST_URL, {})
         response = bagger._make(
             method="GET",
             url=UNIT_TEST_URL,
             headers={"Content-Type": "application/html"},
             payload={},
             retry=0)
+        bagger.manifest.append({})
         assert response
         assert response.status_code == 200
         response = bagger._make(
@@ -206,7 +210,7 @@ class TestBaseCarpetBag(object):
 
         bagger.remote_service_api = UNIT_TEST_URL_BROKEN
         with pytest.raises(errors.NoRemoteServicesConnection):
-            response = bagger._make_internal('ip')
+            response = bagger._make_internal("ip")
 
     def test__handle_connection_error(self):
         """
@@ -217,6 +221,8 @@ class TestBaseCarpetBag(object):
         """
         bagger = CarpetBag()
         with pytest.raises(requests.exceptions.ConnectionError):
+            # bagger._start_request_manifest("GET", UNIT_TEST_URL_BROKEN, {})
+            bagger.manifest.append({})
             bagger._handle_connection_error(
                 method="GET",
                 url=UNIT_TEST_URL_BROKEN,
@@ -259,14 +265,14 @@ class TestBaseCarpetBag(object):
 
         """
         bagger = CarpetBag()
-        new_manifest = bagger._start_request_manifest("GET", "https://www.bad-actor.services")
+        new_manifest = bagger._start_request_manifest("GET", UNIT_TEST_URL)
         assert isinstance(new_manifest, dict)
         assert new_manifest["method"] == "GET"
-        assert new_manifest["url"] == "https://www.bad-actor.services"
-        # assert isinstance(new_manifest["date_start"], arrow)
+        assert new_manifest["url"] == UNIT_TEST_URL
+        assert isinstance(new_manifest["date_start"], datetime)
         assert not new_manifest["date_end"]
         assert not new_manifest["response"]
-        assert not new_manifest["attempts"]
+        assert not new_manifest["errors"]
         assert len(bagger.manifest) == 1
 
     def test__end_manifest(self):
@@ -278,7 +284,7 @@ class TestBaseCarpetBag(object):
         bagger = CarpetBag()
         current_manifest = {
             "method": "GET",
-            "url": "https://www.bad-actor.services/",
+            "url": UNIT_TEST_URL,
             "payload_size ": 0,
             "date_start": arrow.utcnow(),
             "date_end": None,
@@ -288,11 +294,24 @@ class TestBaseCarpetBag(object):
             "errors": []
         }
         bagger.manifest.insert(0, current_manifest)
-        bagger._end_manifest('5', 1.54)
+        bagger._end_manifest("5", 1.54)
         assert isinstance(bagger.manifest, list)
         assert len(bagger.manifest) == 1
         assert bagger.manifest[0]["date_end"]
         assert bagger.manifest[0]["roundtrip"] == 1.54
+
+    def test__cleanup_one_time_headers(self):
+        bagger = CarpetBag()
+        bagger.one_time_headers = ["Test", "Headers"]
+        bagger.headers = {
+            "Test": "Some value",
+            "Headers": "Some other value",
+            "One that Stays": "Value"
+        }
+        bagger._cleanup_one_time_headers()
+        assert "Test" not in bagger.headers
+        assert "Headers" not in bagger.headers
+        assert "One that Stays" in bagger.headers
 
     def test__determine_save_file_name(self):
         """
@@ -306,6 +325,12 @@ class TestBaseCarpetBag(object):
             "image/gif",
             "/opt/carpetbag/tests/data")
         assert full_phile_name == "/opt/carpetbag/tests/data/hacker-man.gif"
+
+        full_phile_name = bagger._determine_save_file_name(
+            ct.url_join(UNIT_TEST_URL, "ip"),
+            "application/json",
+            "/opt/carpetbag/tests/data")
+        assert full_phile_name == "/opt/carpetbag/tests/data/ip.json"
 
     def test__prep_destination(self):
         """

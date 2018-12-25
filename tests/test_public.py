@@ -1,21 +1,80 @@
 """Test CarpetBag's public methods that are not the basic HTTP verbs.
 
 """
+from datetime import datetime
 import os
 import re
 
+import requests
 import pytest
 
 from carpetbag import CarpetBag
 from carpetbag import errors
 from carpetbag import carpet_tools as ct
 
-UNIT_TEST_URL = os.environ.get('BAD_ACTOR_URL', 'https//www.bad-actor.services/')
+UNIT_TEST_URL = os.environ.get("BAD_ACTOR_URL", "https//www.bad-actor.services/")
 UNIT_TEST_URL_BROKEN = "http://0.0.0.0:90/"
 UNIT_TEST_AGENT = "CarpetBag v%s/ UnitTests" % CarpetBag.__version__
 
 
 class TestPublic(object):
+
+    def test_get(self):
+        """
+        Tests the CarpetBag.get() method and some of the many different ways that it can be used.
+
+        """
+        bagger = CarpetBag()
+        bagger.mininum_wait_time = 50
+        bagger.use_skip_ssl_verify()
+        bagger.user_agent = UNIT_TEST_AGENT
+        # bagger.
+
+        first_successful_response = bagger.get(UNIT_TEST_URL)
+        bagger.get(ct.url_join(UNIT_TEST_URL, "api/proxies"))
+
+        self._run_get_successful_test(bagger, first_successful_response)
+        self._run_inspect_manifest(bagger)
+        # self._run_minimum_wait_test(bagger)
+
+        self._run_unabled_to_connect(bagger)
+
+    def _run_get_successful_test(self, bagger, successful_response):
+        """
+        Tests CarpetBag.get() to make sure a successfull response sets and returns everything that it should.
+
+        :param bagger: The current CarpetBag instance running through the test.
+        :type bagger: <CarpetBag> obj
+        """
+        assert successful_response
+        assert successful_response.status_code == 200
+        assert isinstance(bagger.last_request_time, datetime)
+        assert bagger.user_agent == UNIT_TEST_AGENT
+
+    def _run_inspect_manifest(self, bagger):
+        """
+
+        :param bagger: The current CarpetBag instance running through the test.
+        :type bagger: <CarpetBag> obj
+        """
+        assert isinstance(bagger.manifest, list)
+        assert len(bagger.manifest) == 2
+        assert bagger.manifest[0]["method"] == "GET"
+        assert bagger.manifest[0]["roundtrip"] > 0
+        assert bagger.manifest[0]["attempt_count"] > 0
+        assert isinstance(bagger.manifest[0]["errors"], list)
+        assert len(bagger.manifest[0]["errors"]) == 0
+        assert bagger.manifest[1]["url"] == UNIT_TEST_URL
+
+    def _run_unabled_to_connect(self, bagger):
+        """
+        Tests Carpetbag().get() handling of ConnectionErrors
+
+        :param bagger: The current CarpetBag instance running through the test.
+        :type bagger: <CarpetBag> obj
+        """
+        with pytest.raises(requests.exceptions.ConnectionError):
+            bagger.get(UNIT_TEST_URL_BROKEN)
 
     def test_use_random_user_agent(self):
         """
@@ -70,16 +129,9 @@ class TestPublic(object):
         assert len(bagger.proxy_bag) > 5
 
         # Test the continent filtering
-        # @todo: Continent filtering is not working currently, looks like an API problem though.
-        # proxies = bagger.get_public_proxies("Asia")
-        # for proxy in proxies:
-        #     assert proxy["continent"] == "Asia"
-
-        # Test the SSL filtering
-        # @todo: SSL filtering is not working currently, looks like an API problem though.
-        # proxies = bagger.get_public_proxies(ssl_only=True)
-        # for proxy in proxies:
-        #     assert proxy["ssl"]
+        proxies = bagger.get_public_proxies("Asia")
+        for proxy in proxies:
+            assert proxy["continent"] == "Asia"
 
         # Test that we raise a No Remote Services Connection error when we can reach Bad-Actor
         bagger.remote_service_api = "http://0.0.0.0:90/"
@@ -105,7 +157,7 @@ class TestPublic(object):
         assert bagger.use_random_public_proxy()
         assert bagger.random_proxy_bag
         assert len(bagger.proxy) > 0
-        assert 'http' in bagger.proxy or 'https' in bagger.proxy
+        assert "http" in bagger.proxy or "https" in bagger.proxy
         current_ip = bagger.get_outbound_ip()
 
         # @todo: The ip check is not currently working. Need to fix!
@@ -165,8 +217,8 @@ class TestPublic(object):
         """
         bagger = CarpetBag()
         bagger.use_skip_ssl_verify()
-        response = bagger.search('learn python')
-        assert response['results'][0]['title'] == 'Learn Python - Free Interactive Python Tutorial'
+        response = bagger.search("learn python")
+        assert response["results"][0]["title"] == "Learn Python - Free Interactive Python Tutorial"
 
     def test_check_tor(self):
         """
@@ -223,5 +275,12 @@ class TestPublic(object):
         assert first_ua != bagger.user_agent
         assert first_proxy != bagger.proxy
         assert first_ip != second_ip
+
+    def test_set_header(self):
+        """
+        """
+        bagger = CarpetBag()
+        assert isinstance(bagger.set_header("Test-Header", "Test Header Value"), dict)
+        assert bagger.headers.get("Test-Header") == "Test Header Value"
 
 # End File carpetbag/tests/test_public.py
