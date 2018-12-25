@@ -12,7 +12,7 @@ from carpetbag import CarpetBag
 from carpetbag import errors
 from carpetbag import carpet_tools as ct
 
-UNIT_TEST_URL = os.environ.get('BAD_ACTOR_URL', 'https//www.bad-actor.services/')
+UNIT_TEST_URL = os.environ.get("BAD_ACTOR_URL", "https//www.bad-actor.services/")
 UNIT_TEST_URL_BROKEN = "http://0.0.0.0:90/"
 UNIT_TEST_AGENT = "CarpetBag v%s/ UnitTests" % CarpetBag.__version__
 
@@ -25,13 +25,17 @@ class TestPublic(object):
 
         """
         bagger = CarpetBag()
+        bagger.mininum_wait_time = 50
         bagger.use_skip_ssl_verify()
         bagger.user_agent = UNIT_TEST_AGENT
+        # bagger.
+
         first_successful_response = bagger.get(UNIT_TEST_URL)
-        second_successful_response = bagger.get(ct.url_join(UNIT_TEST_URL, "api/proxies"))
+        bagger.get(ct.url_join(UNIT_TEST_URL, "api/proxies"))
 
         self._run_get_successful_test(bagger, first_successful_response)
         self._run_inspect_manifest(bagger)
+        self._run_minimum_wait_test(bagger)
 
         self._run_unabled_to_connect(bagger)
 
@@ -125,16 +129,9 @@ class TestPublic(object):
         assert len(bagger.proxy_bag) > 5
 
         # Test the continent filtering
-        # @todo: Continent filtering is not working currently, looks like an API problem though.
-        # proxies = bagger.get_public_proxies("Asia")
-        # for proxy in proxies:
-        #     assert proxy["continent"] == "Asia"
-
-        # Test the SSL filtering
-        # @todo: SSL filtering is not working currently, looks like an API problem though.
-        # proxies = bagger.get_public_proxies(ssl_only=True)
-        # for proxy in proxies:
-        #     assert proxy["ssl"]
+        proxies = bagger.get_public_proxies("Asia")
+        for proxy in proxies:
+            assert proxy["continent"] == "Asia"
 
         # Test that we raise a No Remote Services Connection error when we can reach Bad-Actor
         bagger.remote_service_api = "http://0.0.0.0:90/"
@@ -160,7 +157,7 @@ class TestPublic(object):
         assert bagger.use_random_public_proxy()
         assert bagger.random_proxy_bag
         assert len(bagger.proxy) > 0
-        assert 'http' in bagger.proxy or 'https' in bagger.proxy
+        assert "http" in bagger.proxy or "https" in bagger.proxy
         current_ip = bagger.get_outbound_ip()
 
         # @todo: The ip check is not currently working. Need to fix!
@@ -220,8 +217,8 @@ class TestPublic(object):
         """
         bagger = CarpetBag()
         bagger.use_skip_ssl_verify()
-        response = bagger.search('learn python')
-        assert response['results'][0]['title'] == 'Learn Python - Free Interactive Python Tutorial'
+        response = bagger.search("learn python")
+        assert response["results"][0]["title"] == "Learn Python - Free Interactive Python Tutorial"
 
     def test_check_tor(self):
         """

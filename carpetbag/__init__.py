@@ -376,8 +376,10 @@ class CarpetBag(BaseCarpetBag):
         parsed = self.parse(response)
         title = parsed.get_title()
         if title == "Sorry. You are not using Tor.":
+            logging.warning("Tor is NOT properly configured.")
             return False
         elif title == "Congratulations. This browser is configured to use Tor.":
+            logging.info("Tor is properly configured.")
             return True
 
         logging.error("There was an unexpected error checking if Tor is properly configured.")
@@ -457,5 +459,38 @@ class CarpetBag(BaseCarpetBag):
             test_response.roundtrip))
 
         return True
+
+    def set_header(self, key, value):
+        """
+        Sets the headers to be sent over requests.
+        @todo: Unit test.
+
+        :param key: The header key.
+        :type key: str
+        :param value: The header value to be set.
+        :type value: dict
+        :returns: The headers to be sent to the request.
+        :rtype: dict
+        """
+        self.headers[key] = value
+
+        return self.headers
+
+    def set_header_once(self, key, value):
+        """
+        Sets a header once for a request that returns successfully.
+        @todo: Unit test.
+
+        :param key: The header key.
+        :type key: str
+        :param value: The header value to be set.
+        :type value: dict
+        :returns: The headers to be sent to the request.
+        :rtype: dict
+        """
+        self.one_time_headers.append(key)
+        self.set_header(key, value)
+
+        return self.headers
 
 # End File: carpetbag/carpetbag/__init__.py

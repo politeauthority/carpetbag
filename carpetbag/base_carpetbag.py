@@ -97,11 +97,13 @@ class BaseCarpetBag(object):
         self.ssl_verify = True
         self.send_usage_stats = False
         self.usage_stats_API_KEY = ""
+        self.one_time_headers = []
         self.logger = logging.getLogger(__name__)
 
     def __repr__(self):
         """
         CarpetBag's representation.
+
         """
         proxy = ""
         if self.proxy.get("http"):
@@ -133,14 +135,16 @@ class BaseCarpetBag(object):
         self._handle_sleep(url)
 
         response = self._make(method, url, headers, payload)
-
         if response.status_code >= 500:
             self.logger.warning("Recieved a server error response %s" % response.status_code)
 
         roundtrip = self._after_request(ts_start, url, response)
-        self._end_manifest(response, roundtrip)
         response.roundtrip = roundtrip
+
+        self._end_manifest(response, response.roundtrip)
         self.logger.debug("Repsonse took %s for %s" % (roundtrip, url))
+
+        self._cleanup_one_time_headers()
 
         return response
 
@@ -160,7 +164,7 @@ class BaseCarpetBag(object):
 
         # Checks that the next server we're making a request to is the same as the previous request.
         # tld.get_fld(self.last_response.url)
-        if self.last_response.domain != ct.get_domain(url):
+        if self.last_response.domain != ct.url_domain(url):
             return
 
         # Checks the time of the last request and sets the sleep timer for the difference.
@@ -294,6 +298,7 @@ class BaseCarpetBag(object):
             url=url,
             payload=payload,
             retry=retry)
+        self.manifest[0]["request_args"] = request_args
 
         try:
             response = requests.request(**request_args)
@@ -370,32 +375,30 @@ class BaseCarpetBag(object):
         if uri_segment == "proxies":
             params = {"q": {}}
             if payload:
-                params["filters"] = []
+                params["q"]["filters"] = []
 
                 # Add continent filter
-                # @todo: Continent filtering is not working currently, looks like an API problem though.
                 if payload.get("continent"):
-                    filter_continent = {
-                        "name": "continent",
-                        "op": "eq",
-                        "val": payload["continent"]
-                    }
-                    params["filters"].append(filter_continent)
+                    params["q"]["filters"].append(dict(
+                        name="continent",
+                        op="eq",
+                        val=payload.get("continent")))
 
-            params["q"]["order_by"] = {
-                "field": "quality",
-                "direction": "desc"
-            }
+            params["q"] = json.dumps(params["q"])
+            # params["q"]["order_by"] = {
+            #     "field": "quality",
+            #     "direction": "desc"
+            # }
 
-            params["q"]["limit"] = 100
-            if page != 1:
-                params["q"]["page"] = page
+            # params["q"]["limit"] = 100
+            # if page != 1:
+            #     params["q"]["page"] = page
 
         request_args = self._fmt_request_args(
             method="GET",
             headers=headers,
             url=api_url,
-            payload=json.dumps(params),
+            payload=params,
             internal=True)
 
         try:
@@ -462,9 +465,8 @@ class BaseCarpetBag(object):
         roundtrip = ts_end - ts_start
         self.last_request_time = datetime.now()
         if response:
-            print("ROUNDTRIP: %s %s" % (url, roundtrip))
             response.roundtrip = roundtrip
-            response.domain = ct.get_domain(response.url)
+            response.domain = ct.url_domain(response.url)
         self.ts_start = None
 
         return roundtrip
@@ -499,7 +501,8 @@ class BaseCarpetBag(object):
             "roundtrip": None,
             "response": None,
             "attempt_count": 1,
-            "errors": []
+            "errors": [],
+            "response_args": {},
         }
         self.manifest.insert(0, new_manifest)
         return new_manifest
@@ -518,6 +521,21 @@ class BaseCarpetBag(object):
         self.manifest[0]["date_end"] = arrow.utcnow().datetime
         self.manifest[0]["roundtrip"] = roundtrip
         self.manifest[0]["response"] = response
+
+        return True
+
+    def _cleanup_one_time_headers(self):
+        """
+        Handles the one time headers by removing them after the request has gone through successfully.
+        @todo: Unit test!
+
+        :returns: Sucess if it happens.
+        :rtype: True
+        """
+        for header in self.one_time_headers:
+            if header in self.headers:
+                self.headers.pop(header)
+        self.one_time_headers = []
 
         return True
 
@@ -554,10 +572,10 @@ class BaseCarpetBag(object):
             phile_name = url_disect["last"]
             if "." not in phile_name:
                 if file_extension:
-                    phile_name = phile_name + file_extension
+                    full_phile_name = os.path.join(destination, "%s.%s" % (phile_name, file_extension))
 
             elif "." in url_disect["last"]:
-                file_extension = url_disect["url"][:url_disect["url"].rfind(".") + 1]
+                file_extension = url_disect["uri"][:url_disect["uri"].rfind(".") + 1]
                 phile_name = url_disect["last"]
                 full_phile_name = os.path.join(destination, phile_name)
 
