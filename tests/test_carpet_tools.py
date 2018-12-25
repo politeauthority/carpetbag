@@ -14,7 +14,7 @@ class TestCarpetTools(object):
         We check to make sure we're not adding any extra slashes or making weird urls.
 
         """
-        assert ct.url_join("www.bad-actor.services", "api") == "https://www.bad-actor.services/api"
+        assert ct.url_join("www.bad-actor.services", "api") == "http://www.bad-actor.services/api"
         assert ct.url_join("https://www.bad-actor.services", "api") == "https://www.bad-actor.services/api"
         assert ct.url_join("https://www.bad-actor.services", "/api") == "https://www.bad-actor.services/api"
         assert ct.url_join("https://www.bad-actor.services", "/") == "https://www.bad-actor.services/"
@@ -26,9 +26,11 @@ class TestCarpetTools(object):
         urls.
 
         """
-        assert ct.url_join("www.bad-actor.services", "api") == "https://www.bad-actor.services/api"
+        assert ct.url_join("www.bad-actor.services", "api") == "http://www.bad-actor.services/api"
         assert ct.url_concat("https://www.bad-actor.services", "api") == "https://www.bad-actor.services/api"
         assert ct.url_concat("https://www.bad-actor.services", "/api") == "https://www.bad-actor.services/api"
+        assert ct.url_concat(
+            "https://www.bad-actor.services", "/api", "new//one") == "https://www.bad-actor.services/api/new/one"
         assert ct.url_concat("https://www.bad-actor.services", "/") == "https://www.bad-actor.services/"
         assert ct.url_concat("https://www.bad-actor.services/", "/") == "https://www.bad-actor.services/"
 
@@ -41,23 +43,49 @@ class TestCarpetTools(object):
 
         assert url_pieces
         assert isinstance(url_pieces, dict)
+        assert "original" in url_pieces
         assert "protocol" in url_pieces
         assert "domain" in url_pieces
-        assert "sub_domains" in url_pieces
+        assert "subdomains" in url_pieces
         assert "tld" in url_pieces
-        assert "url" in url_pieces
+        assert "port" in url_pieces
+        assert "uri" in url_pieces
         assert "last" in url_pieces
         assert "params" in url_pieces
 
         assert url_pieces["protocol"] == "https"
         assert url_pieces["domain"] == "bad-actor.services"
-        assert "www" in url_pieces["sub_domains"]
+        assert "www" in url_pieces["subdomains"]
 
         assert url_pieces["tld"] == "services"
-        assert url_pieces["url"] == "www.bad-actor.services/some/url-thats-long"
+        assert url_pieces["port"] == "443"
+        assert url_pieces["uri"] == "/some/url-thats-long"
         assert url_pieces["last"] == "url-thats-long"
         assert isinstance(url_pieces["params"], dict)
         assert url_pieces["params"]["debug"] == "True"
+
+    def test_url_subdomain(self):
+        """
+        Tests CarpetBag.carpet_tools.url_subdomain() to make sure we're find all url subdomains.
+
+        """
+        subdomains = ct.url_subdomain("https://www.bad-actor.services/some/url-thats-long?debug=True")
+        assert isinstance(subdomains, list)
+        assert len(subdomains) == 1
+        subdomains = ct.url_subdomain("https://one.two.bad-actor.services/some/url-thats-long?debug=True")
+        assert subdomains[0] == "one"
+        assert subdomains[1] == "two"
+
+    def test_url_params(self):
+        """
+        Tests CarpetBag.carpet_tools.url_params() to make sure we're getting url paramters.
+
+        """
+        params = ct.url_params("https://www.bad-actor.services/some/url-thats-long?debug=True&this=that")
+        assert isinstance(params, dict)
+        assert len(params) == 2
+        assert params["debug"] == "True"
+        assert params["this"] == "that"
 
     def test_json_date(self):
         """
@@ -70,24 +98,23 @@ class TestCarpetTools(object):
         assert isinstance(ct.json_date(), str)
         assert ct.json_date()[:4] == str(now.year)
 
-    def test_remove_protocol(self):
+    def test_url_domain(self):
         """
-        Tests the carpet_tools.remove_protocol() method to ensure it properly takes off http:// and https:// from a
-        string. Keep in mind this only removes http:// and https:// protocals.
+        Tests the CarpetBag.carpet_tools.url_domain() method to see if it properly picks the domain from a url.
 
         """
-        assert ct.remove_protocol("http://google.com") == "google.com"
-        assert ct.remove_protocol("https://google.com") == "google.com"
-        assert ct.remove_protocol("http://www.google.com") == "www.google.com"
+        assert ct.url_domain("http://www.google.com") == "google.com"
+        assert ct.url_domain("http://localhost") == "localhost"
+        assert ct.url_domain("http://192.168.1.19:5010") == "192.168.1.19"
 
-    def test_get_domain(self):
+    def test_url_port(self):
         """
-        Tests the CarpetBag.carpet_tools.get_domain() method to see if it properly picks the domain from a url.
+        Tests the CarpetBag.carpet_tools.url_port() to make sure we're plucking the port from a url.
 
         """
-        assert ct.get_domain("http://www.google.com") == "google.com"
-        assert ct.get_domain("http://localhost") == "localhost"
-        assert ct.get_domain("http://192.168.1.19:5010") == "192.168.1.19"
+        assert ct.url_port("https://www.bad-actor.services:5000/") == "5000"
+        assert ct.url_port("https://www.bad-actor.services/") == "443"
+        assert ct.url_port("http://www.bad-actor.services/") == "80"
 
     def test_content_type_to_extension(self):
         """
@@ -96,5 +123,11 @@ class TestCarpetTools(object):
         """
         ct.content_type_to_extension("image/jpg") == "jpg"
         ct.content_type_to_extension("image/jpeg") == "jpg"
+        ct.content_type_to_extension("image/png",) == "css"
         ct.content_type_to_extension("text/html") == "html"
         ct.content_type_to_extension("text/css") == "css"
+        ct.content_type_to_extension("application/json") == "json"
+        ct.content_type_to_extension("application/xml") == "xml"
+        ct.content_type_to_extension("application/zip") == "zip"
+
+# End File carpetbag/tests/test_carpet_tools.py
