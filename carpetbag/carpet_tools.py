@@ -1,4 +1,5 @@
-"""Utils
+"""Carpet Tools
+A series of tools for use in and outside of CarpetBag internally. Mostly for ease of handling urls.
 
 """
 from datetime import datetime
@@ -86,6 +87,12 @@ def url_disect(url):
     url_pieces["tld"] = url_tld(url)
     url_pieces["port"] = url_port(url)
     url_pieces["last"] = url_last(url, True)
+
+    for subdomain in url_pieces["subdomains"]:
+        url_pieces["uri"] = url_pieces["uri"].replace(subdomain + ".", "")
+
+    url_pieces["uri"] = url_pieces["uri"].replace(url_pieces["domain"], "")
+
 
     for subdomain in url_pieces["subdomains"]:
         url_pieces["uri"] = url_pieces["uri"].replace(subdomain + ".", "")
@@ -238,6 +245,7 @@ def url_params(url):
         for param in params:
             param_pieces = param.split("=")
             query_params[param_pieces[0]] = param_pieces[1]
+
     return query_params
 
 
@@ -259,6 +267,7 @@ def url_create(url_segments, omit_standard_ports=True):
     subdomain_seg = ""
     for sub in url_segments["subdomains"]:
         subdomain_seg += "%s." % sub
+
     domain_seg = ""
     if url_segments["domain"]:
         domain_seg = "%s" % url_segments["domain"]
