@@ -36,7 +36,6 @@ def url_concat(*args):
             url_segment = "/" + url_segment
         url += url_segment
 
-    print(url)
     url_segs = url_disect(url)
     return url_create(url_segs)
 
