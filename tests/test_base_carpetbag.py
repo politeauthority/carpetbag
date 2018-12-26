@@ -55,8 +55,8 @@ class TestBaseCarpetBag(object):
         assert bagger.send_user_agent == ""
         assert bagger.ssl_verify
         assert not bagger.send_usage_stats
-        assert isinstance(bagger.usage_stats_API_KEY, str)
-        assert not bagger.usage_stats_API_KEY
+        assert isinstance(bagger.usage_stats_api_key, str)
+        assert not bagger.usage_stats_api_key
         assert isinstance(bagger.one_time_headers, list)
 
     def test___repr__(self):

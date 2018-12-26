@@ -95,8 +95,8 @@ class BaseCarpetBag(object):
         self.random_proxy_bag = False
         self.send_user_agent = ""
         self.ssl_verify = True
-        self.send_usage_stats = False
-        self.usage_stats_API_KEY = ""
+        self.send_usage_stats_val = False
+        self.usage_stats_api_key = ""
         self.one_time_headers = []
         self.logger = logging.getLogger(__name__)
 
@@ -128,9 +128,8 @@ class BaseCarpetBag(object):
         """
         ts_start = int(round(time.time() * 1000))
         url = ct.url_add_missing_protocol(url)
-        headers = self._get_headers()
-        # urllib3.disable_warnings(InsecureRequestWarning)
-        urllib3.disable_warnings()
+        headers = self.headers
+        urllib3.disable_warnings(InsecureRequestWarning)
         self._start_request_manifest(method, url, payload)
         self._increment_counters()
         self._handle_sleep(url)
@@ -146,6 +145,7 @@ class BaseCarpetBag(object):
         self.logger.debug("Repsonse took %s for %s" % (roundtrip, url))
 
         self._cleanup_one_time_headers()
+        self._send_usage_stats()
 
         return response
 
@@ -244,10 +244,14 @@ class BaseCarpetBag(object):
         :rtype: dict
         """
         request_args = {
+            "allow_redirects": True,
             "method": method,
             "url": url,
             "headers": headers,
         }
+
+        if method == "GET":
+            request_args["stream"] = True
 
         if internal:
             request_args["verify"] = False
@@ -257,8 +261,8 @@ class BaseCarpetBag(object):
             else:
                 request_args["verify"] = self.ssl_verify
 
-        # Setup Proxy if we have one.
-        if self.proxy:
+        # Setup Proxy if we have one, and we're not sending an "internal" to bad-actor.services request.
+        if self.proxy and not internal:
             request_args["proxies"] = self.proxy
 
         # Setup payload if we have it.
@@ -309,6 +313,7 @@ class BaseCarpetBag(object):
         except requests.exceptions.ProxyError:
             if self.random_proxy_bag:
                 self.logger.warning("Hit a proxy error, picking a new one from proxy bag and continuing.")
+                self.manifest[0]["errors"].append("ProxyError")
                 self.reset_proxy_from_bag()
             else:
                 self.logger.warning("Hit a proxy error, sleeping for %s and continuing." % 5)
@@ -370,9 +375,12 @@ class BaseCarpetBag(object):
             "Content-Type": "application/json",
             "User-Agent": "CarpetBag v%s" % self.__version__
         }
+        if self.send_usage_stats_val and self.usage_stats_api_key:
+            headers["Api-Key"] = self.usage_stats_api_key
+
+        method = "GET"
 
         # @todo: Break this up into sub methods!
-        params = {}
         if uri_segment == "proxies":
             params = {"q": {}}
             if payload:
@@ -394,19 +402,28 @@ class BaseCarpetBag(object):
             # params["q"]["limit"] = 100
             # if page != 1:
             #     params["q"]["page"] = page
+            send_payload = params
+
+        elif uri_segment == "proxy_reports":
+            method = "POST"
+            send_payload = json.dumps(payload)
+        else:
+            send_payload = payload
 
         request_args = self._fmt_request_args(
-            method="GET",
+            method=method,
             headers=headers,
             url=api_url,
-            payload=params,
+            payload=send_payload,
             internal=True)
 
         try:
+            urllib3.disable_warnings(InsecureRequestWarning)
             response = requests.request(**request_args)
         except requests.exceptions.ConnectionError:
             raise errors.NoRemoteServicesConnection("Cannot connect to bad-actor.services API")
-
+        if "proxy_reports" == uri_segment:
+            import pdb; pdb.set_trace()
         return response.json()
 
     def _handle_connection_error(self, method, url, headers, payload, retry):
@@ -496,7 +513,7 @@ class BaseCarpetBag(object):
         new_manifest = {
             "method": method,
             "url": url,
-            "payload_size ": sys.getsizeof(payload),
+            "payload_size ": 0,
             "date_start": arrow.utcnow().datetime,
             "date_end": None,
             "roundtrip": None,
@@ -504,11 +521,12 @@ class BaseCarpetBag(object):
             "attempt_count": 1,
             "errors": [],
             "response_args": {},
+            "success": None
         }
         self.manifest.insert(0, new_manifest)
         return new_manifest
 
-    def _end_manifest(self, response, roundtrip):
+    def _end_manifest(self, response, roundtrip, success=True):
         """
         Ends the manifest for a requested url with endtimes and runtimes.
 
@@ -516,12 +534,17 @@ class BaseCarpetBag(object):
         :rtype response: <Response> obj
         :param roundtrip: The time it took to get the response.
         :type roundtrip: float
+        :param success: The success or failure of a request that we are sending data about.
+        :type success: bool
         :returns: True if everything worked.
         :type: bool
         """
-        self.manifest[0]["date_end"] = arrow.utcnow().datetime
-        self.manifest[0]["roundtrip"] = roundtrip
-        self.manifest[0]["response"] = response
+        if success:
+            self.manifest[0]["date_end"] = arrow.utcnow().datetime
+            self.manifest[0]["roundtrip"] = roundtrip
+            self.manifest[0]["response"] = response
+
+        self.manifest[0]["success"] = success
 
         return True
 
@@ -539,6 +562,44 @@ class BaseCarpetBag(object):
         self.one_time_headers = []
 
         return True
+
+    def _send_usage_stats(self, success=True):
+        """
+        Sends the usage stats to bad-actor.services if sending usage stats is enabled, and the user has an API key
+        ready to go.
+
+        :param success: The success or failure of a request that we are sending data about.
+        :type success: bool
+        """
+        if not self.send_usage_stats_val:
+            return False
+
+        if not self.random_proxy_bag:
+            logging.debug("USAGE STATS: Not using random public proxy, not sending usage metrics.")
+            return False
+
+        proxy_quality = self.proxy_bag[0]["quality"]
+        if not proxy_quality:
+            proxy_quality = 0
+
+        proxy_score = 0
+        if success:
+            proxy_score = proxy_quality + 1
+
+        usage_payload = {
+            "proxy_id": self.proxy_bag[0]["id"],
+            "request_url": self.manifest[0]["url"],
+            # "request_payload_size": self.manifest[0]["payload_size"],
+            "request_method": self.manifest[0]["method"],
+            # "response_payload_size": 0,
+            "response_time": (self.manifest[0]["date_end"] - self.manifest[0]["date_start"]).seconds,
+            "response_success": success,
+            # "response_ip": "",
+            "user_ip": self.non_proxy_user_ip,
+            "score": proxy_score
+        }
+
+        self._make_internal("proxy_reports", usage_payload)
 
     def _determine_save_file_name(self, url, content_type, destination):
         """

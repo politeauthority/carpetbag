@@ -190,8 +190,6 @@ class CarpetBag(BaseCarpetBag):
     def get_public_proxies(self, continent=""):
         """
         Gets list of free public proxies and loads them into a list, currently just selecting from free-proxy-list.
-        @todo: Add filtering by country/ continent.
-
 
         :param continent: Filters proxies to either  just a single continent, or if list is used, orders proxies in
             based off of the order contients are listed within the "contenient" list.
@@ -270,6 +268,10 @@ class CarpetBag(BaseCarpetBag):
             self.proxy.pop("https")
 
         chosen_proxy = self.proxy_bag[0]
+        self.logger.debug("New Proxy: %s (%s - %s)" % (
+            self.proxy_bag[0]["address"],
+            self.proxy_bag[0]["continent"],
+            self.proxy_bag[0]["country"]))
 
         if chosen_proxy["ssl"]:
             self.proxy = {"https": chosen_proxy["address"]}
@@ -311,7 +313,7 @@ class CarpetBag(BaseCarpetBag):
         head_args = self._fmt_request_args("GET", self.headers, url, payload)
         head_args.pop("method")
         head_args["verify"] = False
-        h = requests.head(allow_redirects=True, **head_args)
+        h = requests.head(**head_args)
         header = h.headers
         content_type = header.get("content-type")
 
@@ -490,5 +492,24 @@ class CarpetBag(BaseCarpetBag):
         self.set_header(key, value)
 
         return self.headers
+
+    def send_usage_stats(self, api_key, non_proxy_user_ip, val=True):
+        """
+        Sends usage stats to bad-actor.services, this helps rate the quality of proxy services so only the best proxies
+        are selected.
+
+        :param api_key: The bad-actor.services API key for submitting usage data.
+        :type api_key: str
+        :param non_proxy_user_ip: The IP address of the user with out a proxy, to help determine proxy quality.
+        :type non_proxy_user_ip: str
+        :param val: Whether or not to start or stop sending usage data.
+        :type val: bool
+        :returns: Current value of usage stat sending.
+        :rtype: bool
+        """
+        self.send_usage_stats_val = val
+        self.usage_stats_api_key = api_key
+        self.non_proxy_user_ip = non_proxy_user_ip
+        return val
 
 # End File: carpetbag/carpetbag/__init__.py
