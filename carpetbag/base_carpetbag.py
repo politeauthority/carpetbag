@@ -97,6 +97,7 @@ class BaseCarpetBag(object):
         self.ssl_verify = True
         self.send_usage_stats_val = False
         self.usage_stats_api_key = ""
+
         self.one_time_headers = []
         self.logger = logging.getLogger(__name__)
 
@@ -422,8 +423,7 @@ class BaseCarpetBag(object):
             response = requests.request(**request_args)
         except requests.exceptions.ConnectionError:
             raise errors.NoRemoteServicesConnection("Cannot connect to bad-actor.services API")
-        if "proxy_reports" == uri_segment:
-            import pdb; pdb.set_trace()
+
         return response.json()
 
     def _handle_connection_error(self, method, url, headers, payload, retry):

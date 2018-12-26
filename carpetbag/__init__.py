@@ -512,4 +512,5 @@ class CarpetBag(BaseCarpetBag):
         self.non_proxy_user_ip = non_proxy_user_ip
         return val
 
+
 # End File: carpetbag/carpetbag/__init__.py
