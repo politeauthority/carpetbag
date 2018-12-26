@@ -17,7 +17,8 @@ class TestCarpetTools(object):
         assert ct.url_join("www.bad-actor.services", "api") == "http://www.bad-actor.services/api"
         assert ct.url_join("https://www.bad-actor.services", "api") == "https://www.bad-actor.services/api"
         assert ct.url_join("https://www.bad-actor.services", "/api") == "https://www.bad-actor.services/api"
-        assert ct.url_join("https://www.bad-actor.services", "/") == "https://www.bad-actor.services/"
+        assert ct.url_join("https://www.bad-actor.services", "/api") == "https://www.bad-actor.services/api"
+        assert ct.url_join("http://www.bad-actor.services", "/") == "http://www.bad-actor.services/"
         assert ct.url_join("https://www.bad-actor.services/", "/") == "https://www.bad-actor.services/"
 
     def test_url_concat(self):
@@ -41,6 +42,7 @@ class TestCarpetTools(object):
         """
         assert ct.url_add_missing_protocol("https://www.bad-actor.services/") == "https://www.bad-actor.services/"
         assert ct.url_add_missing_protocol("www.bad-actor.services/") == "http://www.bad-actor.services/"
+        assert ct.url_add_missing_protocol("http://www.bad-actor.services/") == "http://www.bad-actor.services/"
         assert ct.url_add_missing_protocol(
             "www.bad-actor.services/",
             default="https") == "https://www.bad-actor.services/"
