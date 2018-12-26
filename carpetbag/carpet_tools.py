@@ -51,7 +51,7 @@ def url_add_missing_protocol(url, default="http"):
     :returns: Adds a protocal of http if no protocal present.
     :rtype: str
     """
-    if url[:6] != "https:" and url[:5] != "http":
+    if url[:6] != "https:" and url[:5] != "http:":
         url = "%s://%s" % (default, url)
     return url
 
@@ -81,7 +81,6 @@ def url_disect(url):
     url_pieces["protocol"] = url[:url.find("://")]
 
     url_pieces["uri"] = url.replace(url_pieces["protocol"] + "://", "")
-
     url_pieces["subdomains"] = url_subdomain(url)
     url_pieces["domain"] = url_domain(url)
     url_pieces["tld"] = url_tld(url)
@@ -115,6 +114,7 @@ def url_subdomain(url):
     :returns: All subdomains within a url in order.
     :rtype: list
     """
+    subdomain = ""
     try:
         tld_res = tld.get_tld(url, as_object=True)
         subdomain = tld_res.subdomain
@@ -128,7 +128,7 @@ def url_subdomain(url):
             except AttributeError:
                 pass
 
-    if "." in subdomain:
+    if subdomain and "." in subdomain:
         ret_subdomains = subdomain.split(".")
     else:
         ret_subdomains = [subdomain]
@@ -259,6 +259,9 @@ def url_create(url_segments, omit_standard_ports=True):
     subdomain_seg = ""
     for sub in url_segments["subdomains"]:
         subdomain_seg += "%s." % sub
+    domain_seg = ""
+    if url_segments["domain"]:
+        domain_seg = "%s" % url_segments["domain"]
 
     port_seg = ""
     if url_segments["port"] not in ["443", "80"]:
@@ -269,7 +272,7 @@ def url_create(url_segments, omit_standard_ports=True):
     full_url = "%(protocol)s://%(subdomains)s%(domain)s%(port)s%(uri)s%(params)s" % {
         "protocol": url_segments["protocol"],
         "subdomains": subdomain_seg,
-        "domain": url_segments["domain"],
+        "domain": domain_seg,
         "port": port_seg,
         "uri": url_segments["uri"],
         "params": param_seg
@@ -282,7 +285,6 @@ def url_create(url_segments, omit_standard_ports=True):
 def json_date(the_date=None):
     """
     Concats all args with slashes as needed.
-    @note this will probably move to a utility class sometime in the near future.
 
     :param the_date: Datetime to convert, or if None, will use now.
     :type the_date: <DateTime> or None
@@ -299,7 +301,7 @@ def json_date(the_date=None):
 def content_type_to_extension(content_type):
     """
     Takes a content type and tries to map it to an extension.
-    @todo: Needs more content types!
+    @note: This is not a very complete list of content types, just what I could find easily, this could be expanded!
 
     :param content_type: Content type from a request
     :type content_type: str
