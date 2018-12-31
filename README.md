@@ -30,8 +30,8 @@ print(news.status_code)
 
 ## Install
 ```bash
-git clone https://github.com/politeauthority/CarpetBag.git
-cd CarpetBag
+git clone https://github.com/politeauthority/carpetbag.git
+cd carpetbag
 pip install -r requirements.txt
 python setup.py build
 sudo python setup.py install
@@ -56,3 +56,11 @@ For best results, use Privoxy to connect to tor, using a docker container is a r
         print(reponse.text)
     else:
         print("Tor Check: Failed\n")
+## Testing
+The python pytest module is used as the unit test module. Some of the more difficult unit tests benifit from being run under the docker-compose instuctions. This makes sure there's a service running a tor proxy as well as other utilities needed to make all tests pass. Assuming that, the following commands should run, and pass.
+```
+docker-compose build
+docker-compose up
+docker exec -it carpetbag_carpetbag_1 bash
+pytest
+```
