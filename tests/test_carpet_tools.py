@@ -113,9 +113,9 @@ class TestCarpetTools(object):
         """
         now = datetime.now()
         the_date = datetime(2018, 10, 13, 12, 12, 12)
-        assert ct.json_date(the_date) == "2018-10-13 12:12:12"
-        assert isinstance(ct.json_date(), str)
-        assert ct.json_date()[:4] == str(now.year)
+        assert ct.date_to_json(the_date) == "2018-10-13 12:12:12"
+        assert isinstance(ct.date_to_json(), str)
+        assert ct.date_to_json()[:4] == str(now.year)
 
     def test_url_domain(self):
         """

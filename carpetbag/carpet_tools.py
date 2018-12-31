@@ -291,7 +291,7 @@ def url_create(url_segs, omit_standard_ports=True):
     return full_url
 
 
-def json_date(the_date=None):
+def date_to_json(the_date=None):
     """
     Gets a date string capable of being sent over JSON.
 

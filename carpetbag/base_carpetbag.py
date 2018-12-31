@@ -1,7 +1,7 @@
 """BaseCarpetBag
 
 """
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 import logging
 import os
@@ -19,7 +19,7 @@ from . import errors
 
 class BaseCarpetBag(object):
 
-    __version__ = "0.0.3b4"
+    __version__ = "0.0.3b5"
 
     def __init__(self):
         """
@@ -422,6 +422,20 @@ class BaseCarpetBag(object):
                         name="continent",
                         op="eq",
                         val=payload.get("continent")))
+
+                # Add filter for proxies tested within the last week
+                one_week_ago = ct.date_to_json(arrow.utcnow().datetime - timedelta(weeks=1))
+                params["q"]["filters"].append(dict(
+                    name="last_tested",
+                    op=">",
+                    val=one_week_ago))
+
+                # Add filter for proxies with a quality greater than 0
+                params["q"]["filters"].append(dict(
+                    name="quality",
+                    op=">",
+                    val=0))
+
             params["q"]["order_by"] = [{"field": "quality", "direction": "desc"}]
 
             # params["q"]["limit"] = 100
