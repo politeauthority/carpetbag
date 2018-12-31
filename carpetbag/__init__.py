@@ -241,6 +241,7 @@ class CarpetBag(BaseCarpetBag):
         self.random_proxy_bag = True
 
         if not self.proxy_bag:
+            self.logger.debug("Proxy Bag already built, not getting more.")
             self.proxy_bag = self.get_public_proxies()
 
         self.reset_proxy_from_bag()
@@ -276,22 +277,22 @@ class CarpetBag(BaseCarpetBag):
             self.logger.error("Proxy bag is empty! Cannot reset Proxy from Proxy Bag.")
             raise errors.EmptyProxyBag
 
+
         self.proxy_current = self.proxy_bag[0]
         if "http" in self.proxy:
             self.proxy.pop("http")
         if "https" in self.proxy:
             self.proxy.pop("https")
 
-        chosen_proxy = self.proxy_bag[0]
         self.logger.debug("New Proxy: %s (%s - %s)" % (
             self.proxy_current["address"],
             self.proxy_current["continent"],
             self.proxy_current["country"]))
 
-        if chosen_proxy["ssl"]:
-            self.proxy = {"https": chosen_proxy["address"]}
+        if self.proxy_current["ssl"]:
+            self.proxy = {"https": self.proxy_current["address"]}
         else:
-            self.proxy = {"http": chosen_proxy["address"]}
+            self.proxy = {"http": self.proxy_current["address"]}
 
     def use_skip_ssl_verify(self, val=True, force=False):
         """

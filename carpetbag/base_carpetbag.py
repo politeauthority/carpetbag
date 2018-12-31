@@ -280,7 +280,6 @@ class BaseCarpetBag(object):
                 request_args["params"] = payload
             elif method in ["PUT", "POST"]:
                 request_args["data"] = payload
-
         return request_args
 
     def _make(self, method, url, headers, payload={}, retry=0):
@@ -315,6 +314,7 @@ class BaseCarpetBag(object):
         self.manifest[0]["request_args"] = request_args
 
         try:
+            self.logger.debug("Request args: %s" % str(request_args))
             response = requests.request(**request_args)
 
         # Catch Connection Refused Error. This is probably happening because of a bad proxy.
@@ -359,7 +359,6 @@ class BaseCarpetBag(object):
             if not self.ssl_verify:
                 self.logger.warning("Re-running request without SSL cert verification.")
                 retry += 1
-
                 return self._make(method, url, headers, payload, retry)
             else:
                 msg = """There was an error with the SSL cert, this happens a lot with LetsEncrypt certificates."""
