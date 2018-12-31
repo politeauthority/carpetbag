@@ -324,14 +324,14 @@ class BaseCarpetBag(object):
                 self.logger.warning("Hit a proxy error, picking a new one from proxy bag and continuing.")
                 self.manifest[0]["errors"].append("ProxyError")
                 self._send_usage_stats(False)
-                self.reset_proxy_from_bag()
             else:
                 self.logger.warning("Hit a proxy error, sleeping for %s and continuing." % 5)
                 time.sleep(5)
 
-            retry += 1
             if not self.retry_on_proxy_failure:
                 raise requests.exceptions.ProxyError
+            self.reset_proxy_from_bag()
+            retry += 1
 
             return self._make(method, url, headers, payload, retry)
 
@@ -422,11 +422,7 @@ class BaseCarpetBag(object):
                         name="continent",
                         op="eq",
                         val=payload.get("continent")))
-
-            # params["q"]["order_by"] = {
-            #     "field": "quality",
-            #     "direction": "desc"
-            # }
+            params["q"]["order_by"] = [{"field": "quality", "direction": "desc"}]
 
             # params["q"]["limit"] = 100
             # if page != 1:

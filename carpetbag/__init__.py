@@ -277,7 +277,6 @@ class CarpetBag(BaseCarpetBag):
             self.logger.error("Proxy bag is empty! Cannot reset Proxy from Proxy Bag.")
             raise errors.EmptyProxyBag
 
-
         self.proxy_current = self.proxy_bag[0]
         if "http" in self.proxy:
             self.proxy.pop("http")
