@@ -76,141 +76,141 @@ class TestPublic(object):
         with pytest.raises(requests.exceptions.ConnectionError):
             bagger.get(UNIT_TEST_URL_BROKEN)
 
-    # def test_use_random_user_agent(self):
-    #     """
-    #     Tests CarpetBag.use_random_user_agent()
+    def test_use_random_user_agent(self):
+        """
+        Tests CarpetBag.use_random_user_agent()
 
-    #     """
-    #     bagger = CarpetBag()
-    #     assert bagger.user_agent == "CarpetBag v%s" % bagger.__version__
-    #     bagger.user_agent = UNIT_TEST_AGENT
-    #     assert bagger.user_agent == UNIT_TEST_AGENT
-    #     assert not bagger.random_user_agent
+        """
+        bagger = CarpetBag()
+        assert bagger.user_agent == "CarpetBag v%s" % bagger.__version__
+        bagger.user_agent = UNIT_TEST_AGENT
+        assert bagger.user_agent == UNIT_TEST_AGENT
+        assert not bagger.random_user_agent
 
-    #     assert bagger.use_random_user_agent()  # Turn on random user agent.
-    #     assert bagger.random_user_agent
-    #     assert not bagger.use_random_user_agent(False)
-    #     assert bagger.user_agent == ""
+        assert bagger.use_random_user_agent()  # Turn on random user agent.
+        assert bagger.random_user_agent
+        assert not bagger.use_random_user_agent(False)
+        assert bagger.user_agent == ""
 
-    #     bagger.use_skip_ssl_verify()
-    #     bagger.get(bagger.remote_service_api)
-    #     assert bagger.send_user_agent == ""  # Test that we send the chosen user agent
+        bagger.use_skip_ssl_verify()
+        bagger.get(bagger.remote_service_api)
+        assert bagger.send_user_agent == ""  # Test that we send the chosen user agent
 
-    # def test_get_new_user_agent(self):
-    #     """
-    #     Tests the CarpetBag().get_new_user_agent() method to make sure gets user agents and does not retry the same user
-    #     agent that is currently being used by CarpetBag.
+    def test_get_new_user_agent(self):
+        """
+        Tests the CarpetBag().get_new_user_agent() method to make sure gets user agents and does not retry the same user
+        agent that is currently being used by CarpetBag.
 
-    #     """
-    #     bagger = CarpetBag()
-    #     ua_1 = bagger.get_new_user_agent()
-    #     bagger.user_agent = ua_1
-    #     ua_2 = bagger.get_new_user_agent()
+        """
+        bagger = CarpetBag()
+        ua_1 = bagger.get_new_user_agent()
+        bagger.user_agent = ua_1
+        ua_2 = bagger.get_new_user_agent()
 
-    #     assert isinstance(ua_1, str)
-    #     assert ua_1 != ua_2
+        assert isinstance(ua_1, str)
+        assert ua_1 != ua_2
 
-    # def test_get_public_proxies(self):
-    #     """
-    #     Tests BaseCarpetBag().get_public_proxies()
+    def test_get_public_proxies(self):
+        """
+        Tests BaseCarpetBag().get_public_proxies()
 
-    #     """
-    #     bagger = CarpetBag()
-    #     bagger.user_agent = UNIT_TEST_AGENT
+        """
+        bagger = CarpetBag()
+        bagger.user_agent = UNIT_TEST_AGENT
 
-    #     assert not bagger.proxy
-    #     assert isinstance(bagger.proxy_bag, list)
-    #     assert len(bagger.proxy_bag) == 0
-    #     proxies = bagger.get_public_proxies()
+        assert not bagger.proxy
+        assert isinstance(bagger.proxy_bag, list)
+        assert len(bagger.proxy_bag) == 0
+        proxies = bagger.get_public_proxies()
 
-    #     assert isinstance(proxies, list)
-    #     assert len(proxies) > 5
-    #     assert isinstance(bagger.proxy_bag, list)
-    #     assert len(bagger.proxy_bag) > 5
+        assert isinstance(proxies, list)
+        assert len(proxies) > 5
+        assert isinstance(bagger.proxy_bag, list)
+        assert len(bagger.proxy_bag) > 5
 
-    #     # Test the continent filtering
-    #     proxies = bagger.get_public_proxies("Asia")
-    #     for proxy in proxies:
-    #         assert proxy["continent"] == "Asia"
-    #     proxies = bagger.get_public_proxies("North America")
-    #     for proxy in proxies:
-    #         assert proxy["continent"] == "North America"
+        # Test the continent filtering
+        proxies = bagger.get_public_proxies("Asia")
+        for proxy in proxies:
+            assert proxy["continent"] == "Asia"
+        proxies = bagger.get_public_proxies("North America")
+        for proxy in proxies:
+            assert proxy["continent"] == "North America"
 
-    #     # Test that we raise a No Remote Services Connection error when we can reach Bad-Actor
-    #     bagger.remote_service_api = UNIT_TEST_URL_BROKEN
-    #     with pytest.raises(errors.NoRemoteServicesConnection):
-    #         bagger.get_public_proxies()
+        # Test that we raise a No Remote Services Connection error when we can reach Bad-Actor
+        bagger.remote_service_api = UNIT_TEST_URL_BROKEN
+        with pytest.raises(errors.NoRemoteServicesConnection):
+            bagger.get_public_proxies()
 
-    # def test_use_random_public_proxy(self):
-    #     """
-    #     Tests BaseCarpetBag().use_public_proxies()
+    def test_use_random_public_proxy(self):
+        """
+        Tests BaseCarpetBag().use_public_proxies()
 
-    #     """
-    #     bagger = CarpetBag()
-    #     bagger.user_agent = UNIT_TEST_AGENT
+        """
+        bagger = CarpetBag()
+        bagger.user_agent = UNIT_TEST_AGENT
 
-    #     assert not bagger.proxy
-    #     assert isinstance(bagger.proxy, dict)
-    #     assert not bagger.random_proxy_bag
-    #     assert not bagger.proxy_bag
-    #     assert isinstance(bagger.proxy_bag, list)
+        assert not bagger.proxy
+        assert isinstance(bagger.proxy, dict)
+        assert not bagger.random_proxy_bag
+        assert not bagger.proxy_bag
+        assert isinstance(bagger.proxy_bag, list)
 
-    #     no_proxy_ip = bagger.get_outbound_ip()
+        no_proxy_ip = bagger.get_outbound_ip()
 
-    #     assert bagger.use_random_public_proxy()
-    #     assert bagger.random_proxy_bag
-    #     assert len(bagger.proxy) > 0
-    #     assert "http" in bagger.proxy or "https" in bagger.proxy
-    #     current_ip = bagger.get_outbound_ip()
+        assert bagger.use_random_public_proxy()
+        assert bagger.random_proxy_bag
+        assert len(bagger.proxy) > 0
+        assert "http" in bagger.proxy or "https" in bagger.proxy
+        current_ip = bagger.get_outbound_ip()
 
-    #     # @todo: The ip check is not currently working. Need to fix!
-    #     assert no_proxy_ip != current_ip
+        # @todo: The ip check is not currently working. Need to fix!
+        assert no_proxy_ip != current_ip
 
-    #     assert bagger.use_random_public_proxy(test_proxy=True)
+        assert bagger.use_random_public_proxy(test_proxy=True)
 
-    # def test_use_skip_ssl_verify(self):
-    #     """
-    #     Tests CarpetBag().use_ssl_verify() to make sure if sets and uses the value CarpetBag.ssl_verify
+    def test_use_skip_ssl_verify(self):
+        """
+        Tests CarpetBag().use_ssl_verify() to make sure if sets and uses the value CarpetBag.ssl_verify
 
-    #     """
-    #     bagger = CarpetBag()
-    #     assert bagger.ssl_verify
-    #     assert bagger.use_skip_ssl_verify()
-    #     assert not bagger.ssl_verify
-    #     assert not bagger.use_skip_ssl_verify(False)
-    #     assert bagger.ssl_verify
+        """
+        bagger = CarpetBag()
+        assert bagger.ssl_verify
+        assert bagger.use_skip_ssl_verify()
+        assert not bagger.ssl_verify
+        assert not bagger.use_skip_ssl_verify(False)
+        assert bagger.ssl_verify
 
-    # def test_save(self):
-    #     """
-    #     Tests the CarpetBag.save() method to make sure it can download files.
-    #     """
-    #     bagger = CarpetBag()
-    #     bagger.use_skip_ssl_verify()
+    def test_save(self):
+        """
+        Tests the CarpetBag.save() method to make sure it can download files.
+        """
+        bagger = CarpetBag()
+        bagger.use_skip_ssl_verify()
 
-    #     image_1_url = ct.url_join(bagger.remote_service_api.replace("api", ""), "test/troll.jpg")
+        image_1_url = ct.url_join(bagger.remote_service_api.replace("api", ""), "test/troll.jpg")
 
-    #     # Test the file being named after the full path given in the destination.
-    #     saved_phile_name = bagger.save(
-    #         image_1_url,
-    #         "/opt/carpetbag/tests/data/images/test_download.jpg")
+        # Test the file being named after the full path given in the destination.
+        saved_phile_name = bagger.save(
+            image_1_url,
+            "/opt/carpetbag/tests/data/images/test_download.jpg")
 
-    #     assert saved_phile_name
-    #     assert saved_phile_name == "/opt/carpetbag/tests/data/images/test_download.jpg"
-    #     os.remove(saved_phile_name)
+        assert saved_phile_name
+        assert saved_phile_name == "/opt/carpetbag/tests/data/images/test_download.jpg"
+        os.remove(saved_phile_name)
 
-    #     # Test the name of the file being the last url segment
-    #     saved_phile_name = bagger.save(
-    #         image_1_url,
-    #         "/opt/carpetbag/tests/data/images/")
-    #     assert saved_phile_name
-    #     assert saved_phile_name == "/opt/carpetbag/tests/data/images/troll.jpg"
-    #     os.remove(saved_phile_name)
+        # Test the name of the file being the last url segment
+        saved_phile_name = bagger.save(
+            image_1_url,
+            "/opt/carpetbag/tests/data/images/")
+        assert saved_phile_name
+        assert saved_phile_name == "/opt/carpetbag/tests/data/images/troll.jpg"
+        os.remove(saved_phile_name)
 
-    #     # Test that we respect the overwrite argument
-    #     with pytest.raises(errors.CannotOverwriteFile):
-    #         bagger.save(
-    #             image_1_url,
-    #             "/opt/carpetbag/tests/data/images/existing.jpg")
+        # Test that we respect the overwrite argument
+        with pytest.raises(errors.CannotOverwriteFile):
+            bagger.save(
+                image_1_url,
+                "/opt/carpetbag/tests/data/images/existing.jpg")
 
     def test_search(self):
         """
@@ -223,17 +223,17 @@ class TestPublic(object):
         response = bagger.search("learn python")
         assert response["results"][0]["title"] == "Learn Python - Free Interactive Python Tutorial"
 
-    # def test_check_tor(self):
-    #     """
-    #     Tests the method CarpetBag().check_tor(), this test mocks out a failure of connecting to tor.
+    def test_check_tor(self):
+        """
+        Tests the method CarpetBag().check_tor(), this test mocks out a failure of connecting to tor.
 
-    #     """
-    #     bagger = CarpetBag()
-    #     tor_1 = bagger.check_tor()
-    #     bagger.proxy["https"] = "https://%s:8118" % TOR_CONTAINER
-    #     tor_2 = bagger.check_tor()
-    #     assert not tor_1
-    #     assert tor_2
+        """
+        bagger = CarpetBag()
+        tor_1 = bagger.check_tor()
+        bagger.proxy["https"] = "https://%s:8119" % TOR_CONTAINER
+        tor_2 = bagger.check_tor()
+        assert not tor_1
+        assert tor_2
 
     def test_parse(self):
         """
