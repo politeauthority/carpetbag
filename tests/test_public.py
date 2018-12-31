@@ -12,6 +12,7 @@ from carpetbag import CarpetBag
 from carpetbag import errors
 from carpetbag import carpet_tools as ct
 
+TOR_PROXY = os.environ.get("TOR_PROXY", "tor")
 UNIT_TEST_URL = os.environ.get("BAD_ACTOR_URL", "https//www.bad-actor.services/")
 UNIT_TEST_URL_BROKEN = "http://0.0.0.0:90/"
 UNIT_TEST_AGENT = "CarpetBag v%s/ UnitTests" % CarpetBag.__version__
@@ -19,25 +20,24 @@ UNIT_TEST_AGENT = "CarpetBag v%s/ UnitTests" % CarpetBag.__version__
 
 class TestPublic(object):
 
-    def test_get(self):
-        """
-        Tests the CarpetBag.get() method and some of the many different ways that it can be used.
+    # def test_get(self):
+    #     """
+    #     Tests the CarpetBag.get() method and some of the many different ways that it can be used.
 
-        """
-        bagger = CarpetBag()
-        bagger.mininum_wait_time = 50
-        bagger.use_skip_ssl_verify()
-        bagger.user_agent = UNIT_TEST_AGENT
-        # bagger.
+    #     """
+    #     bagger = CarpetBag()
+    #     bagger.mininum_wait_time = 50
+    #     bagger.use_skip_ssl_verify(force=True)
+    #     bagger.user_agent = UNIT_TEST_AGENT
 
-        first_successful_response = bagger.get(UNIT_TEST_URL)
-        bagger.get(ct.url_join(UNIT_TEST_URL, "api/proxies"))
+    #     first_successful_response = bagger.get(UNIT_TEST_URL)
+    #     bagger.get(ct.url_join(UNIT_TEST_URL, "api/proxies"))
 
-        self._run_get_successful_test(bagger, first_successful_response)
-        self._run_inspect_manifest(bagger)
-        # self._run_minimum_wait_test(bagger)
+    #     self._run_get_successful_test(bagger, first_successful_response)
+    #     self._run_inspect_manifest(bagger)
+    #     # self._run_minimum_wait_test(bagger)
 
-        self._run_unabled_to_connect(bagger)
+    #     self._run_unabled_to_connect(bagger)
 
     def _run_get_successful_test(self, bagger, successful_response):
         """
@@ -132,9 +132,12 @@ class TestPublic(object):
         proxies = bagger.get_public_proxies("Asia")
         for proxy in proxies:
             assert proxy["continent"] == "Asia"
+        proxies = bagger.get_public_proxies("North America")
+        for proxy in proxies:
+            assert proxy["continent"] == "North America"
 
         # Test that we raise a No Remote Services Connection error when we can reach Bad-Actor
-        bagger.remote_service_api = "http://0.0.0.0:90/"
+        bagger.remote_service_api = UNIT_TEST_URL_BROKEN
         with pytest.raises(errors.NoRemoteServicesConnection):
             bagger.get_public_proxies()
 
@@ -227,7 +230,7 @@ class TestPublic(object):
         """
         bagger = CarpetBag()
         tor_1 = bagger.check_tor()
-        bagger.proxy["https"] = "https://tor:8118"
+        bagger.proxy["https"] = "https://%s:8119" % TOR_CONTAINER
         tor_2 = bagger.check_tor()
         assert not tor_1
         assert tor_2
@@ -254,33 +257,52 @@ class TestPublic(object):
             r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",
             bagger.outbound_ip)  # Something to the tune of "184.153.235.188"
 
-    def test_reset_identity(self):
-        """
-        Tests the CarpetBag().reset_identity() method, makeing sure:
-            - We reset the User-Agent if the use_random_user_agent() method has been invoked.
-            - We pick a new proxy if the use_random_public_proxy() method has been invoked.
+    # def test_reset_identity(self):
+    #     """
+    #     Tests the CarpetBag().reset_identity() method, makeing sure:
+    #         - We reset the User-Agent if the use_random_user_agent() method has been invoked.
+    #         - We pick a new proxy if the use_random_public_proxy() method has been invoked.
 
-        """
-        bagger = CarpetBag()
-        bagger.use_random_user_agent()
-        bagger.use_random_public_proxy()
+    #     """
+    #     bagger = CarpetBag()
+    #     bagger.use_random_user_agent()
+    #     bagger.use_random_public_proxy()
 
-        first_ip = bagger.get_outbound_ip()
-        first_ua = bagger.user_agent
-        first_proxy = bagger.proxy
-        bagger.reset_identity()
+    #     first_ip = bagger.get_outbound_ip()
+    #     first_ua = bagger.user_agent
+    #     first_proxy = bagger.proxy
+    #     bagger.reset_identity()
 
-        second_ip = bagger.get_outbound_ip()
+    #     second_ip = bagger.get_outbound_ip()
 
-        assert first_ua != bagger.user_agent
-        assert first_proxy != bagger.proxy
-        assert first_ip != second_ip
+    #     assert first_ua != bagger.user_agent
+    #     assert first_proxy != bagger.proxy
+    #     assert first_ip != second_ip
 
     def test_set_header(self):
         """
+        Tests the CarpetBag().set_header() method to make sure it adds the headers to the CarpetBag.header class var.
+
         """
         bagger = CarpetBag()
         assert isinstance(bagger.set_header("Test-Header", "Test Header Value"), dict)
         assert bagger.headers.get("Test-Header") == "Test Header Value"
+
+    def test_set_header_once(self):
+        """
+        Tests the CarpetBag().test_set_header_once() method to make sure it adds the headers to the CarpetBag.header
+        class var and then removes it after a request has been made.
+
+        """
+        bagger = CarpetBag()
+        bagger.use_skip_ssl_verify(force=True)
+
+        bagger.set_header_once("Test-Header", "Test Header Value")
+        assert "Test-Header" in bagger.one_time_headers
+        assert bagger.headers.get("Test-Header") == "Test Header Value"
+
+        bagger.get(UNIT_TEST_URL)
+        assert not bagger.headers.get("Test-Header")
+
 
 # End File carpetbag/tests/test_public.py

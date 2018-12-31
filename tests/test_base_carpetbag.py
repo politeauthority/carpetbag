@@ -54,10 +54,11 @@ class TestBaseCarpetBag(object):
         assert not bagger.random_proxy_bag
         assert bagger.send_user_agent == ""
         assert bagger.ssl_verify
-        assert not bagger.send_usage_stats
-        assert isinstance(bagger.usage_stats_API_KEY, str)
-        assert not bagger.usage_stats_API_KEY
+        assert not bagger.send_usage_stats_val
+        assert isinstance(bagger.usage_stats_api_key, str)
+        assert not bagger.usage_stats_api_key
         assert isinstance(bagger.one_time_headers, list)
+        assert not bagger.force_skip_ssl_verify
 
     def test___repr__(self):
         """
@@ -206,7 +207,7 @@ class TestBaseCarpetBag(object):
         """
         bagger = CarpetBag()
         response = bagger._make_internal("ip")
-        assert str(response["ip"])
+        assert str(response.json()["ip"])
 
         bagger.remote_service_api = UNIT_TEST_URL_BROKEN
         with pytest.raises(errors.NoRemoteServicesConnection):
