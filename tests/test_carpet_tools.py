@@ -20,6 +20,12 @@ class TestCarpetTools(object):
         assert ct.url_join("https://www.bad-actor.services", "/api") == "https://www.bad-actor.services/api"
         assert ct.url_join("http://www.bad-actor.services", "/") == "http://www.bad-actor.services/"
         assert ct.url_join("https://www.bad-actor.services/", "/") == "https://www.bad-actor.services/"
+        assert ct.url_join(
+            "https://www.bad-actor.services/", "/", "api") == \
+            "https://www.bad-actor.services/api"
+        assert ct.url_join(
+            "bad-actor-services_bad-actor-services-web_1:5000", "/api/proxies") == \
+            "http://bad-actor-services_bad-actor-services-web_1:5000/api/proxies"
 
     def test_url_concat(self):
         """
@@ -126,8 +132,10 @@ class TestCarpetTools(object):
 
         """
         assert ct.url_port("https://www.bad-actor.services:5000/") == "5000"
+        assert ct.url_port("https://www.bad-actor.services:502/") == "502"
         assert ct.url_port("https://www.bad-actor.services/") == "443"
         assert ct.url_port("http://www.bad-actor.services/") == "80"
+        assert ct.url_port("http://www.bad-actor.services:50200") == "50200"
 
     def test_content_type_to_extension(self):
         """

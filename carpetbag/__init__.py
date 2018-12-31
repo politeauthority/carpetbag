@@ -3,7 +3,7 @@ Multi faceted scraping utility. All the public methods of the CarpetBag python m
 information check out the README.md or https://www.github.com/politeauthority/carpetbag
 
 Author: @politeauthority
-
+Source: https://www.github.com/politeauthority/carpetbag
 """
 
 import logging
@@ -210,7 +210,13 @@ class CarpetBag(BaseCarpetBag):
             logging.error("Unable to connect to Bad-Actor.Services")
             raise errors.NoRemoteServicesConnection
 
-        self.proxy_bag = response["objects"]
+        try:
+            self.proxy_bag = response.json()["objects"]
+        except Exception:
+            logging.error("ERROR: Coud not get proxies. %s" % response.text)
+            return False
+
+        logging.debug("Fetched %s proxies" % len(self.proxy_bag))
 
         # Shuffle the proxies so concurrent instances of CarpetBag wont use the same proxy
         shuffle(self.proxy_bag)
@@ -253,15 +259,24 @@ class CarpetBag(BaseCarpetBag):
 
         :raises: carpetbag.erros.EmptyProxyBag
         """
-        self.logger.debug("Changing proxy")
         if len(self.proxy_bag) == 0:
+            self.logger.debug("Changing proxy")
             self.logger.error("Proxy bag is empty! Cannot reset Proxy from Proxy Bag.")
             raise errors.EmptyProxyBag
 
         # Remove the current proxy from the proxy bag if one is set.
         if self.proxy:
+            self.logger.debug("Changing proxy")
             del self.proxy_bag[0]
+        else:
+            self.logger.debug("Selecting proxy")
 
+        if len(self.proxy_bag) == 0:
+            self.logger.debug("Changing proxy")
+            self.logger.error("Proxy bag is empty! Cannot reset Proxy from Proxy Bag.")
+            raise errors.EmptyProxyBag
+
+        self.proxy_current = self.proxy_bag[0]
         if "http" in self.proxy:
             self.proxy.pop("http")
         if "https" in self.proxy:
@@ -269,22 +284,27 @@ class CarpetBag(BaseCarpetBag):
 
         chosen_proxy = self.proxy_bag[0]
         self.logger.debug("New Proxy: %s (%s - %s)" % (
-            self.proxy_bag[0]["address"],
-            self.proxy_bag[0]["continent"],
-            self.proxy_bag[0]["country"]))
+            self.proxy_current["address"],
+            self.proxy_current["continent"],
+            self.proxy_current["country"]))
 
         if chosen_proxy["ssl"]:
             self.proxy = {"https": chosen_proxy["address"]}
         else:
             self.proxy = {"http": chosen_proxy["address"]}
 
-    def use_skip_ssl_verify(self, val=True):
+    def use_skip_ssl_verify(self, val=True, force=False):
         """
         Sets CarpetBag up to not force a valid certificate return from the server. This exists mostly because I was
         running into some issues with self signed certs. This can be enabled/disabled at anytime through execution.
 
+        ** WARNING ** Would not typically recommend using "force=True", unless retrying a request is extermly taxing
+        and you're willing to accept the risk of using a non verified data source!
+
         :param val: Whether or not to enable or disable skipping SSL Cert validation.
         :type val: bool
+        :param force: Will force CarpetBag to completely skip all verification of SSL Certs, becareful using this.
+        :type force: bool
         :returns: The value CarpetBag is configured to use for self.ssl_verify
         :rtype: bool
         """
@@ -292,6 +312,11 @@ class CarpetBag(BaseCarpetBag):
             self.ssl_verify = False
         else:
             self.ssl_verify = True
+
+        if force:
+            self.force_skip_ssl_verify = True
+        else:
+            self.force_skip_ssl_verify = False
 
         return val
 
@@ -414,7 +439,7 @@ class CarpetBag(BaseCarpetBag):
             logging.error("Unable to connect to Bad-Actor.Services")
             return False
 
-        self.outbound_ip = response["ip"]
+        self.outbound_ip = response.json()["ip"]
 
         return self.outbound_ip
 

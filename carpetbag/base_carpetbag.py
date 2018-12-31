@@ -5,7 +5,6 @@ from datetime import datetime
 import json
 import logging
 import os
-import sys
 import time
 import urllib3
 from urllib3.exceptions import InsecureRequestWarning
@@ -20,7 +19,7 @@ from . import errors
 
 class BaseCarpetBag(object):
 
-    __version__ = "0.0.2"
+    __version__ = "0.0.3b4"
 
     def __init__(self):
         """
@@ -92,11 +91,14 @@ class BaseCarpetBag(object):
         self.manifest = []
         self.proxy = {}
         self.proxy_bag = []
+        self.proxy_current = {}
         self.random_proxy_bag = False
         self.send_user_agent = ""
         self.ssl_verify = True
+        self.force_skip_ssl_verify = False
         self.send_usage_stats_val = False
         self.usage_stats_api_key = ""
+        self.retry_on_proxy_failure = True
 
         self.one_time_headers = []
         self.logger = logging.getLogger(__name__)
@@ -104,6 +106,8 @@ class BaseCarpetBag(object):
     def __repr__(self):
         """
         CarpetBag's representation.
+        Normally like, <CarpetBag>
+        With a selected proxy in use, <CarpetBag Proxy:https://66.98.56.237:8080>
 
         """
         proxy = ""
@@ -210,6 +214,7 @@ class BaseCarpetBag(object):
             if continent not in valid_continents:
                 self.logger.error("Unknown continent: %s" % continent)
                 raise errors.InvalidContinent(continent)
+
         return True
 
     def _set_user_agent(self):
@@ -261,6 +266,9 @@ class BaseCarpetBag(object):
                 request_args["verify"] = True
             else:
                 request_args["verify"] = self.ssl_verify
+
+        if self.force_skip_ssl_verify:
+            request_args["verify"] = False
 
         # Setup Proxy if we have one, and we're not sending an "internal" to bad-actor.services request.
         if self.proxy and not internal:
@@ -315,19 +323,41 @@ class BaseCarpetBag(object):
             if self.random_proxy_bag:
                 self.logger.warning("Hit a proxy error, picking a new one from proxy bag and continuing.")
                 self.manifest[0]["errors"].append("ProxyError")
+                self._send_usage_stats(False)
                 self.reset_proxy_from_bag()
             else:
                 self.logger.warning("Hit a proxy error, sleeping for %s and continuing." % 5)
                 time.sleep(5)
 
             retry += 1
+            if not self.retry_on_proxy_failure:
+                raise requests.exceptions.ProxyError
+
             return self._make(method, url, headers, payload, retry)
+
+        # # Catch ConnectionRefused Error, right now we'll handle it the same way we handle ProxyErrors
+        # except requests.exceptions.ConnectionRefusedError:
+        #     retry += 1
+        #     if self.random_proxy_bag:
+        #         self.logger.warning("Hit a proxy error, picking a new one from proxy bag and continuing.")
+        #         self.manifest[0]["errors"].append("ProxyError")
+        #         self._send_usage_stats(False)
+        #         self.reset_proxy_from_bag()
+        #     else:
+        #         self.logger.warning("Hit a proxy error, sleeping for %s and continuing." % 5)
+        #         time.sleep(5)
+
+        #     retry += 1
+        #     if not self.retry_on_proxy_failure:
+        #         raise requests.exceptions.ProxyError
+
+        #     return self._make(method, url, headers, payload, retry)
 
         # Catch an SSLError, seems to crop up with LetsEncypt certs.
         except requests.exceptions.SSLError:
-            logging.warning("Recieved an SSL Error from %s" % url)
+            self.logger.warning("Recieved an SSL Error from %s" % url)
             if not self.ssl_verify:
-                logging.warning("Re-running request without SSL cert verification.")
+                self.logger.warning("Re-running request without SSL cert verification.")
                 retry += 1
 
                 return self._make(method, url, headers, payload, retry)
@@ -335,7 +365,7 @@ class BaseCarpetBag(object):
                 msg = """There was an error with the SSL cert, this happens a lot with LetsEncrypt certificates."""
                 msg += """ Use the carpetbag.use_skip_ssl_verify() method to enable skipping of SSL Certificate """
                 msg += """checks"""
-                logging.error(msg)
+                self.logger.error(msg)
                 raise requests.exceptions.SSLError
 
         # Catch the server unavailble exception, and potentially retry if needed.
@@ -364,8 +394,8 @@ class BaseCarpetBag(object):
         :type: uri_segment: str
         :param payload: The data to be sent over the POST request.
         :type payload: dict
-        :returns: The json response from the remote service API
-        :rtype: dict
+        :returns: The response from bad-actor.services
+        :rtype: <Response> obj
         """
         # This is a hack because BadActor does not have the IP /api route set up yet.
         if uri_segment == "ip":
@@ -394,7 +424,6 @@ class BaseCarpetBag(object):
                         op="eq",
                         val=payload.get("continent")))
 
-            params["q"] = json.dumps(params["q"])
             # params["q"]["order_by"] = {
             #     "field": "quality",
             #     "direction": "desc"
@@ -403,6 +432,7 @@ class BaseCarpetBag(object):
             # params["q"]["limit"] = 100
             # if page != 1:
             #     params["q"]["page"] = page
+            params["q"] = json.dumps(params["q"])
             send_payload = params
 
         elif uri_segment == "proxy_reports":
@@ -424,7 +454,7 @@ class BaseCarpetBag(object):
         except requests.exceptions.ConnectionError:
             raise errors.NoRemoteServicesConnection("Cannot connect to bad-actor.services API")
 
-        return response.json()
+        return response
 
     def _handle_connection_error(self, method, url, headers, payload, retry):
         """
@@ -575,8 +605,21 @@ class BaseCarpetBag(object):
             return False
 
         if not self.random_proxy_bag:
-            logging.debug("USAGE STATS: Not using random public proxy, not sending usage metrics.")
+            self.logger.debug("USAGE STATS: Not using random public proxy, not sending usage metrics.")
             return False
+
+        usage_payload = {
+            "proxy_id": self.proxy_bag[0]["id"],
+            "request_url": self.manifest[0]["url"],
+            # "request_payload_size": self.manifest[0]["payload_size"],
+            "request_method": self.manifest[0]["method"],
+            "response_time": None,
+            # "response_payload_size": 0,
+            "response_success": success,
+            # "response_ip": "",
+            "user_ip": self.non_proxy_user_ip,
+            "score": 0
+        }
 
         proxy_quality = self.proxy_bag[0]["quality"]
         if not proxy_quality:
@@ -585,21 +628,15 @@ class BaseCarpetBag(object):
         proxy_score = 0
         if success:
             proxy_score = proxy_quality + 1
+            usage_payload["response_time"] = (self.manifest[0]["date_end"] - self.manifest[0]["date_start"]).seconds
 
-        usage_payload = {
-            "proxy_id": self.proxy_bag[0]["id"],
-            "request_url": self.manifest[0]["url"],
-            # "request_payload_size": self.manifest[0]["payload_size"],
-            "request_method": self.manifest[0]["method"],
-            # "response_payload_size": 0,
-            "response_time": (self.manifest[0]["date_end"] - self.manifest[0]["date_start"]).seconds,
-            "response_success": success,
-            # "response_ip": "",
-            "user_ip": self.non_proxy_user_ip,
-            "score": proxy_score
-        }
+        usage_payload["score"] = proxy_score
 
-        self._make_internal("proxy_reports", usage_payload)
+        internal_request = self._make_internal("proxy_reports", usage_payload)
+        if internal_request.status_code in [200, 201]:
+            self.logger.debug("Saved request to bad-actor")
+        else:
+            self.logger.error("Had an issue saving response: %s" % internal_request.json())
 
     def _determine_save_file_name(self, url, content_type, destination):
         """

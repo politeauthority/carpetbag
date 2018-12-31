@@ -58,6 +58,7 @@ class TestBaseCarpetBag(object):
         assert isinstance(bagger.usage_stats_api_key, str)
         assert not bagger.usage_stats_api_key
         assert isinstance(bagger.one_time_headers, list)
+        assert not bagger.force_skip_ssl_verify
 
     def test___repr__(self):
         """

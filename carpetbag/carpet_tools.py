@@ -11,7 +11,6 @@ import tld
 def url_join(*args):
     """
     Concats all args with slashes as needed.
-    @note this will probably move to a utility class sometime in the near future.
 
     :param args: All the url components to join.
     :type args: list
@@ -24,7 +23,6 @@ def url_join(*args):
 def url_concat(*args):
     """
     Concats all args with slashes as needed.
-    @note this will probably move to a utility class sometime in the near future.
 
     :param args: All the url components to join.
     :type args: list
@@ -176,7 +174,7 @@ def url_port(url):
     :returns: The port related to the url.
     :rtype: str
     """
-    regex = r":\d{2,4}"
+    regex = r":\d{2,5}"
     matches = re.finditer(regex, url)
     for matchNum, match in enumerate(matches):
         try:
@@ -248,41 +246,45 @@ def url_params(url):
     return query_params
 
 
-def url_create(url_segments, omit_standard_ports=True):
+def url_create(url_segs, omit_standard_ports=True):
     """
     Puts a URL back together after it's been disected by url_disect.
 
-    :param url_segments: The URL segments from the url_disect method.
-    :type url_segments: dict
+    :param url_segs: The URL segments from the url_disect method.
+    :type url_segs: dict
     :param omit_standard_ports: Skips adding standard ports to a URL.
     :type omit_standard_ports: Bool
     :returns: A full, usable url
     :rtype: str
     """
     param_seg = ""
-    if url_segments["params"]:
-        param_seg = "?%s" % url_segments["params"]
+    if url_segs["params"]:
+        param_seg = "?%s" % url_segs["params"]
 
     subdomain_seg = ""
-    for sub in url_segments["subdomains"]:
+    for sub in url_segs["subdomains"]:
         subdomain_seg += "%s." % sub
 
     domain_seg = ""
-    if url_segments["domain"]:
-        domain_seg = "%s" % url_segments["domain"]
+    if url_segs["domain"]:
+        domain_seg = "%s" % url_segs["domain"]
 
     port_seg = ""
-    if url_segments["port"] not in ["443", "80"]:
-        port_seg = ":%s" % url_segments["port"]
+    if url_segs["port"] not in ["443", "80"]:
+        port_seg = ":%s" % url_segs["port"]
     elif not omit_standard_ports:
-        port_seg = ":%s" % url_segments["port"]
+        port_seg = ":%s" % url_segs["port"]
+
+    # For non-standard urls like homenames that might not get a domain.
+    if not url_segs["domain"]:
+        return url_add_missing_protocol(url_segs["original"])
 
     full_url = "%(protocol)s://%(subdomains)s%(domain)s%(port)s%(uri)s%(params)s" % {
-        "protocol": url_segments["protocol"],
+        "protocol": url_segs["protocol"],
         "subdomains": subdomain_seg,
         "domain": domain_seg,
         "port": port_seg,
-        "uri": url_segments["uri"],
+        "uri": url_segs["uri"],
         "params": param_seg
     }
 
@@ -291,17 +293,31 @@ def url_create(url_segments, omit_standard_ports=True):
 
 def json_date(the_date=None):
     """
-    Concats all args with slashes as needed.
+    Gets a date string capable of being sent over JSON.
 
     :param the_date: Datetime to convert, or if None, will use now.
     :type the_date: <DateTime> or None
-    :returns: Jsonable date time string
+    :returns: JSONable date time string
     :rtype: str
     """
     if not the_date:
         the_date = datetime.now()
     ret = the_date.strftime("%Y-%m-%d %H:%M:%S")
 
+    return ret
+
+
+def json_to_date(the_json_date):
+    """
+    Gets a date string capable of being sent over JSON.
+    @todo: test this!
+
+    :param the_json_date: Datetime to convert, or if None, will use now.
+    :type the_json_date: <DateTime> or None
+    :returns: JSONable date time string
+    :rtype: str
+    """
+    ret = datetime.striptime(the_json_date, "%Y-%m-%d %H:%M:%S")
     return ret
 
 
