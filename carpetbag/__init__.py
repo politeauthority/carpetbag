@@ -394,7 +394,6 @@ class CarpetBag(BaseCarpetBag):
         """
         Checks the Tor Projects page "check.torproject.org" to see if we"re running through a tor proxy correctly, and
         exiting through an actual tor exit node.
-        @todo: Need to run this successfull to get the tor success page!!
 
         :returns: Whether or not your proxy is using Tor and CarpetBag is connected to it.
         :params: bool
@@ -403,13 +402,13 @@ class CarpetBag(BaseCarpetBag):
         parsed = self.parse(response)
         title = parsed.get_title()
         if title == "Sorry. You are not using Tor.":
-            logging.warning("Tor is NOT properly configured.")
+            self.logger.warning("Tor is NOT properly configured.")
             return False
         elif title == "Congratulations. This browser is configured to use Tor.":
-            logging.info("Tor is properly configured.")
+            self.logger.info("Tor is properly configured.")
             return True
 
-        logging.error("There was an unexpected error checking if Tor is properly configured.")
+        self.logger.error("There was an unexpected error checking if Tor is properly configured.")
         return False
 
     def parse(self, response=None):
