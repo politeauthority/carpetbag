@@ -12,7 +12,7 @@ from carpetbag import CarpetBag
 from carpetbag import errors
 from carpetbag import carpet_tools as ct
 
-TOR_PROXY = os.environ.get("TOR_PROXY", "tor")
+TOR_PROXY_CONTAINER = os.environ.get("TOR_PROXY_CONTAINER", "tor")
 UNIT_TEST_URL = os.environ.get("BAD_ACTOR_URL", "https//www.bad-actor.services/")
 UNIT_TEST_URL_BROKEN = "http://0.0.0.0:90/"
 UNIT_TEST_AGENT = "CarpetBag v%s/ UnitTests" % CarpetBag.__version__
@@ -141,32 +141,32 @@ class TestPublic(object):
         with pytest.raises(errors.NoRemoteServicesConnection):
             bagger.get_public_proxies()
 
-    def test_use_random_public_proxy(self):
-        """
-        Tests BaseCarpetBag().use_public_proxies()
+    # def test_use_random_public_proxy(self):
+    #     """
+    #     Tests BaseCarpetBag().use_public_proxies()
 
-        """
-        bagger = CarpetBag()
-        bagger.user_agent = UNIT_TEST_AGENT
+    #     """
+    #     bagger = CarpetBag()
+    #     bagger.user_agent = UNIT_TEST_AGENT
 
-        assert not bagger.proxy
-        assert isinstance(bagger.proxy, dict)
-        assert not bagger.random_proxy_bag
-        assert not bagger.proxy_bag
-        assert isinstance(bagger.proxy_bag, list)
+    #     assert not bagger.proxy
+    #     assert isinstance(bagger.proxy, dict)
+    #     assert not bagger.random_proxy_bag
+    #     assert not bagger.proxy_bag
+    #     assert isinstance(bagger.proxy_bag, list)
 
-        no_proxy_ip = bagger.get_outbound_ip()
+    #     no_proxy_ip = bagger.get_outbound_ip()
 
-        assert bagger.use_random_public_proxy()
-        assert bagger.random_proxy_bag
-        assert len(bagger.proxy) > 0
-        assert "http" in bagger.proxy or "https" in bagger.proxy
-        current_ip = bagger.get_outbound_ip()
+    #     assert bagger.use_random_public_proxy()
+    #     assert bagger.random_proxy_bag
+    #     assert len(bagger.proxy) > 0
+    #     assert "http" in bagger.proxy or "https" in bagger.proxy
+    #     current_ip = bagger.get_outbound_ip()
 
-        # @todo: The ip check is not currently working. Need to fix!
-        assert no_proxy_ip != current_ip
+    #     # @todo: The ip check is not currently working. Need to fix!
+    #     assert no_proxy_ip != current_ip
 
-        assert bagger.use_random_public_proxy(test_proxy=True)
+    #     assert bagger.use_random_public_proxy(test_proxy=True)
 
     def test_use_skip_ssl_verify(self):
         """
@@ -229,8 +229,10 @@ class TestPublic(object):
 
         """
         bagger = CarpetBag()
+        bagger.retries_on_connection_failure = 0
         tor_1 = bagger.check_tor()
-        bagger.proxy["https"] = "https://%s:8119" % TOR_CONTAINER
+
+        bagger.proxy["https"] = "https://%s:8119" % TOR_PROXY_CONTAINER
         tor_2 = bagger.check_tor()
         assert not tor_1
         assert tor_2
@@ -257,27 +259,27 @@ class TestPublic(object):
             r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",
             bagger.outbound_ip)  # Something to the tune of "184.153.235.188"
 
-    # def test_reset_identity(self):
-    #     """
-    #     Tests the CarpetBag().reset_identity() method, makeing sure:
-    #         - We reset the User-Agent if the use_random_user_agent() method has been invoked.
-    #         - We pick a new proxy if the use_random_public_proxy() method has been invoked.
+    def test_reset_identity(self):
+        """
+        Tests the CarpetBag().reset_identity() method, makeing sure:
+            - We reset the User-Agent if the use_random_user_agent() method has been invoked.
+            - We pick a new proxy if the use_random_public_proxy() method has been invoked.
 
-    #     """
-    #     bagger = CarpetBag()
-    #     bagger.use_random_user_agent()
-    #     bagger.use_random_public_proxy()
+        """
+        bagger = CarpetBag()
+        bagger.use_random_user_agent()
+        bagger.use_random_public_proxy()
 
-    #     first_ip = bagger.get_outbound_ip()
-    #     first_ua = bagger.user_agent
-    #     first_proxy = bagger.proxy
-    #     bagger.reset_identity()
+        first_ip = bagger.get_outbound_ip()
+        first_ua = bagger.user_agent
+        first_proxy = bagger.proxy
+        bagger.reset_identity()
 
-    #     second_ip = bagger.get_outbound_ip()
+        second_ip = bagger.get_outbound_ip()
 
-    #     assert first_ua != bagger.user_agent
-    #     assert first_proxy != bagger.proxy
-    #     assert first_ip != second_ip
+        assert first_ua != bagger.user_agent
+        assert first_proxy != bagger.proxy
+        assert first_ip != second_ip
 
     def test_set_header(self):
         """

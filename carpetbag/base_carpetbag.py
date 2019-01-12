@@ -19,7 +19,7 @@ from . import errors
 
 class BaseCarpetBag(object):
 
-    __version__ = "0.0.3b5"
+    __version__ = "0.0.3b7"
 
     def __init__(self):
         """
@@ -81,6 +81,7 @@ class BaseCarpetBag(object):
         self.auth_type = None
         self.change_identity_interval = 0
         self.remote_service_api = "https://www.bad-actor.services/api"
+        self.public_proxies_max_last_test_weeks = 5
 
         # These are private reserved class vars, don"t use these!
         self.outbound_ip = None
@@ -330,7 +331,10 @@ class BaseCarpetBag(object):
 
             if not self.retry_on_proxy_failure:
                 raise requests.exceptions.ProxyError
-            self.reset_proxy_from_bag()
+
+            if self.random_proxy_bag:
+                self.reset_proxy_from_bag()
+
             retry += 1
 
             return self._make(method, url, headers, payload, retry)
@@ -418,24 +422,15 @@ class BaseCarpetBag(object):
 
                 # Add continent filter
                 if payload.get("continent"):
-                    params["q"]["filters"].append(dict(
-                        name="continent",
-                        op="eq",
-                        val=payload.get("continent")))
+                    params["q"]["filters"].append(self._internal_proxies_filter_continent_param(payload))
 
-                # Add filter for proxies tested within the last week
-                one_week_ago = ct.date_to_json(arrow.utcnow().datetime - timedelta(weeks=1))
-                params["q"]["filters"].append(dict(
-                    name="last_tested",
-                    op=">",
-                    val=one_week_ago))
+                # Add filter for proxies tested within the last x weeks
+                params["q"]["filters"].append(self._internal_proxies_filter_last_test_param(payload))
 
-                # Add filter for proxies with a quality greater than 0
-                params["q"]["filters"].append(dict(
-                    name="quality",
-                    op=">",
-                    val=0))
+                # Add filter for proxies with a quality greater than x.
+                params["q"]["filters"].append(self._internal_proxies_filter_quality_param(payload))
 
+            # Add the order by query portion, ordering by the quality.
             params["q"]["order_by"] = [{"field": "quality", "direction": "desc"}]
 
             # params["q"]["limit"] = 100
@@ -464,6 +459,55 @@ class BaseCarpetBag(object):
             raise errors.NoRemoteServicesConnection("Cannot connect to bad-actor.services API")
 
         return response
+
+    def _internal_proxies_filter_continent_param(self, payload):
+        """
+        Creates the filter arguments for continent filtering to be sent to https://www.bad-actor.services/api/proxies/
+
+        :param payload: The query payload to build args from. Not all param configurers need this, but it's always
+                        passsed regarduless
+        :type payload: dict
+        :returns: FlaskRestless style query filter.
+        :rtype: dict
+        """
+        return dict(
+            name="continent",
+            op="eq",
+            val=payload.get("continent"))
+
+    def _internal_proxies_filter_last_test_param(self, payload):
+        """
+        Creates the filter arguments for last_test filtering to be sent to https://www.bad-actor.services/api/proxies/
+        Will create a search with the last_test being self.public_proxies_max_last_test_weeks, currently defaulted to
+        5 weeks.
+
+        :param payload: The query payload to build args from. Not all param configurers need this, but it's always
+                        passsed regarduless
+        :type payload: dict
+        :returns: FlaskRestless style query filter.
+        :rtype: dict
+        """
+        one_week_ago = ct.date_to_json(
+            arrow.utcnow().datetime - timedelta(weeks=self.public_proxies_max_last_test_weeks))
+        return dict(
+            name="last_tested",
+            op=">",
+            val=one_week_ago)
+
+    def _internal_proxies_filter_quality_param(self, payload):
+        """
+        Creates the filter arguments for quality filtering to be sent to https://www.bad-actor.services/api/proxies/
+
+        :param payload: The query payload to build args from. Not all param configurers need this, but it's always
+                        passsed regarduless
+        :type payload: dict
+        :returns: FlaskRestless style query filter.
+        :rtype: dict
+        """
+        return dict(
+            name="quality",
+            op=">",
+            val=0)
 
     def _handle_connection_error(self, method, url, headers, payload, retry):
         """
