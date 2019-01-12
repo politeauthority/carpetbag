@@ -2,13 +2,12 @@
 A series of tools for use in and outside of CarpetBag internally. Mostly for ease of handling urls.
 
 """
-from datetime import datetime
 import re
 
 import arrow
 import tld
 
-from . import xlate_extension_to_mime as xetm
+from . import xlate_extension_mime as xetm
 
 
 def url_join(*args):
