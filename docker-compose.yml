@@ -7,6 +7,7 @@ services:
       - ./:/opt/carpetbag
     environment:
       - BAD_ACTOR_URL=https://www.bad-actor.services/
+      - TOR_PROXY_CONTAINER=carpetbag_tor_1
   tor:
     image: zeta0/alpine-tor
     environment:
