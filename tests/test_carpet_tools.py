@@ -106,7 +106,7 @@ class TestCarpetTools(object):
         assert params["debug"] == "True"
         assert params["this"] == "that"
 
-    def test_json_date(self):
+    def test_date_to_json(self):
         """
         Tests the JSON date method to try and convert the information to JSON friendly output.
 
@@ -116,6 +116,18 @@ class TestCarpetTools(object):
         assert ct.date_to_json(the_date) == "2018-10-13 12:12:12"
         assert isinstance(ct.date_to_json(), str)
         assert ct.date_to_json()[:4] == str(now.year)
+
+    def test_json_to_date(self):
+        """
+        Tests the CarpetBag.carpet_tools.json_to_date() method to see if we can make a propper python DateTime object
+        from a JSON type date string.
+
+        """
+        json_date_string = "2018-10-13 12:12:12"
+        the_date = ct.json_to_date(json_date_string)
+        assert isinstance(the_date, datetime)
+        assert the_date.year == 2018
+        assert the_date.month == 10
 
     def test_url_domain(self):
         """
@@ -142,13 +154,28 @@ class TestCarpetTools(object):
         Tests the CarpetBag.carpet_tools.content_type_to_extension() method to make sure we're properly translatining.
 
         """
-        ct.content_type_to_extension("image/jpg") == "jpg"
-        ct.content_type_to_extension("image/jpeg") == "jpg"
-        ct.content_type_to_extension("image/png",) == "css"
-        ct.content_type_to_extension("text/html") == "html"
-        ct.content_type_to_extension("text/css") == "css"
-        ct.content_type_to_extension("application/json") == "json"
-        ct.content_type_to_extension("application/xml") == "xml"
-        ct.content_type_to_extension("application/zip") == "zip"
+        assert ct.content_type_to_extension("image/jpg") == "jpg"
+        assert ct.content_type_to_extension("image/jpeg") == "jpg"
+        assert ct.content_type_to_extension("image/png",) == "png"
+        assert ct.content_type_to_extension("text/css",) == "css"
+        assert ct.content_type_to_extension("text/html") == "html"
+        assert ct.content_type_to_extension("text/css") == "css"
+        assert ct.content_type_to_extension("application/json") == "json"
+        assert ct.content_type_to_extension("application/xml") == "xml"
+        assert ct.content_type_to_extension("application/zip") == "zip"
+
+    def test_extension_to_content_type(self):
+        """
+        Tests the CarpetBag.carpet_tools.extension_to_content_type() method to make sure we're properly translatining.
+
+        """
+        assert ct.extension_to_content_type("jpg") == "image/jpg"
+        assert ct.extension_to_content_type("jpeg") == "image/jpg"
+        assert ct.extension_to_content_type("png") == "image/png"
+        ct.extension_to_content_type("css",) == "text/css"
+        ct.extension_to_content_type("html") == "text/html"
+        ct.extension_to_content_type("json") == "application/json"
+        ct.extension_to_content_type("xml") == "application/xml"
+        ct.extension_to_content_type("zip") == "application/zip"
 
 # End File carpetbag/tests/test_carpet_tools.py

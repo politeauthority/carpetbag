@@ -19,7 +19,7 @@ from . import errors
 
 class BaseCarpetBag(object):
 
-    __version__ = "0.0.3b5"
+    __version__ = "0.0.3b6"
 
     def __init__(self):
         """
