@@ -5,12 +5,15 @@ A series of tools for use in and outside of CarpetBag internally. Mostly for eas
 from datetime import datetime
 import re
 
+import arrow
 import tld
+
+from . import xlate_extension_to_mime as xetm
 
 
 def url_join(*args):
     """
-    Concats all args with slashes as needed.
+    Concats all args with slashes as needed. This just a copy of url_concact.
 
     :param args: All the url components to join.
     :type args: list
@@ -301,7 +304,7 @@ def date_to_json(the_date=None):
     :rtype: str
     """
     if not the_date:
-        the_date = datetime.now()
+        the_date = arrow.utcnow().datetime
     ret = the_date.strftime("%Y-%m-%d %H:%M:%S")
 
     return ret
@@ -309,16 +312,15 @@ def date_to_json(the_date=None):
 
 def json_to_date(the_json_date):
     """
-    Gets a date string capable of being sent over JSON.
-    @todo: test this!
+    Attempts to create a python dastetime object from a JSON type data string.
 
-    :param the_json_date: Datetime to convert, or if None, will use now.
-    :type the_json_date: <DateTime> or None
-    :returns: JSONable date time string
-    :rtype: str
+    :param the_json_date: A string from a JSON response to attempt to create a datetime object out of.
+    :type the_json_date: str
+    :returns: A datetime representation of the string argument supplied.
+    :rtype: <datetime> obj
     """
-    ret = datetime.striptime(the_json_date, "%Y-%m-%d %H:%M:%S")
-    return ret
+    ret = arrow.get(the_json_date)
+    return ret.datetime
 
 
 def content_type_to_extension(content_type):
@@ -331,74 +333,27 @@ def content_type_to_extension(content_type):
     :returns: The extension translation from the content-type.
     :rtype: str
     """
-    xlate_extension_to_mime = {
-        "aac": "audio/aac",
-        "abw": "application/x-abiword",
-        "arc": "application/octet-stream",
-        "avi": "video/x-msvideo",
-        "azw": "application/vnd.amazon.ebook",
-        "bin": "application/octet-stream",
-        "bmp": "image/bmp",
-        "bz": "pplication/x-bzip",
-        "bz2": "application/x-bzip2",
-        "csh": "application/x-csh",
-        "css": "text/css",
-        "csv": "text/csv",
-        "doc": "application/msword",
-        "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "eot": "application/vnd.ms-fontobject",
-        "epub": "application/epub+zip",
-        "es": "application/ecmascript",
-        "gif": "image/gif",
-        "html": "text/html",
-        "ico": "image/x-icon",
-        "ics": "text/calendar",
-        "jar": "application/java-archive",
-        "jpg": "image/jpeg",
-        "js": "application/javascript",
-        "json": "application/json",
-        "midi": "audio/midi audio/x-midi",
-        "mpeg": "video/mpeg",
-        "mpkg": "application/vnd.apple.installer+xml",
-        "odp": "application/vnd.oasis.opendocument.presentation",
-        "ods": "application/vnd.oasis.opendocument.spreadsheet",
-        "odt": "application/vnd.oasis.opendocument.text",
-        "oga": "audio/ogg",
-        "ogv": "video/ogg",
-        "ogx": "application/ogg",
-        "otf": "font/otf",
-        "png": "image/png",
-        "pdf": "application/pdf",
-        "ppt": "application/vnd.ms-powerpoint",
-        "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-        "rar": "application/x-rar-compressed",
-        "rtf": "application/rtf",
-        "sh": "application/x-sh",
-        "svg": "image/svg+xml",
-        "swf": "application/x-shockwave-flash",
-        "tar": "application/x-tar",
-        "tiff": "image/tiff",
-        "ts": "application/typescript",
-        "ttf": "font/ttf",
-        "txt": "text/plain",
-        "vsd": "application/vnd.visio",
-        "wav": "audio/wav",
-        "weba": "audio/webm",
-        "webm": "video/webm",
-        "webp": "image/webp",
-        "woff": "font/woff",
-        "woff2": "font/woff2",
-        "xhtml": "application/xhtml+xml",
-        "xls": "application/vnd.ms-excel",
-        "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "xml": "application/xml",
-        "xul": "application/vnd.mozilla.xul+xml",
-        "zip": "application/zip",
-        "7z": "application/x-7z-compressed",
-    }
-    for extension, i_content_type in xlate_extension_to_mime.items():
-        if i_content_type == content_type:
+    for extension, i_content_type in xetm.xlate_extension_to_mime.items():
+        if content_type in i_content_type:
             return extension
+
+    return ""
+
+
+def extension_to_content_type(user_extension):
+    """
+    Takes an extension and attempts to pair ir with a content type.
+    @note: This is not a very complete list of content types, just what I could find easily, this could be expanded!
+
+    :param user_extension: Content type from a request
+    :type user_extension: str
+    :returns: The matching HTTP Content-Type for a particular extension.
+    :rtype: str
+    """
+    for extension, i_content_type in xetm.xlate_extension_to_mime.items():
+        if user_extension in extension:
+            return i_content_type[0]
+
     return ""
 
 # EndFile: carpetbag/carpetbag/carpet_tools.py
