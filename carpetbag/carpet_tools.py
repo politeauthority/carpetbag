@@ -2,16 +2,17 @@
 A series of tools for use in and outside of CarpetBag internally. Mostly for ease of handling urls.
 
 """
-from datetime import datetime
 import re
 
+import arrow
 import tld
+
+from . import xlate_extension_mime as xetm
 
 
 def url_join(*args):
     """
-    Concats all args with slashes as needed.
-    @note this will probably move to a utility class sometime in the near future.
+    Concats all args with slashes as needed. This just a copy of url_concact.
 
     :param args: All the url components to join.
     :type args: list
@@ -24,7 +25,6 @@ def url_join(*args):
 def url_concat(*args):
     """
     Concats all args with slashes as needed.
-    @note this will probably move to a utility class sometime in the near future.
 
     :param args: All the url components to join.
     :type args: list
@@ -92,7 +92,6 @@ def url_disect(url):
         url_pieces["uri"] = url_pieces["uri"].replace(subdomain + ".", "")
 
     url_pieces["uri"] = url_pieces["uri"].replace(url_pieces["domain"], "")
-
 
     for subdomain in url_pieces["subdomains"]:
         url_pieces["uri"] = url_pieces["uri"].replace(subdomain + ".", "")
@@ -177,7 +176,7 @@ def url_port(url):
     :returns: The port related to the url.
     :rtype: str
     """
-    regex = r":\d{2,4}"
+    regex = r":\d{2,5}"
     matches = re.finditer(regex, url)
     for matchNum, match in enumerate(matches):
         try:
@@ -249,62 +248,78 @@ def url_params(url):
     return query_params
 
 
-def url_create(url_segments, omit_standard_ports=True):
+def url_create(url_segs, omit_standard_ports=True):
     """
     Puts a URL back together after it's been disected by url_disect.
 
-    :param url_segments: The URL segments from the url_disect method.
-    :type url_segments: dict
+    :param url_segs: The URL segments from the url_disect method.
+    :type url_segs: dict
     :param omit_standard_ports: Skips adding standard ports to a URL.
     :type omit_standard_ports: Bool
     :returns: A full, usable url
     :rtype: str
     """
     param_seg = ""
-    if url_segments["params"]:
-        param_seg = "?%s" % url_segments["params"]
+    if url_segs["params"]:
+        param_seg = "?%s" % url_segs["params"]
 
     subdomain_seg = ""
-    for sub in url_segments["subdomains"]:
+    for sub in url_segs["subdomains"]:
         subdomain_seg += "%s." % sub
 
     domain_seg = ""
-    if url_segments["domain"]:
-        domain_seg = "%s" % url_segments["domain"]
+    if url_segs["domain"]:
+        domain_seg = "%s" % url_segs["domain"]
 
     port_seg = ""
-    if url_segments["port"] not in ["443", "80"]:
-        port_seg = ":%s" % url_segments["port"]
+    if url_segs["port"] not in ["443", "80"]:
+        port_seg = ":%s" % url_segs["port"]
     elif not omit_standard_ports:
-        port_seg = ":%s" % url_segments["port"]
+        port_seg = ":%s" % url_segs["port"]
+
+    # For non-standard urls like homenames that might not get a domain.
+    if not url_segs["domain"]:
+        return url_add_missing_protocol(url_segs["original"])
 
     full_url = "%(protocol)s://%(subdomains)s%(domain)s%(port)s%(uri)s%(params)s" % {
-        "protocol": url_segments["protocol"],
+        "protocol": url_segs["protocol"],
         "subdomains": subdomain_seg,
         "domain": domain_seg,
         "port": port_seg,
-        "uri": url_segments["uri"],
+        "uri": url_segs["uri"],
         "params": param_seg
     }
-    # import pdb; pdb.set_trace()
 
     return full_url
 
 
-def json_date(the_date=None):
+def date_to_json(the_date=None):
     """
-    Concats all args with slashes as needed.
+    Gets a date string capable of being sent over JSON.
 
     :param the_date: Datetime to convert, or if None, will use now.
     :type the_date: <DateTime> or None
-    :returns: Jsonable date time string
+    :returns: JSONable date time string
     :rtype: str
     """
     if not the_date:
-        the_date = datetime.now()
+        the_date = arrow.utcnow().datetime
     ret = the_date.strftime("%Y-%m-%d %H:%M:%S")
 
     return ret
+
+
+def json_to_date(the_json_date):
+    """
+    Attempts to create a python dastetime object from a JSON type data string.
+
+    :param the_json_date: A string from a JSON response to attempt to create a datetime object out of.
+    :type the_json_date: str
+    :returns: A datetime representation of the string argument supplied.
+    :rtype: <datetime> obj
+    """
+    ret = arrow.get(the_json_date)
+    return ret.datetime
 
 
 def content_type_to_extension(content_type):
@@ -317,74 +332,27 @@ def content_type_to_extension(content_type):
     :returns: The extension translation from the content-type.
     :rtype: str
     """
-    xlate_extension_to_mime = {
-        "aac": "audio/aac",
-        "abw": "application/x-abiword",
-        "arc": "application/octet-stream",
-        "avi": "video/x-msvideo",
-        "azw": "application/vnd.amazon.ebook",
-        "bin": "application/octet-stream",
-        "bmp": "image/bmp",
-        "bz": "pplication/x-bzip",
-        "bz2": "application/x-bzip2",
-        "csh": "application/x-csh",
-        "css": "text/css",
-        "csv": "text/csv",
-        "doc": "application/msword",
-        "docx": "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-        "eot": "application/vnd.ms-fontobject",
-        "epub": "application/epub+zip",
-        "es": "application/ecmascript",
-        "gif": "image/gif",
-        "html": "text/html",
-        "ico": "image/x-icon",
-        "ics": "text/calendar",
-        "jar": "application/java-archive",
-        "jpg": "image/jpeg",
-        "js": "application/javascript",
-        "json": "application/json",
-        "midi": "audio/midi audio/x-midi",
-        "mpeg": "video/mpeg",
-        "mpkg": "application/vnd.apple.installer+xml",
-        "odp": "application/vnd.oasis.opendocument.presentation",
-        "ods": "application/vnd.oasis.opendocument.spreadsheet",
-        "odt": "application/vnd.oasis.opendocument.text",
-        "oga": "audio/ogg",
-        "ogv": "video/ogg",
-        "ogx": "application/ogg",
-        "otf": "font/otf",
-        "png": "image/png",
-        "pdf": "application/pdf",
-        "ppt": "application/vnd.ms-powerpoint",
-        "pptx": "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-        "rar": "application/x-rar-compressed",
-        "rtf": "application/rtf",
-        "sh": "application/x-sh",
-        "svg": "image/svg+xml",
-        "swf": "application/x-shockwave-flash",
-        "tar": "application/x-tar",
-        "tiff": "image/tiff",
-        "ts": "application/typescript",
-        "ttf": "font/ttf",
-        "txt": "text/plain",
-        "vsd": "application/vnd.visio",
-        "wav": "audio/wav",
-        "weba": "audio/webm",
-        "webm": "video/webm",
-        "webp": "image/webp",
-        "woff": "font/woff",
-        "woff2": "font/woff2",
-        "xhtml": "application/xhtml+xml",
-        "xls": "application/vnd.ms-excel",
-        "xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        "xml": "application/xml",
-        "xul": "application/vnd.mozilla.xul+xml",
-        "zip": "application/zip",
-        "7z": "application/x-7z-compressed",
-    }
-    for extension, i_content_type in xlate_extension_to_mime.items():
-        if i_content_type == content_type:
+    for extension, i_content_type in xetm.xlate_extension_to_mime.items():
+        if content_type in i_content_type:
             return extension
+
+    return ""
+
+
+def extension_to_content_type(user_extension):
+    """
+    Takes an extension and attempts to pair ir with a content type.
+    @note: This is not a very complete list of content types, just what I could find easily, this could be expanded!
+
+    :param user_extension: Content type from a request
+    :type user_extension: str
+    :returns: The matching HTTP Content-Type for a particular extension.
+    :rtype: str
+    """
+    for extension, i_content_type in xetm.xlate_extension_to_mime.items():
+        if user_extension in extension:
+            return i_content_type[0]
+
     return ""
 
 # EndFile: carpetbag/carpetbag/carpet_tools.py

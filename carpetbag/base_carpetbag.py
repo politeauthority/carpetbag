@@ -1,11 +1,10 @@
 """BaseCarpetBag
 
 """
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 import logging
 import os
-import sys
 import time
 import urllib3
 from urllib3.exceptions import InsecureRequestWarning
@@ -20,7 +19,7 @@ from . import errors
 
 class BaseCarpetBag(object):
 
-    __version__ = "0.0.2"
+    __version__ = "0.0.3b7"
 
     def __init__(self):
         """
@@ -82,6 +81,7 @@ class BaseCarpetBag(object):
         self.auth_type = None
         self.change_identity_interval = 0
         self.remote_service_api = "https://www.bad-actor.services/api"
+        self.public_proxies_max_last_test_weeks = 5
 
         # These are private reserved class vars, don"t use these!
         self.outbound_ip = None
@@ -92,17 +92,23 @@ class BaseCarpetBag(object):
         self.manifest = []
         self.proxy = {}
         self.proxy_bag = []
+        self.proxy_current = {}
         self.random_proxy_bag = False
         self.send_user_agent = ""
         self.ssl_verify = True
-        self.send_usage_stats = False
-        self.usage_stats_API_KEY = ""
+        self.force_skip_ssl_verify = False
+        self.send_usage_stats_val = False
+        self.usage_stats_api_key = ""
+        self.retry_on_proxy_failure = True
+
         self.one_time_headers = []
         self.logger = logging.getLogger(__name__)
 
     def __repr__(self):
         """
         CarpetBag's representation.
+        Normally like, <CarpetBag>
+        With a selected proxy in use, <CarpetBag Proxy:https://66.98.56.237:8080>
 
         """
         proxy = ""
@@ -128,9 +134,8 @@ class BaseCarpetBag(object):
         """
         ts_start = int(round(time.time() * 1000))
         url = ct.url_add_missing_protocol(url)
-        headers = self._get_headers()
-        # urllib3.disable_warnings(InsecureRequestWarning)
-        urllib3.disable_warnings()
+        headers = self.headers
+        urllib3.disable_warnings(InsecureRequestWarning)
         self._start_request_manifest(method, url, payload)
         self._increment_counters()
         self._handle_sleep(url)
@@ -146,6 +151,7 @@ class BaseCarpetBag(object):
         self.logger.debug("Repsonse took %s for %s" % (roundtrip, url))
 
         self._cleanup_one_time_headers()
+        self._send_usage_stats()
 
         return response
 
@@ -209,6 +215,7 @@ class BaseCarpetBag(object):
             if continent not in valid_continents:
                 self.logger.error("Unknown continent: %s" % continent)
                 raise errors.InvalidContinent(continent)
+
         return True
 
     def _set_user_agent(self):
@@ -244,10 +251,14 @@ class BaseCarpetBag(object):
         :rtype: dict
         """
         request_args = {
+            "allow_redirects": True,
             "method": method,
             "url": url,
             "headers": headers,
         }
+
+        if method == "GET":
+            request_args["stream"] = True
 
         if internal:
             request_args["verify"] = False
@@ -257,8 +268,11 @@ class BaseCarpetBag(object):
             else:
                 request_args["verify"] = self.ssl_verify
 
-        # Setup Proxy if we have one.
-        if self.proxy:
+        if self.force_skip_ssl_verify:
+            request_args["verify"] = False
+
+        # Setup Proxy if we have one, and we're not sending an "internal" to bad-actor.services request.
+        if self.proxy and not internal:
             request_args["proxies"] = self.proxy
 
         # Setup payload if we have it.
@@ -267,7 +281,6 @@ class BaseCarpetBag(object):
                 request_args["params"] = payload
             elif method in ["PUT", "POST"]:
                 request_args["data"] = payload
-
         return request_args
 
     def _make(self, method, url, headers, payload={}, retry=0):
@@ -302,6 +315,7 @@ class BaseCarpetBag(object):
         self.manifest[0]["request_args"] = request_args
 
         try:
+            self.logger.debug("Request args: %s" % str(request_args))
             response = requests.request(**request_args)
 
         # Catch Connection Refused Error. This is probably happening because of a bad proxy.
@@ -309,27 +323,52 @@ class BaseCarpetBag(object):
         except requests.exceptions.ProxyError:
             if self.random_proxy_bag:
                 self.logger.warning("Hit a proxy error, picking a new one from proxy bag and continuing.")
-                self.reset_proxy_from_bag()
+                self.manifest[0]["errors"].append("ProxyError")
+                self._send_usage_stats(False)
             else:
                 self.logger.warning("Hit a proxy error, sleeping for %s and continuing." % 5)
                 time.sleep(5)
 
+            if not self.retry_on_proxy_failure:
+                raise requests.exceptions.ProxyError
+
+            if self.random_proxy_bag:
+                self.reset_proxy_from_bag()
+
             retry += 1
+
             return self._make(method, url, headers, payload, retry)
+
+        # # Catch ConnectionRefused Error, right now we'll handle it the same way we handle ProxyErrors
+        # except requests.exceptions.ConnectionRefusedError:
+        #     retry += 1
+        #     if self.random_proxy_bag:
+        #         self.logger.warning("Hit a proxy error, picking a new one from proxy bag and continuing.")
+        #         self.manifest[0]["errors"].append("ProxyError")
+        #         self._send_usage_stats(False)
+        #         self.reset_proxy_from_bag()
+        #     else:
+        #         self.logger.warning("Hit a proxy error, sleeping for %s and continuing." % 5)
+        #         time.sleep(5)
+
+        #     retry += 1
+        #     if not self.retry_on_proxy_failure:
+        #         raise requests.exceptions.ProxyError
+
+        #     return self._make(method, url, headers, payload, retry)
 
         # Catch an SSLError, seems to crop up with LetsEncypt certs.
         except requests.exceptions.SSLError:
-            logging.warning("Recieved an SSL Error from %s" % url)
+            self.logger.warning("Recieved an SSL Error from %s" % url)
             if not self.ssl_verify:
-                logging.warning("Re-running request without SSL cert verification.")
+                self.logger.warning("Re-running request without SSL cert verification.")
                 retry += 1
-
                 return self._make(method, url, headers, payload, retry)
             else:
                 msg = """There was an error with the SSL cert, this happens a lot with LetsEncrypt certificates."""
                 msg += """ Use the carpetbag.use_skip_ssl_verify() method to enable skipping of SSL Certificate """
                 msg += """checks"""
-                logging.error(msg)
+                self.logger.error(msg)
                 raise requests.exceptions.SSLError
 
         # Catch the server unavailble exception, and potentially retry if needed.
@@ -358,8 +397,8 @@ class BaseCarpetBag(object):
         :type: uri_segment: str
         :param payload: The data to be sent over the POST request.
         :type payload: dict
-        :returns: The json response from the remote service API
-        :rtype: dict
+        :returns: The response from bad-actor.services
+        :rtype: <Response> obj
         """
         # This is a hack because BadActor does not have the IP /api route set up yet.
         if uri_segment == "ip":
@@ -370,9 +409,12 @@ class BaseCarpetBag(object):
             "Content-Type": "application/json",
             "User-Agent": "CarpetBag v%s" % self.__version__
         }
+        if self.send_usage_stats_val and self.usage_stats_api_key:
+            headers["Api-Key"] = self.usage_stats_api_key
+
+        method = "GET"
 
         # @todo: Break this up into sub methods!
-        params = {}
         if uri_segment == "proxies":
             params = {"q": {}}
             if payload:
@@ -380,34 +422,92 @@ class BaseCarpetBag(object):
 
                 # Add continent filter
                 if payload.get("continent"):
-                    params["q"]["filters"].append(dict(
-                        name="continent",
-                        op="eq",
-                        val=payload.get("continent")))
+                    params["q"]["filters"].append(self._internal_proxies_filter_continent_param(payload))
 
-            params["q"] = json.dumps(params["q"])
-            # params["q"]["order_by"] = {
-            #     "field": "quality",
-            #     "direction": "desc"
-            # }
+                # Add filter for proxies tested within the last x weeks
+                params["q"]["filters"].append(self._internal_proxies_filter_last_test_param(payload))
+
+                # Add filter for proxies with a quality greater than x.
+                params["q"]["filters"].append(self._internal_proxies_filter_quality_param(payload))
+
+            # Add the order by query portion, ordering by the quality.
+            params["q"]["order_by"] = [{"field": "quality", "direction": "desc"}]
 
             # params["q"]["limit"] = 100
             # if page != 1:
             #     params["q"]["page"] = page
+            params["q"] = json.dumps(params["q"])
+            send_payload = params
+
+        elif uri_segment == "proxy_reports":
+            method = "POST"
+            send_payload = json.dumps(payload)
+        else:
+            send_payload = payload
 
         request_args = self._fmt_request_args(
-            method="GET",
+            method=method,
             headers=headers,
             url=api_url,
-            payload=params,
+            payload=send_payload,
             internal=True)
 
         try:
+            urllib3.disable_warnings(InsecureRequestWarning)
             response = requests.request(**request_args)
         except requests.exceptions.ConnectionError:
             raise errors.NoRemoteServicesConnection("Cannot connect to bad-actor.services API")
 
-        return response.json()
+        return response
+
+    def _internal_proxies_filter_continent_param(self, payload):
+        """
+        Creates the filter arguments for continent filtering to be sent to https://www.bad-actor.services/api/proxies/
+
+        :param payload: The query payload to build args from. Not all param configurers need this, but it's always
+                        passsed regarduless
+        :type payload: dict
+        :returns: FlaskRestless style query filter.
+        :rtype: dict
+        """
+        return dict(
+            name="continent",
+            op="eq",
+            val=payload.get("continent"))
+
+    def _internal_proxies_filter_last_test_param(self, payload):
+        """
+        Creates the filter arguments for last_test filtering to be sent to https://www.bad-actor.services/api/proxies/
+        Will create a search with the last_test being self.public_proxies_max_last_test_weeks, currently defaulted to
+        5 weeks.
+
+        :param payload: The query payload to build args from. Not all param configurers need this, but it's always
+                        passsed regarduless
+        :type payload: dict
+        :returns: FlaskRestless style query filter.
+        :rtype: dict
+        """
+        one_week_ago = ct.date_to_json(
+            arrow.utcnow().datetime - timedelta(weeks=self.public_proxies_max_last_test_weeks))
+        return dict(
+            name="last_tested",
+            op=">",
+            val=one_week_ago)
+
+    def _internal_proxies_filter_quality_param(self, payload):
+        """
+        Creates the filter arguments for quality filtering to be sent to https://www.bad-actor.services/api/proxies/
+
+        :param payload: The query payload to build args from. Not all param configurers need this, but it's always
+                        passsed regarduless
+        :type payload: dict
+        :returns: FlaskRestless style query filter.
+        :rtype: dict
+        """
+        return dict(
+            name="quality",
+            op=">",
+            val=0)
 
     def _handle_connection_error(self, method, url, headers, payload, retry):
         """
@@ -496,7 +596,7 @@ class BaseCarpetBag(object):
         new_manifest = {
             "method": method,
             "url": url,
-            "payload_size ": sys.getsizeof(payload),
+            "payload_size ": 0,
             "date_start": arrow.utcnow().datetime,
             "date_end": None,
             "roundtrip": None,
@@ -504,11 +604,12 @@ class BaseCarpetBag(object):
             "attempt_count": 1,
             "errors": [],
             "response_args": {},
+            "success": None
         }
         self.manifest.insert(0, new_manifest)
         return new_manifest
 
-    def _end_manifest(self, response, roundtrip):
+    def _end_manifest(self, response, roundtrip, success=True):
         """
         Ends the manifest for a requested url with endtimes and runtimes.
 
@@ -516,12 +617,17 @@ class BaseCarpetBag(object):
         :rtype response: <Response> obj
         :param roundtrip: The time it took to get the response.
         :type roundtrip: float
+        :param success: The success or failure of a request that we are sending data about.
+        :type success: bool
         :returns: True if everything worked.
         :type: bool
         """
-        self.manifest[0]["date_end"] = arrow.utcnow().datetime
-        self.manifest[0]["roundtrip"] = roundtrip
-        self.manifest[0]["response"] = response
+        if success:
+            self.manifest[0]["date_end"] = arrow.utcnow().datetime
+            self.manifest[0]["roundtrip"] = roundtrip
+            self.manifest[0]["response"] = response
+
+        self.manifest[0]["success"] = success
 
         return True
 
@@ -539,6 +645,51 @@ class BaseCarpetBag(object):
         self.one_time_headers = []
 
         return True
+
+    def _send_usage_stats(self, success=True):
+        """
+        Sends the usage stats to bad-actor.services if sending usage stats is enabled, and the user has an API key
+        ready to go.
+
+        :param success: The success or failure of a request that we are sending data about.
+        :type success: bool
+        """
+        if not self.send_usage_stats_val:
+            return False
+
+        if not self.random_proxy_bag:
+            self.logger.debug("USAGE STATS: Not using random public proxy, not sending usage metrics.")
+            return False
+
+        usage_payload = {
+            "proxy_id": self.proxy_bag[0]["id"],
+            "request_url": self.manifest[0]["url"],
+            # "request_payload_size": self.manifest[0]["payload_size"],
+            "request_method": self.manifest[0]["method"],
+            "response_time": None,
+            # "response_payload_size": 0,
+            "response_success": success,
+            # "response_ip": "",
+            "user_ip": self.non_proxy_user_ip,
+            "score": 0
+        }
+
+        proxy_quality = self.proxy_bag[0]["quality"]
+        if not proxy_quality:
+            proxy_quality = 0
+
+        proxy_score = 0
+        if success:
+            proxy_score = proxy_quality + 1
+            usage_payload["response_time"] = (self.manifest[0]["date_end"] - self.manifest[0]["date_start"]).seconds
+
+        usage_payload["score"] = proxy_score
+
+        internal_request = self._make_internal("proxy_reports", usage_payload)
+        if internal_request.status_code in [200, 201]:
+            self.logger.debug("Saved request to bad-actor")
+        else:
+            self.logger.error("Had an issue saving response: %s" % internal_request.json())
 
     def _determine_save_file_name(self, url, content_type, destination):
         """

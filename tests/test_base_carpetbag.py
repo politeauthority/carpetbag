@@ -1,7 +1,7 @@
 """Test Base CarpetBag for the private methods of CarpetBag.
 
 """
-from datetime import datetime
+from datetime import datetime, timedelta
 import time
 import os
 import shutil
@@ -54,10 +54,11 @@ class TestBaseCarpetBag(object):
         assert not bagger.random_proxy_bag
         assert bagger.send_user_agent == ""
         assert bagger.ssl_verify
-        assert not bagger.send_usage_stats
-        assert isinstance(bagger.usage_stats_API_KEY, str)
-        assert not bagger.usage_stats_API_KEY
+        assert not bagger.send_usage_stats_val
+        assert isinstance(bagger.usage_stats_api_key, str)
+        assert not bagger.usage_stats_api_key
         assert isinstance(bagger.one_time_headers, list)
+        assert not bagger.force_skip_ssl_verify
 
     def test___repr__(self):
         """
@@ -206,11 +207,40 @@ class TestBaseCarpetBag(object):
         """
         bagger = CarpetBag()
         response = bagger._make_internal("ip")
-        assert str(response["ip"])
+        assert str(response.json()["ip"])
 
         bagger.remote_service_api = UNIT_TEST_URL_BROKEN
         with pytest.raises(errors.NoRemoteServicesConnection):
             response = bagger._make_internal("ip")
+
+    def test__internal_proxies_filter_continent_param(self):
+        """
+        Tests the BaseCarpetBagger()._internal_proxies_filter_continent_param() to make sure we're adding the continent
+        filter correctly.
+
+        """
+        payload = {
+            "continent": "Asia"
+        }
+        bagger = CarpetBag()
+        _filter = bagger._internal_proxies_filter_continent_param(payload)
+        assert _filter["name"] == "continent"
+        assert _filter["op"] == "eq"
+        assert _filter["val"] == "Asia"
+
+    def test__internal_proxies_filter_last_test_param(self):
+        """
+        Tests the BaseCarpetBagger()._internal_proxies_filter_continent_param() to make sure we're adding the continent
+        filter correctly.
+
+        """
+        bagger = CarpetBag()
+        _filter = bagger._internal_proxies_filter_last_test_param({})
+        weeks_ago_date = arrow.utcnow().datetime - timedelta(weeks=bagger.public_proxies_max_last_test_weeks + 1)
+
+        assert _filter["name"] == "last_tested"
+        assert _filter["op"] == ">"
+        assert ct.json_to_date(_filter["val"]) > weeks_ago_date
 
     def test__handle_connection_error(self):
         """
@@ -277,7 +307,7 @@ class TestBaseCarpetBag(object):
 
     def test__end_manifest(self):
         """
-        Tests the BaseCarpetBag._end_manifest() method to make sure it caps off the end of the manifest and saves it to
+        Tests the BaseCarpetBag()._end_manifest() method to make sure it caps off the end of the manifest and saves it to
         the class.
 
         """
@@ -301,6 +331,11 @@ class TestBaseCarpetBag(object):
         assert bagger.manifest[0]["roundtrip"] == 1.54
 
     def test__cleanup_one_time_headers(self):
+        """
+        Tests the BaseCarpetBag()._cleanup_one_time_headers() to make sure it removes headers that are supposed to be
+        destroy after a single use.
+
+        """
         bagger = CarpetBag()
         bagger.one_time_headers = ["Test", "Headers"]
         bagger.headers = {
