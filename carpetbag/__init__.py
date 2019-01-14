@@ -536,5 +536,41 @@ class CarpetBag(BaseCarpetBag):
         self.non_proxy_user_ip = non_proxy_user_ip
         return val
 
+    def rest_get_pages(self, url, payload={}):
+        """
+        Paginates a REST resource and returns all data and responses stitched together.
+
+        :param url: The url to fetch.
+        :type: url: str
+        :returns: A Requests module instance of the response.
+        :rtype: dict
+        """
+        paginatation_map = {
+            "field_name_page": "page",
+            "field_name_total_pages": "total_pages",
+            "field_name_data": "objects",
+            "field_name_payload_page": "page",
+        }
+
+        responses = []
+        response = self.get(url, payload)
+        response_json = response.json()
+        page = 2
+        total_pages = response_json[paginatation_map.get("field_name_total_pages")]
+        while page != total_pages:
+            payload[paginatation_map.get("field_name_page")] = page
+            logging.info("Getting page %s of %s: %s" % (page, total_pages, url))
+            response = self.get(url, payload=payload)
+            if response.status_code not in [200]:
+                logging.error("Could not get page %s: %s" % (page, response.json()))
+                break
+            response_json[paginatation_map.get("field_name_data")] += \
+                response_json[paginatation_map.get("field_name_data")]
+            page += 1
+
+        return {
+            "responses": responses,
+            "data": response_json
+        }
 
 # End File: carpetbag/carpetbag/__init__.py
