@@ -555,6 +555,8 @@ class CarpetBag(BaseCarpetBag):
         responses = []
         response = self.get(url, payload)
         response_json = response.json()
+        logging.info("Getting page 1: %s" % (url))
+
         page = 2
         total_pages = response_json[paginatation_map.get("field_name_total_pages")]
         while page != total_pages:
