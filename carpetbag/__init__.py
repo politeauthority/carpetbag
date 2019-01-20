@@ -559,15 +559,16 @@ class CarpetBag(BaseCarpetBag):
 
         page = 2
         total_pages = response_json[paginatation_map.get("field_name_total_pages")]
-        while page != total_pages:
+        for page in range(2, total_pages + 1):
             payload[paginatation_map.get("field_name_page")] = page
             logging.info("Getting page %s of %s: %s" % (page, total_pages, url))
             response = self.get(url, payload=payload)
+            next_page_json = response.json()
             if response.status_code not in [200]:
                 logging.error("Could not get page %s: %s" % (page, response.json()))
                 break
             response_json[paginatation_map.get("field_name_data")] += \
-                response_json[paginatation_map.get("field_name_data")]
+                next_page_json[paginatation_map.get("field_name_data")]
             page += 1
 
         return {

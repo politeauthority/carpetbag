@@ -19,7 +19,7 @@ from . import errors
 
 class BaseCarpetBag(object):
 
-    __version__ = "0.0.3b7"
+    __version__ = "0.0.3b9"
 
     def __init__(self):
         """
@@ -322,11 +322,11 @@ class BaseCarpetBag(object):
         # Catch an error with the connection to the Proxy
         except requests.exceptions.ProxyError:
             if self.random_proxy_bag:
-                self.logger.warning("Hit a proxy error, picking a new one from proxy bag and continuing.")
+                self.logger.debug("Hit a proxy error, picking a new one from proxy bag and continuing.")
                 self.manifest[0]["errors"].append("ProxyError")
                 self._send_usage_stats(False)
             else:
-                self.logger.warning("Hit a proxy error, sleeping for %s and continuing." % 5)
+                self.logger.debug("Hit a proxy error, sleeping for %s and continuing." % 5)
                 time.sleep(5)
 
             if not self.retry_on_proxy_failure:
@@ -414,31 +414,11 @@ class BaseCarpetBag(object):
 
         method = "GET"
 
-        # @todo: Break this up into sub methods!
+        # Get Bad-Actor.Services proxies
         if uri_segment == "proxies":
-            params = {"q": {}}
-            if payload:
-                params["q"]["filters"] = []
+            send_payload = self._internal_proxies_params(payload)
 
-                # Add continent filter
-                if payload.get("continent"):
-                    params["q"]["filters"].append(self._internal_proxies_filter_continent_param(payload))
-
-                # Add filter for proxies tested within the last x weeks
-                params["q"]["filters"].append(self._internal_proxies_filter_last_test_param(payload))
-
-                # Add filter for proxies with a quality greater than x.
-                params["q"]["filters"].append(self._internal_proxies_filter_quality_param(payload))
-
-            # Add the order by query portion, ordering by the quality.
-            params["q"]["order_by"] = [{"field": "quality", "direction": "desc"}]
-
-            # params["q"]["limit"] = 100
-            # if page != 1:
-            #     params["q"]["page"] = page
-            params["q"] = json.dumps(params["q"])
-            send_payload = params
-
+        # Submit a proxy peport
         elif uri_segment == "proxy_reports":
             method = "POST"
             send_payload = json.dumps(payload)
@@ -459,6 +439,40 @@ class BaseCarpetBag(object):
             raise errors.NoRemoteServicesConnection("Cannot connect to bad-actor.services API")
 
         return response
+
+    def _internal_proxies_params(self, payload):
+        """
+        Creates the params to uery bad-actor.services for ranked proxies.
+        @todo: Create unit test!
+
+        :param payload: The data to be sent over the POST request.
+        :type payload: dict
+        :returns: The GET query paramters to be sent to bad-actor.servies for proxies.
+        :rtype: dict
+        """
+        params = {"q": {}}
+        if payload:
+            params["q"]["filters"] = []
+
+            # Add continent filter
+            if payload.get("continent"):
+                params["q"]["filters"].append(self._internal_proxies_filter_continent_param(payload))
+
+            # Add filter for proxies tested within the last x weeks
+            params["q"]["filters"].append(self._internal_proxies_filter_last_test_param(payload))
+
+            # Add filter for proxies with a quality greater than x.
+            params["q"]["filters"].append(self._internal_proxies_filter_quality_param(payload))
+
+        # Add the order by query portion, ordering by the quality.
+        params["q"]["order_by"] = [{"field": "quality", "direction": "desc"}]
+
+        # params["q"]["limit"] = 100
+        # if page != 1:
+        #     params["q"]["page"] = page
+        params["q"] = json.dumps(params["q"])
+
+        return params
 
     def _internal_proxies_filter_continent_param(self, payload):
         """
