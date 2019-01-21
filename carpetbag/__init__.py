@@ -539,36 +539,35 @@ class CarpetBag(BaseCarpetBag):
     def rest_get_pages(self, url, payload={}):
         """
         Paginates a REST resource and returns all data and responses stitched together.
+        Set the rest_pagination_vars for the bagger if they do not match the defaults below;
+
+        self.paginatation_map = {
+            "field_name_page": "page",                  # The name of the field contianing the current page.
+            "field_name_total_pages": "total_pages",    # The name of the field contianing the total pages.
+            "field_name_data": "objects",               # The name of the field contianing resource objects.
+        }
 
         :param url: The url to fetch.
         :type: url: str
         :returns: A Requests module instance of the response.
         :rtype: dict
         """
-        paginatation_map = {
-            "field_name_page": "page",
-            "field_name_total_pages": "total_pages",
-            "field_name_data": "objects",
-            "field_name_payload_page": "page",
-        }
-
         responses = []
         response = self.get(url, payload)
         response_json = response.json()
-        logging.info("Getting page 1: %s" % (url))
+        logging.debug("Getting page 1: %s" % (url))
 
-        page = 2
-        total_pages = response_json[paginatation_map.get("field_name_total_pages")]
+        total_pages = response_json[self.paginatation_map.get("field_name_total_pages")]
         for page in range(2, total_pages + 1):
-            payload[paginatation_map.get("field_name_page")] = page
-            logging.info("Getting page %s of %s: %s" % (page, total_pages, url))
+            payload[self.paginatation_map.get("field_name_page")] = page
+            logging.debug("Getting page %s of %s: %s" % (page, total_pages, url))
             response = self.get(url, payload=payload)
             next_page_json = response.json()
             if response.status_code not in [200]:
-                logging.error("Could not get page %s: %s" % (page, response.json()))
+                logging.debug("Could not get page %s: %s" % (page, response.json()))
                 break
-            response_json[paginatation_map.get("field_name_data")] += \
-                next_page_json[paginatation_map.get("field_name_data")]
+            response_json[self.paginatation_map.get("field_name_data")] += \
+                next_page_json[self.paginatation_map.get("field_name_data")]
             page += 1
 
         return {

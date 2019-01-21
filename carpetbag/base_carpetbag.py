@@ -19,7 +19,7 @@ from . import errors
 
 class BaseCarpetBag(object):
 
-    __version__ = "0.0.3b9"
+    __version__ = "0.0.3b10"
 
     def __init__(self):
         """
@@ -82,6 +82,11 @@ class BaseCarpetBag(object):
         self.change_identity_interval = 0
         self.remote_service_api = "https://www.bad-actor.services/api"
         self.public_proxies_max_last_test_weeks = 5
+        self.paginatation_map = {
+            "field_name_page": "page",
+            "field_name_total_pages": "total_pages",
+            "field_name_data": "objects",
+        }
 
         # These are private reserved class vars, don"t use these!
         self.outbound_ip = None
@@ -324,7 +329,9 @@ class BaseCarpetBag(object):
             if self.random_proxy_bag:
                 self.logger.debug("Hit a proxy error, picking a new one from proxy bag and continuing.")
                 self.manifest[0]["errors"].append("ProxyError")
-                self._send_usage_stats(False)
+                if not self.send_usage_stats_val:
+                    self._send_usage_stats(False)
+                    raise requests.exceptions.ProxyError
             else:
                 self.logger.debug("Hit a proxy error, sleeping for %s and continuing." % 5)
                 time.sleep(5)
@@ -667,9 +674,6 @@ class BaseCarpetBag(object):
         :param success: The success or failure of a request that we are sending data about.
         :type success: bool
         """
-        if not self.send_usage_stats_val:
-            return False
-
         if not self.random_proxy_bag:
             self.logger.debug("USAGE STATS: Not using random public proxy, not sending usage metrics.")
             return False

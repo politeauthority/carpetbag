@@ -60,6 +60,12 @@ class TestBaseCarpetBag(object):
         assert isinstance(bagger.one_time_headers, list)
         assert not bagger.force_skip_ssl_verify
 
+        assert bagger.paginatation_map == {
+            "field_name_page": "page",
+            "field_name_total_pages": "total_pages",
+            "field_name_data": "objects",
+        }
+
     def test___repr__(self):
         """
         Test CarpetBag's object representation.
