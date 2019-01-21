@@ -413,7 +413,6 @@ class BaseCarpetBag(object):
             headers["Api-Key"] = self.usage_stats_api_key
 
         method = "GET"
-
         # Get Bad-Actor.Services proxies
         if uri_segment == "proxies":
             send_payload = self._internal_proxies_params(payload)
