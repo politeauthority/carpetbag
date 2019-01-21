@@ -19,7 +19,7 @@ from . import errors
 
 class BaseCarpetBag(object):
 
-    __version__ = "0.0.3b10"
+    __version__ = "0.0.3b11"
 
     def __init__(self):
         """
@@ -147,7 +147,8 @@ class BaseCarpetBag(object):
 
         response = self._make(method, url, headers, payload)
         if response.status_code >= 500:
-            self.logger.warning("Recieved a server error response %s" % response.status_code)
+            self.logger.warning("URL %s Recieved a server error response <%s>" % (url, response.status_code))
+            self.logger.debug(response.text)
 
         roundtrip = self._after_request(ts_start, url, response)
         response.roundtrip = roundtrip

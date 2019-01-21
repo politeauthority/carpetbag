@@ -536,7 +536,7 @@ class CarpetBag(BaseCarpetBag):
         self.non_proxy_user_ip = non_proxy_user_ip
         return val
 
-    def rest_get_pages(self, url, payload={}):
+    def rest_get_pages(self, url, payload={}, total=None):
         """
         Paginates a REST resource and returns all data and responses stitched together.
         Set the rest_pagination_vars for the bagger if they do not match the defaults below;
@@ -559,13 +559,19 @@ class CarpetBag(BaseCarpetBag):
 
         total_pages = response_json[self.paginatation_map.get("field_name_total_pages")]
         for page in range(2, total_pages + 1):
-            payload[self.paginatation_map.get("field_name_page")] = page
-            logging.debug("Getting page %s of %s: %s" % (page, total_pages, url))
-            response = self.get(url, payload=payload)
-            next_page_json = response.json()
-            if response.status_code not in [200]:
-                logging.debug("Could not get page %s: %s" % (page, response.json()))
+            current_object_total = len(response_json[self.paginatation_map.get("field_name_data")])
+            if total and current_object_total >= total:
+                logging.debug("Got %s items of limit %s, finishing paginiation" % (current_object_total, total))
                 break
+
+            logging.debug("Getting page %s of %s: %s" % (page, total_pages, url))
+            payload[self.paginatation_map.get("field_name_page")] = page
+            response = self.get(url, payload=payload)
+            if response.status_code not in [200]:
+                logging.warning("Could not get page %s: <%s> %s" % (page, response.status_code, response.text))
+                break
+            next_page_json = response.json()
+
             response_json[self.paginatation_map.get("field_name_data")] += \
                 next_page_json[self.paginatation_map.get("field_name_data")]
             page += 1
