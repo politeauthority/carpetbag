@@ -18,6 +18,7 @@ class TestParseResponse(object):
         assert pr.response == r
         assert pr.content
 
+
     def test__get_title(self):
         r = GoogleDotComResponse()
         pr = ParseResponse(r)
