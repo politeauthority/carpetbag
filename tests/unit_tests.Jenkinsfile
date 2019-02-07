@@ -21,7 +21,6 @@ podTemplate(
 ) {
     node(label) {
         try {
-            currentBuild.description = "Docker-Pretty-Ps Testing"
             // Stage One
             // Initialize terraform and create the Scattershot instance, which will also start Scattershot on boot
             stage('Running unit tests') {
