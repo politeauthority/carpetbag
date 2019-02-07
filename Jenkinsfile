@@ -30,7 +30,7 @@ podTemplate(
                 container("carpetbag") {
                     ansiColor('gnome-terminal') {
                         sh """#!/usr/bin/env bash
-                            pytest
+                            pytest -vv
                         """
                     }
                 }
