@@ -1,5 +1,5 @@
 
-label = "docker-pretty-ps-${UUID.randomUUID().toString()}"
+label = "carpetbag-unit-test-${UUID.randomUUID().toString()}"
 podTemplate(
     label: label,
     cloud: "kubernetes",

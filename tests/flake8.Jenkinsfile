@@ -1,5 +1,5 @@
 
-label = "docker-pretty-ps-${UUID.randomUUID().toString()}"
+label = "carpetbag-flake8-${UUID.randomUUID().toString()}"
 podTemplate(
     label: label,
     cloud: "kubernetes",
@@ -26,7 +26,7 @@ podTemplate(
             stage('Running flake8') {
                 echo "Running flake8"
                 checkout scm
-                container("docker-pretty-ps") {
+                container("carpetbag") {
                     ansiColor('gnome-terminal') {
                         sh """#!/usr/bin/env bash
                             flake8 -v
