@@ -69,7 +69,6 @@ podTemplate(
             }
 
         } catch(error) {
-            reportFailure(error)
             throw error
         }
     }
