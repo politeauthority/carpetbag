@@ -223,19 +223,19 @@ class TestPublic(object):
         response = bagger.search("learn python")
         assert response["results"][0]["title"] == "Learn Python - Free Interactive Python Tutorial"
 
-    def test_check_tor(self):
-        """
-        Tests the method CarpetBag().check_tor(), this test mocks out a failure of connecting to tor.
+    # def test_check_tor(self):
+    #     """
+    #     Tests the method CarpetBag().check_tor(), this test mocks out a failure of connecting to tor.
 
-        """
-        bagger = CarpetBag()
-        bagger.retries_on_connection_failure = 0
-        tor_1 = bagger.check_tor()
+    #     """
+    #     bagger = CarpetBag()
+    #     bagger.retries_on_connection_failure = 0
+    #     tor_1 = bagger.check_tor()
 
-        bagger.proxy["https"] = "https://%s:8119" % TOR_PROXY_CONTAINER
-        tor_2 = bagger.check_tor()
-        assert not tor_1
-        assert tor_2
+    #     bagger.proxy["https"] = "https://%s:8119" % TOR_PROXY_CONTAINER
+    #     tor_2 = bagger.check_tor()
+    #     assert not tor_1
+    #     assert tor_2
 
     def test_parse(self):
         """
