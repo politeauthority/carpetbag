@@ -29,7 +29,7 @@ podTemplate(
                 container("carpetbag") {
                     ansiColor('gnome-terminal') {
                         sh """#!/usr/bin/env bash
-                            flake8
+                            flake8 > flake8-issues.txt
                         """
                         archiveArtifacts artifacts: 'flake8-issues.txt'
                     }
