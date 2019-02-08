@@ -29,8 +29,9 @@ podTemplate(
                 container("carpetbag") {
                     ansiColor('gnome-terminal') {
                         sh """#!/usr/bin/env bash
-                            pytest -vv
+                            pytest --log-file=pytest.log
                         """
+                        archiveArtifacts artifacts: 'pytest.log'
                     }
                 }
             }
