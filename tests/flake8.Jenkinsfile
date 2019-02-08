@@ -1,5 +1,5 @@
 
-label = "docker-pretty-ps-${UUID.randomUUID().toString()}"
+label = "carpetbag-flake8-${UUID.randomUUID().toString()}"
 podTemplate(
     label: label,
     cloud: "kubernetes",
@@ -21,28 +21,17 @@ podTemplate(
 ) {
     node(label) {
         try {
-            currentBuild.description = "Docker-Pretty-Ps Testing"
             // Stage One
             // Initialize terraform and create the Scattershot instance, which will also start Scattershot on boot
-            stage('Running unit tests') {
-                echo "Running unit tests"
+            stage('Running flake8') {
+                echo "Running flake8"
                 checkout scm
                 container("carpetbag") {
                     ansiColor('gnome-terminal') {
                         sh """#!/usr/bin/env bash
-                            pytest -vv
-                        """
-                    }
-                }
-            }
-            stage('Running flake8') {
-                echo "Running flake8"
-                checkout scm
-                container("docker-pretty-ps") {
-                    ansiColor('gnome-terminal') {
-                        sh """#!/usr/bin/env bash
                             flake8
                         """
+                        archiveArtifacts artifacts: 'flake8-issues.txt'
                     }
                 }
             }
