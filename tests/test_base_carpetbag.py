@@ -16,7 +16,7 @@ from carpetbag import errors
 
 from .data.response_data import GoogleDotComResponse
 
-UNIT_TEST_URL = os.environ.get("BAD_ACTOR_URL", "https//www.bad-actor.services/")
+UNIT_TEST_URL = os.environ.get("BAD_ACTOR_URL", "https://www.bad-actor.services/")
 UNIT_TEST_URL_BROKEN = "http://0.0.0.0:90/"
 UNIT_TEST_AGENT = "CarpetBag v%s/ UnitTests" % CarpetBag.__version__
 
