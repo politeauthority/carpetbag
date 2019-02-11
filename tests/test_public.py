@@ -185,7 +185,7 @@ class TestPublic(object):
         Tests the CarpetBag.save() method to make sure it can download files.
         """
         bagger = CarpetBag()
-        bagger.use_skip_ssl_verify()
+        bagger.use_skip_ssl_verify(force=True)
 
         image_1_url = ct.url_join(bagger.remote_service_api.replace("api", ""), "test/troll.jpg")
 
