@@ -13,7 +13,7 @@ from carpetbag import errors
 from carpetbag import carpet_tools as ct
 
 TOR_PROXY_CONTAINER = os.environ.get("TOR_PROXY_CONTAINER", "tor")
-UNIT_TEST_URL = os.environ.get("BAD_ACTOR_URL", "https://www.bad-actor.services/")
+UNIT_TEST_URL = os.environ.get("BAD_ACTOR_URL", CarpetBag().remote_service_api)
 UNIT_TEST_URL_BROKEN = "http://0.0.0.0:90/"
 UNIT_TEST_AGENT = "CarpetBag v%s/ UnitTests" % CarpetBag.__version__
 
