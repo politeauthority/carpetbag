@@ -13,7 +13,7 @@ from carpetbag import errors
 from carpetbag import carpet_tools as ct
 
 TOR_PROXY_CONTAINER = os.environ.get("TOR_PROXY_CONTAINER", "tor")
-UNIT_TEST_URL = os.environ.get("BAD_ACTOR_URL", "https//www.bad-actor.services/")
+UNIT_TEST_URL = os.environ.get("BAD_ACTOR_URL", "https://www.bad-actor.services/")
 UNIT_TEST_URL_BROKEN = "http://0.0.0.0:90/"
 UNIT_TEST_AGENT = "CarpetBag v%s/ UnitTests" % CarpetBag.__version__
 
@@ -140,7 +140,7 @@ class TestPublic(object):
         bagger.remote_service_api = UNIT_TEST_URL_BROKEN
         with pytest.raises(errors.NoRemoteServicesConnection):
             bagger.get_public_proxies()
-
+    # @todo: Removing because this is failing tests at the moment
     # def test_use_random_public_proxy(self):
     #     """
     #     Tests BaseCarpetBag().use_public_proxies()
