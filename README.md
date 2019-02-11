@@ -1,4 +1,4 @@
-# CarpetBag (v.0.0.3)
+# CarpetBag (v.0.0.4)
 <img align="right" src="https://vol-1.nyc3.digitaloceanspaces.com/bad-actor.services/1-0xc/static/img/carpetbag.jpg">
 A multi faceted scraping swiss army knife, built on top of the python [Requests](http://docs.python-requests.org/en/master/) module. All primary HTTP methods return a Requests object back.
 
