@@ -186,7 +186,7 @@ class TestBaseCarpetBag(object):
 
         """
         bagger = CarpetBag()
-        bagger.use_skip_ssl_verify()
+        bagger.use_skip_ssl_verify(force=True)
         bagger._start_request_manifest("GET", UNIT_TEST_URL, {})
         response = bagger._make(
             method="GET",
