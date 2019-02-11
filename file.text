@@ -1,3 +1,0 @@
-./tests/test_base_carpetbag.py:316:121: E501 line too long (121 > 120 characters)
-./carpetbag/carpet_tools.py:5:1: F401 'datetime.datetime' imported but unused
-2
