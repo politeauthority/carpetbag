@@ -28,22 +28,18 @@ podTemplate(
                 echo "Running unit tests"
                 checkout scm
                 container("carpetbag") {
-                    ansiColor('gnome-terminal') {
-                        sh """#!/usr/bin/env bash
-                            pytest -vv
-                        """
-                    }
+                    sh """#!/usr/bin/env bash
+                        pytest -vv
+                    """
                 }
             }
             stage('Running flake8') {
                 echo "Running flake8"
                 checkout scm
                 container("carpetbag") {
-                    ansiColor('gnome-terminal') {
-                        sh """#!/usr/bin/env bash
-                            flake8
-                        """
-                    }
+                    sh """#!/usr/bin/env bash
+                        flake8
+                    """
                 }
             }
 
