@@ -2,7 +2,6 @@
 A series of tools for use in and outside of CarpetBag internally. Mostly for ease of handling urls.
 
 """
-from datetime import datetime
 import pytz
 import re
 

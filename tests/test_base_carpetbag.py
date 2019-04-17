@@ -313,8 +313,8 @@ class TestBaseCarpetBag(object):
 
     def test__end_manifest(self):
         """
-        Tests the BaseCarpetBag()._end_manifest() method to make sure it caps off the end of the manifest and saves it to
-        the class.
+        Tests the BaseCarpetBag()._end_manifest() method to make sure it caps off the end of the manifest and saves it
+        to the class.
 
         """
         bagger = CarpetBag()
