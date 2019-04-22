@@ -1,0 +1,60 @@
+
+label = "carpetbag-${UUID.randomUUID().toString()}"
+podTemplate(
+    label: label,
+    cloud: "kubernetes",
+    containers:
+        [
+            containerTemplate(
+                image: 'politeauthority/carpetbag:latest',
+                name: 'carpetbag',
+                ttyEnabled: true,
+                command: 'tail -f /dev/null',
+                envVars: [],
+                alwaysPullImage: true
+            )
+        ],
+
+    volumes: [
+        hostPathVolume(hostPath: '/var/run/docker.sock', mountPath: '/var/run/docker.sock'),
+    ]
+) {
+    node(label) {
+        try {
+            stage('Code Standards') {
+                echo "Running flake8"
+                checkout scm
+                container("carpetbag") {
+                    sh """#!/usr/bin/env bash
+                        flake8
+                    """
+                }
+            }
+
+        // FlowInterruptedExceptions (at least those with a cause of UserInterruption) are
+        // aborts via the UI of Jenkins.  We don't want to treat these as errors so we detect
+        // them specifically and basically just halt processing.
+        } catch(org.jenkinsci.plugins.workflow.steps.FlowInterruptedException fe) {
+
+            wasUserInterruption = false
+            for (item in fe.getCauses()) {
+                if (item instanceof jenkins.model.CauseOfInterruption$UserInterruption) {
+                    currentBuild.description=""
+                    wasUserInterruption = true
+                    break
+                }
+            }
+
+            // Note: I haven't seen a FlowInterruptedException that _wasn't_ caused by
+            // UserInterruption yet, but the exception documentation seems to suggest that there
+            // are other possibilities.  We'll treat anything else as an error for now.
+            if (!wasUserInterruption) {
+                throw fe
+            }
+
+        } catch(error) {
+            reportFailure(error)
+            throw error
+        }
+    }
+}
