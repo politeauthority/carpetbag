@@ -26,7 +26,7 @@ podTemplate(
                 checkout scm
                 container("carpetbag") {
                     sh """#!/usr/bin/env bash
-                        flake8 -vvv
+                        flake8 -v
                     """
                 }
             }
