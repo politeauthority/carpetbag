@@ -21,19 +21,7 @@ podTemplate(
 ) {
     node(label) {
         try {
-            currentBuild.description = "CarpetBag Testing"
-            // Stage One
-            // Initialize terraform and create the Scattershot instance, which will also start Scattershot on boot
-            stage('Running unit tests') {
-                echo "Running unit tests"
-                checkout scm
-                container("carpetbag") {
-                    sh """#!/usr/bin/env bash
-                        pytest -vv
-                    """
-                }
-            }
-            stage('Running flake8') {
+            stage('Code Standards') {
                 echo "Running flake8"
                 checkout scm
                 container("carpetbag") {
