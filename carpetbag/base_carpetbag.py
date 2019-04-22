@@ -80,7 +80,8 @@ class BaseCarpetBag(object):
         self.password = None
         self.auth_type = None
         self.change_identity_interval = 0
-        self.remote_service_api = "https://www.bad-actor.services/api"
+        # self.remote_service_api = "https://www.bad-actor.services/api"
+        self.remote_service_api = "https://bas.bitgel.com/api"
         self.public_proxies_max_last_test_weeks = 5
         self.paginatation_map = {
             "field_name_page": "page",
@@ -548,7 +549,7 @@ class BaseCarpetBag(object):
         """
         self.logger.error("Unable to connect to: %s" % url)
 
-        if retry > self.retries_on_connection_failure:
+        if retry >= self.retries_on_connection_failure:
             raise requests.exceptions.ConnectionError
 
         if self.random_proxy_bag:
