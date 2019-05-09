@@ -25,7 +25,7 @@ podTemplate(
             checkout scm
             container("carpetbag") {
                 sh """#!/usr/bin/env bash
-                    pytest -v
+                    pytest
                 """
             }
         }
