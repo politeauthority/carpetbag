@@ -262,7 +262,7 @@ class CarpetBag(BaseCarpetBag):
         """
         if len(self.proxy_bag) == 0:
             self.logger.debug("Changing proxy")
-            self.logger.error("Proxy bag is empty! Cannot reset Proxy from Proxy Bag.")
+            self.logger.warning("Proxy bag is empty! Cannot reset Proxy from Proxy Bag.")
             raise errors.EmptyProxyBag
 
         # Remove the current proxy from the proxy bag if one is set.
