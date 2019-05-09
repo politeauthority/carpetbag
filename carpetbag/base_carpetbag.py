@@ -19,7 +19,7 @@ from . import errors
 
 class BaseCarpetBag(object):
 
-    __version__ = "0.0.4b01"
+    __version__ = "0.0.4b02"
 
     def __init__(self):
         """
@@ -331,7 +331,7 @@ class BaseCarpetBag(object):
             if self.random_proxy_bag:
                 self.logger.debug("Hit a proxy error, picking a new one from proxy bag and continuing.")
                 self.manifest[0]["errors"].append("ProxyError")
-                if not self.send_usage_stats_val:
+                if self.send_usage_stats_val:
                     self._send_usage_stats(False)
                     raise requests.exceptions.ProxyError
             else:
