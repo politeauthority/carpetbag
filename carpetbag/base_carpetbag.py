@@ -19,17 +19,17 @@ from . import errors
 
 class BaseCarpetBag(object):
 
-    __version__ = "0.0.4b02"
+    __version__ = "0.0.4b03"
 
     def __init__(self):
         """
-        CarpetBag constructor. Here we set the default, user changable class vars.
+        CarpetBag constructor. Here we set the default, user changeable class vars.
 
-        :class param headers: Any extra headers to add to the response. This can be maniuplated at any time and applied
+        :class param headers: Any extra headers to add to the response. This can be manipulated at any time and applied
             just before each request made.
         :class type headers: dict
 
-        :class param user_agent: User setable User Agent to send on every request. This can be updated at any time.
+        :class param user_agent: User selected User Agent to send on every request. This can be updated at any time.
         :class type user_agent: str
 
         :class param random_user_agent: Setting to decide whether or not to use a random user agent string.
@@ -39,14 +39,14 @@ class BaseCarpetBag(object):
             certs given out by LetsEncrypt.
         :class type ssl_verify: bool
 
-        :class param mininum_wait_time: Minimum ammount of time to wait before allowing the next request to go out.
+        :class param mininum_wait_time: Minimum amount of time to wait before allowing the next request to go out.
         :class type mininum_wait_time: int
 
         :class param wait_and_retry_on_connection_error: Time to wait and then retry when a connection error has been
             hit.
         :class type wait_and_retry_on_connection_error: int
 
-        :class param retries_on_connection_failure: Ammount of retry attemps to make when a connection_error has been
+        :class param retries_on_connection_failure: Amount of retry attempts to make when a connection_error has been
             hit.
         :class type retries_on_connection_failure: int
 
@@ -72,10 +72,10 @@ class BaseCarpetBag(object):
         self.headers = {}
         self.user_agent = "CarpetBag v%s" % self.__version__
         self.random_user_agent = False
-        self.mininum_wait_time = 0  # Sets the minumum wait time per domain to make a new request in seconds.
+        self.mininum_wait_time = 0  # Sets the minimum wait time per domain to make a new request in seconds.
         self.wait_and_retry_on_connection_error = 0
         self.retries_on_connection_failure = 5
-        self.max_content_length = 200000000  # Sets the maximum downloard size, default 200 MegaBytes, in bytes.
+        self.max_content_length = 200000000  # Sets the maximum download size, default 200 MegaBytes, in bytes.
         self.username = None
         self.password = None
         self.auth_type = None
@@ -127,7 +127,7 @@ class BaseCarpetBag(object):
 
     def _make_request(self, method, url, payload={}):
         """
-        Makes the URL request, over your choosen HTTP verb.
+        Makes the URL request, over your chosen HTTP verb.
 
         :param method: The method for the request action to use. "GET", "POST", "PUT", "DELETE"
         :type method: string
@@ -148,14 +148,14 @@ class BaseCarpetBag(object):
 
         response = self._make(method, url, headers, payload)
         if response.status_code >= 500:
-            self.logger.warning("URL %s Recieved a server error response <%s>" % (url, response.status_code))
+            self.logger.warning("URL %s Received a server error response <%s>" % (url, response.status_code))
             self.logger.debug(response.text)
 
         roundtrip = self._after_request(ts_start, url, response)
         response.roundtrip = roundtrip
 
         self._end_manifest(response, response.roundtrip)
-        self.logger.debug("Repsonse took %s for %s" % (roundtrip, url))
+        self.logger.debug("Response took %s for %s" % (roundtrip, url))
 
         self._cleanup_one_time_headers()
         self._send_usage_stats()
@@ -217,7 +217,7 @@ class BaseCarpetBag(object):
         :rtype: bool
         :raises: carpetbag.errors.InvalidContinent
         """
-        valid_continents = ["North America", "South America", "Asia", "Europe", "Africa", "Austrailia", "Antarctica"]
+        valid_continents = ["North America", "South America", "Asia", "Europe", "Africa", "Australia", "Antarctica"]
         for continent in requested_continents:
             if continent not in valid_continents:
                 self.logger.error("Unknown continent: %s" % continent)
@@ -292,7 +292,7 @@ class BaseCarpetBag(object):
 
     def _make(self, method, url, headers, payload={}, retry=0):
         """
-        Just about every CarpetBag requesmisct comes through this method. It makes the request and handles different
+        Just about every CarpetBag request comes through this method. It makes the request and handles different
         errors that may come about.
         @todo: rework arg list to be url, payload, method,
 
@@ -368,7 +368,7 @@ class BaseCarpetBag(object):
 
         # Catch an SSLError, seems to crop up with LetsEncypt certs.
         except requests.exceptions.SSLError:
-            self.logger.warning("Recieved an SSL Error from %s" % url)
+            self.logger.warning("Received an SSL Error from %s" % url)
             if not self.ssl_verify:
                 self.logger.warning("Re-running request without SSL cert verification.")
                 retry += 1
@@ -450,12 +450,12 @@ class BaseCarpetBag(object):
 
     def _internal_proxies_params(self, payload):
         """
-        Creates the params to uery bad-actor.services for ranked proxies.
+        Creates the params to query bad-actor.services for ranked proxies.
         @todo: Create unit test!
 
         :param payload: The data to be sent over the POST request.
         :type payload: dict
-        :returns: The GET query paramters to be sent to bad-actor.servies for proxies.
+        :returns: The GET query parameters to be sent to bad-actor.services for proxies.
         :rtype: dict
         """
         params = {"q": {}}
@@ -486,8 +486,8 @@ class BaseCarpetBag(object):
         """
         Creates the filter arguments for continent filtering to be sent to https://www.bad-actor.services/api/proxies/
 
-        :param payload: The query payload to build args from. Not all param configurers need this, but it's always
-                        passsed regarduless
+        :param payload: The query payload to build args from. Not all params need this, but it's always
+                        passed regardless
         :type payload: dict
         :returns: FlaskRestless style query filter.
         :rtype: dict
@@ -503,8 +503,8 @@ class BaseCarpetBag(object):
         Will create a search with the last_test being self.public_proxies_max_last_test_weeks, currently defaulted to
         5 weeks.
 
-        :param payload: The query payload to build args from. Not all param configurers need this, but it's always
-                        passsed regarduless
+        :param payload: The query payload to build args from. Not all params need this, but it's always
+                        passed regardless
         :type payload: dict
         :returns: FlaskRestless style query filter.
         :rtype: dict
@@ -520,8 +520,8 @@ class BaseCarpetBag(object):
         """
         Creates the filter arguments for quality filtering to be sent to https://www.bad-actor.services/api/proxies/
 
-        :param payload: The query payload to build args from. Not all param configurers need this, but it's always
-                        passsed regarduless
+        :param payload: The query payload to build args from. Not all params need this, but it's always
+                        passed regardless
         :type payload: dict
         :returns: FlaskRestless style query filter.
         :rtype: dict
@@ -571,8 +571,8 @@ class BaseCarpetBag(object):
 
     def _after_request(self, ts_start, url, response):
         """
-        Runs after request opperations, sets counters and run times. This Should be called before any raised known
-        execptions.
+        Runs after request operations, sets counters and run times. This Should be called before any raised known
+        exceptions.
 
         :param ts_start: The start of the request.
         :type st_start: int
@@ -633,7 +633,7 @@ class BaseCarpetBag(object):
 
     def _end_manifest(self, response, roundtrip, success=True):
         """
-        Ends the manifest for a requested url with endtimes and runtimes.
+        Ends the manifest for a requested url with end times and run times.
 
         :param response: The response pulled from the request.
         :rtype response: <Response> obj
@@ -658,7 +658,7 @@ class BaseCarpetBag(object):
         Handles the one time headers by removing them after the request has gone through successfully.
         @todo: Unit test!
 
-        :returns: Sucess if it happens.
+        :returns: Success if it happens.
         :rtype: True
         """
         for header in self.one_time_headers:
@@ -718,7 +718,7 @@ class BaseCarpetBag(object):
         :type: url: str
         :param content_type: The content type header from the response.
         :type content_type: str
-        :param destination: Where on the local filestem to store the image.
+        :param destination: Where on the local file system to store the image.
         :type: destination: str
         :returns: The absolute path for the file.
         :rtype: str
@@ -751,7 +751,7 @@ class BaseCarpetBag(object):
                 full_phile_name = os.path.join(destination, phile_name)
 
         else:
-            # If the choosen drop is not a directory, use the name given.
+            # If the chosen drop is not a directory, use the name given.
             if "." in destination_last:
                 full_phile_name = os.path.join(destination_dir, destination_last)
 
@@ -765,7 +765,7 @@ class BaseCarpetBag(object):
 
     def _prep_destination(self, destination):
         """
-        Attempts to create the destintion directory path if needed.
+        Attempts to create the destination directory path if needed.
 
         :param destination:
         :type destination: str
