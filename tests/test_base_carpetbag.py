@@ -79,18 +79,18 @@ class TestBaseCarpetBag(object):
         bagger.proxy["https"] = "https://1.20.101.234:33085"
         assert str(bagger) == "<CarpetBag Proxy:https://1.20.101.234:33085>"
 
-    def test__make_request(self):
-        """
-        Tests the BaseCarpetBag._make_request() method.
-        @note: This test DOES make outbound web requests.
+    # def test__make_request(self):
+    #     """
+    #     Tests the BaseCarpetBag._make_request() method.
+    #     @note: This test DOES make outbound web requests.
 
-        """
-        bagger = CarpetBag()
-        bagger.use_skip_ssl_verify()
-        request = bagger._make_request("GET", UNIT_TEST_URL)
-        assert request
-        assert request.text
-        assert request.status_code == 200
+    #     """
+    #     bagger = CarpetBag()
+    #     bagger.use_skip_ssl_verify()
+    #     request = bagger._make_request("GET", UNIT_TEST_URL)
+    #     assert request
+    #     assert request.text
+    #     assert request.status_code == 200
 
     # def test__handle_sleep(self):
     #     """
