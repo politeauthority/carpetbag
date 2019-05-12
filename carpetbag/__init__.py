@@ -557,7 +557,8 @@ class CarpetBag(BaseCarpetBag):
         response_json = response.json()
         logging.debug("Getting page 1: %s" % (url))
 
-        total_pages = response_json[self.paginatation_map.get("field_name_total_pages")]
+        pm_total_pages = self.paginatation_map.get("field_name_total_pages")
+        total_pages = response_json[pm_total_pages]
         for page in range(2, total_pages + 1):
             current_object_total = len(response_json[self.paginatation_map.get("field_name_data")])
             if total and current_object_total >= total:
