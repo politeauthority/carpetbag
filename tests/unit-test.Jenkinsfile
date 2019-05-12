@@ -19,7 +19,6 @@ podTemplate(
     ]
 ) {
     node(label) {
-        currentBuild.description = "CarpetBag Testing"
         stage('Running unit tests') {
             echo "Running unit tests"
             checkout scm
