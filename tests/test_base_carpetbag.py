@@ -42,7 +42,7 @@ class TestBaseCarpetBag(object):
         assert not bagger.password
         assert not bagger.auth_type
         assert bagger.change_identity_interval == 0  # @todo: build and test this functionality
-        assert bagger.remote_service_api == "https://www.bad-actor.services/api"
+        assert bagger.remote_service_api == UNIT_TEST_URL
         assert not bagger.outbound_ip
         assert bagger.request_count == 0
         assert bagger.request_total == 0
