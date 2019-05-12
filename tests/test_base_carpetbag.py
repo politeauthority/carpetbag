@@ -176,33 +176,33 @@ class TestBaseCarpetBag(object):
         assert request_args["verify"]
         assert (request_args["proxies"].get("http") or request_args["proxies"].get("https"))
 
-    def test__make(self):
-        """
-        Tests the _make() method of CarpetBag. This is one of the primary methods of CarpetBag, and could always use
-        more tests!
-        @note: This test DOES make outbound web requests.
+    # def test__make(self):
+    #     """
+    #     Tests the _make() method of CarpetBag. This is one of the primary methods of CarpetBag, and could always use
+    #     more tests!
+    #     @note: This test DOES make outbound web requests.
 
-        """
-        bagger = CarpetBag()
-        bagger.use_skip_ssl_verify()
-        bagger._start_request_manifest("GET", UNIT_TEST_URL, {})
-        response = bagger._make(
-            method="GET",
-            url=UNIT_TEST_URL,
-            headers={"Content-Type": "application/html"},
-            payload={},
-            retry=0)
-        bagger.manifest.append({})
-        assert response
-        assert response.status_code == 200
-        response = bagger._make(
-            method="GET",
-            url=UNIT_TEST_URL,
-            headers={"Content-Type": "application/html"},
-            payload={},
-            retry=0)
-        assert response
-        assert response.status_code == 200
+    #     """
+    #     bagger = CarpetBag()
+    #     bagger.use_skip_ssl_verify()
+    #     bagger._start_request_manifest("GET", UNIT_TEST_URL, {})
+    #     response = bagger._make(
+    #         method="GET",
+    #         url=UNIT_TEST_URL,
+    #         headers={"Content-Type": "application/html"},
+    #         payload={},
+    #         retry=0)
+    #     bagger.manifest.append({})
+    #     assert response
+    #     assert response.status_code == 200
+    #     response = bagger._make(
+    #         method="GET",
+    #         url=UNIT_TEST_URL,
+    #         headers={"Content-Type": "application/html"},
+    #         payload={},
+    #         retry=0)
+    #     assert response
+    #     assert response.status_code == 200
 
     def test_make_internal(self):
         """
