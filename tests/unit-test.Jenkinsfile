@@ -19,14 +19,31 @@ podTemplate(
     ]
 ) {
     node(label) {
-        stage('Running unit tests') {
-            echo "Running unit tests"
-            checkout scm
-            container("carpetbag") {
+        container("carpetbag") {
+            stage('Test CarpetTools') {
+                echo "Running tests/test_carpet_tools.py"
+                checkout scm
                 sh """#!/usr/bin/env bash
-                    pytest
+                    pytest tests/test_carpet_tools.py
                 """
             }
+
+            stage('Test Base') {
+                echo "Running tests/test_base_carpetbag.py"
+                checkout scm
+                sh """#!/usr/bin/env bash
+                    pytest tests/test_base_carpetbag.py
+                """
+            }
+
+            stage('Test Public') {
+                echo "Running tests/test_public.py"
+                checkout scm
+                sh """#!/usr/bin/env bash
+                    pytest tests/test_public.py
+                """
+            }
+
         }
     }
 }
