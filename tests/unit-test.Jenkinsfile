@@ -20,6 +20,14 @@ podTemplate(
 ) {
     node(label) {
         container("carpetbag") {
+            stage('Build Requirements') {
+                echo "Running tests/test_carpet_tools.py"
+                checkout scm
+                sh """#!/usr/bin/env bash
+                    pip3 install -r requirements.txt
+                """
+            }
+
             stage('Test CarpetTools') {
                 echo "Running tests/test_carpet_tools.py"
                 checkout scm
