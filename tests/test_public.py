@@ -28,6 +28,7 @@ class TestPublic(object):
         """
         bagger = CarpetBag()
         bagger.mininum_wait_time = 50
+        bagger.retries_on_connection_failure = 0
         bagger.use_skip_ssl_verify(force=True)
         bagger.user_agent = UNIT_TEST_AGENT
         bagger.remote_service_api = UNIT_TEST_URL
@@ -35,11 +36,10 @@ class TestPublic(object):
         first_successful_response = bagger.get(UNIT_TEST_URL)
         bagger.get(ct.url_join(UNIT_TEST_URL, "api/proxies"))
 
-        self._run_get_successful_test(bagger, first_successful_response)
-        self._run_inspect_manifest(bagger)
-        # self._run_minimum_wait_test(bagger)
+        assert self._run_get_successful_test(bagger, first_successful_response)
+        assert self._run_inspect_manifest(bagger)
 
-        self._run_unabled_to_connect(bagger)
+        assert self._run_unabled_to_connect(bagger)
 
     def _run_get_successful_test(self, bagger, successful_response):
         """
@@ -67,6 +67,7 @@ class TestPublic(object):
         assert isinstance(bagger.manifest[0]["errors"], list)
         assert len(bagger.manifest[0]["errors"]) == 0
         assert bagger.manifest[1]["url"] == UNIT_TEST_URL
+        return True
 
     def _run_unabled_to_connect(self, bagger):
         """
@@ -77,6 +78,7 @@ class TestPublic(object):
         """
         with pytest.raises(requests.exceptions.ConnectionError):
             bagger.get(UNIT_TEST_URL_BROKEN)
+            return True
 
     def test_use_random_user_agent(self):
         """
