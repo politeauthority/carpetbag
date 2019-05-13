@@ -139,6 +139,7 @@ class TestPublic(object):
         assert len(bagger.proxy_bag) == 0
         proxies = bagger.get_public_proxies()
 
+        print(proxies)
         assert isinstance(proxies, list)
         assert len(proxies) > 5
         assert isinstance(bagger.proxy_bag, list)
