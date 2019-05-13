@@ -52,6 +52,14 @@ podTemplate(
                 """
             }
 
+            stage('Test Timings') {
+                echo "Running tests/test_timings.py"
+                checkout scm
+                sh """#!/usr/bin/env bash
+                    pytest tests/test_timings.py
+                """
+            }
+
         }
     }
 }
