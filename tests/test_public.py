@@ -20,24 +20,24 @@ UNIT_TEST_AGENT = "CarpetBag v%s/ UnitTests" % CarpetBag.__version__
 
 class TestPublic(object):
 
-    def test_get(self):
-        """
-        Tests the CarpetBag.get() method and some of the many different ways that it can be used.
+    # def test_get(self):
+    #     """
+    #     Tests the CarpetBag.get() method and some of the many different ways that it can be used.
 
-        """
-        bagger = CarpetBag()
-        bagger.mininum_wait_time = 50
-        bagger.use_skip_ssl_verify(force=True)
-        bagger.user_agent = UNIT_TEST_AGENT
+    #     """
+    #     bagger = CarpetBag()
+    #     bagger.mininum_wait_time = 50
+    #     bagger.use_skip_ssl_verify(force=True)
+    #     bagger.user_agent = UNIT_TEST_AGENT
 
-        first_successful_response = bagger.get(UNIT_TEST_URL)
-        bagger.get(ct.url_join(UNIT_TEST_URL, "api/proxies"))
+    #     first_successful_response = bagger.get(UNIT_TEST_URL)
+    #     bagger.get(ct.url_join(UNIT_TEST_URL, "api/proxies"))
 
-        self._run_get_successful_test(bagger, first_successful_response)
-        self._run_inspect_manifest(bagger)
-        # self._run_minimum_wait_test(bagger)
+    #     self._run_get_successful_test(bagger, first_successful_response)
+    #     self._run_inspect_manifest(bagger)
+    #     # self._run_minimum_wait_test(bagger)
 
-        self._run_unabled_to_connect(bagger)
+    #     self._run_unabled_to_connect(bagger)
 
     def _run_get_successful_test(self, bagger, successful_response):
         """
@@ -180,48 +180,50 @@ class TestPublic(object):
         assert not bagger.use_skip_ssl_verify(False)
         assert bagger.ssl_verify
 
-    def test_save(self):
-        """
-        Tests the CarpetBag.save() method to make sure it can download files.
-        """
-        bagger = CarpetBag()
-        bagger.use_skip_ssl_verify()
+    # def test_save(self):
+    #     """
+    #     Tests the CarpetBag.save() method to make sure it can download files.
+    #     """
+    #     bagger = CarpetBag()
+    #     bagger.use_skip_ssl_verify()
 
-        image_1_url = ct.url_join(bagger.remote_service_api.replace("api", ""), "test/troll.jpg")
+    #     image_1_url = ct.url_join(bagger.remote_service_api.replace("api", ""), "test/troll.jpg")
 
-        # Test the file being named after the full path given in the destination.
-        saved_phile_name = bagger.save(
-            image_1_url,
-            "/opt/carpetbag/tests/data/images/test_download.jpg")
+    #     # Test the file being named after the full path given in the destination.
+    #     saved_phile_name = bagger.save(
+    #         image_1_url,
+    #         "/opt/carpetbag/tests/data/images/test_download.jpg")
 
-        assert saved_phile_name
-        assert saved_phile_name == "/opt/carpetbag/tests/data/images/test_download.jpg"
-        os.remove(saved_phile_name)
+    #     assert saved_phile_name
+    #     assert saved_phile_name == "/opt/carpetbag/tests/data/images/test_download.jpg"
+    #     os.remove(saved_phile_name)
 
-        # Test the name of the file being the last url segment
-        saved_phile_name = bagger.save(
-            image_1_url,
-            "/opt/carpetbag/tests/data/images/")
-        assert saved_phile_name
-        assert saved_phile_name == "/opt/carpetbag/tests/data/images/troll.jpg"
-        os.remove(saved_phile_name)
+    #     # Test the name of the file being the last url segment
+    #     saved_phile_name = bagger.save(
+    #         image_1_url,
+    #         "/opt/carpetbag/tests/data/images/")
+    #     assert saved_phile_name
+    #     assert saved_phile_name == "/opt/carpetbag/tests/data/images/troll.jpg"
+    #     os.remove(saved_phile_name)
 
-        # Test that we respect the overwrite argument
-        with pytest.raises(errors.CannotOverwriteFile):
-            bagger.save(
-                image_1_url,
-                "/opt/carpetbag/tests/data/images/existing.jpg")
+    #     # Test that we respect the overwrite argument
+    #     with pytest.raises(errors.CannotOverwriteFile):
+    #         bagger.save(
 
-    def test_search(self):
-        """
-        Tests CarpetBag().search(), which runs a search on DuckDuckGo and parses the response.
-        @note: If this test refetches data its very likely this test can fail, beware!
+                
+    #             image_1_url,
+    #             "/opt/carpetbag/tests/data/images/existing.jpg")
 
-        """
-        bagger = CarpetBag()
-        bagger.use_skip_ssl_verify()
-        response = bagger.search("learn python")
-        assert response["results"][0]["title"] == "Learn Python - Free Interactive Python Tutorial"
+    # def test_search(self):
+    #     """
+    #     Tests CarpetBag().search(), which runs a search on DuckDuckGo and parses the response.
+    #     @note: If this test refetches data its very likely this test can fail, beware!
+
+    #     """
+    #     bagger = CarpetBag()
+    #     bagger.use_skip_ssl_verify(force=True)
+    #     response = bagger.search("learn python")
+    #     assert response["results"][0]["title"] == "Learn Python - Free Interactive Python Tutorial"
 
     # def test_check_tor(self):
     #     """
@@ -259,27 +261,27 @@ class TestPublic(object):
             r"^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}$",
             bagger.outbound_ip)  # Something to the tune of "184.153.235.188"
 
-    def test_reset_identity(self):
-        """
-        Tests the CarpetBag().reset_identity() method, makeing sure:
-            - We reset the User-Agent if the use_random_user_agent() method has been invoked.
-            - We pick a new proxy if the use_random_public_proxy() method has been invoked.
+    # def test_reset_identity(self):
+    #     """
+    #     Tests the CarpetBag().reset_identity() method, makeing sure:
+    #         - We reset the User-Agent if the use_random_user_agent() method has been invoked.
+    #         - We pick a new proxy if the use_random_public_proxy() method has been invoked.
 
-        """
-        bagger = CarpetBag()
-        bagger.use_random_user_agent()
-        bagger.use_random_public_proxy()
+    #     """
+    #     bagger = CarpetBag()
+    #     bagger.use_random_user_agent()
+    #     bagger.use_random_public_proxy()
 
-        first_ip = bagger.get_outbound_ip()
-        first_ua = bagger.user_agent
-        first_proxy = bagger.proxy
-        bagger.reset_identity()
+    #     first_ip = bagger.get_outbound_ip()
+    #     first_ua = bagger.user_agent
+    #     first_proxy = bagger.proxy
+    #     bagger.reset_identity()
 
-        second_ip = bagger.get_outbound_ip()
+    #     second_ip = bagger.get_outbound_ip()
 
-        assert first_ua != bagger.user_agent
-        assert first_proxy != bagger.proxy
-        assert first_ip != second_ip
+    #     assert first_ua != bagger.user_agent
+    #     assert first_proxy != bagger.proxy
+    #     assert first_ip != second_ip
 
     def test_set_header(self):
         """
