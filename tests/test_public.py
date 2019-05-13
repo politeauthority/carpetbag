@@ -7,6 +7,7 @@ import re
 
 import requests
 import pytest
+import vcr
 
 from carpetbag import CarpetBag
 from carpetbag import errors
