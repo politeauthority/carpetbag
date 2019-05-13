@@ -47,17 +47,23 @@ class TestPublic(object):
 
         :param bagger: The current CarpetBag instance running through the test.
         :type bagger: <CarpetBag> obj
+        :returns: Returns True if everything works.
+        :rtype: bool
         """
         assert successful_response
         assert successful_response.status_code == 200
         assert isinstance(bagger.last_request_time, datetime)
         assert bagger.user_agent == UNIT_TEST_AGENT
 
+        return True
+
     def _run_inspect_manifest(self, bagger):
         """
 
         :param bagger: The current CarpetBag instance running through the test.
         :type bagger: <CarpetBag> obj
+        :returns: Returns True if everything works.
+        :rtype: bool
         """
         assert isinstance(bagger.manifest, list)
         assert len(bagger.manifest) == 2
@@ -67,6 +73,7 @@ class TestPublic(object):
         assert isinstance(bagger.manifest[0]["errors"], list)
         assert len(bagger.manifest[0]["errors"]) == 0
         assert bagger.manifest[1]["url"] == UNIT_TEST_URL
+
         return True
 
     def _run_unabled_to_connect(self, bagger):
@@ -75,10 +82,13 @@ class TestPublic(object):
 
         :param bagger: The current CarpetBag instance running through the test.
         :type bagger: <CarpetBag> obj
+        :returns: Returns True if everything works.
+        :rtype: bool
         """
         with pytest.raises(requests.exceptions.ConnectionError):
             bagger.get(UNIT_TEST_URL_BROKEN)
-            return True
+        
+        return True
 
     def test_use_random_user_agent(self):
         """
