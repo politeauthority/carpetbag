@@ -13,6 +13,7 @@ from carpetbag import errors
 from carpetbag import carpet_tools as ct
 
 TOR_PROXY_CONTAINER = os.environ.get("TOR_PROXY_CONTAINER", "tor")
+# UNIT_TEST_URL = os.environ.get("BAD_ACTOR_URL", "https//bas.bitgel.com")
 UNIT_TEST_URL = "https//bas.bitgel.com"
 UNIT_TEST_URL_BROKEN = "http://0.0.0.0:90/"
 UNIT_TEST_AGENT = "CarpetBag v%s/ UnitTests" % CarpetBag.__version__
@@ -20,24 +21,25 @@ UNIT_TEST_AGENT = "CarpetBag v%s/ UnitTests" % CarpetBag.__version__
 
 class TestPublic(object):
 
-    # def test_get(self):
-    #     """
-    #     Tests the CarpetBag.get() method and some of the many different ways that it can be used.
+    def test_get(self):
+        """
+        Tests the CarpetBag.get() method and some of the many different ways that it can be used.
 
-    #     """
-    #     bagger = CarpetBag()
-    #     bagger.mininum_wait_time = 50
-    #     bagger.use_skip_ssl_verify(force=True)
-    #     bagger.user_agent = UNIT_TEST_AGENT
+        """
+        bagger = CarpetBag()
+        bagger.mininum_wait_time = 50
+        bagger.use_skip_ssl_verify(force=True)
+        bagger.user_agent = UNIT_TEST_AGENT
+        bagger.remote_service_api = UNIT_TEST_URL
 
-    #     first_successful_response = bagger.get(UNIT_TEST_URL)
-    #     bagger.get(ct.url_join(UNIT_TEST_URL, "api/proxies"))
+        first_successful_response = bagger.get(UNIT_TEST_URL)
+        bagger.get(ct.url_join(UNIT_TEST_URL, "api/proxies"))
 
-    #     self._run_get_successful_test(bagger, first_successful_response)
-    #     self._run_inspect_manifest(bagger)
-    #     # self._run_minimum_wait_test(bagger)
+        self._run_get_successful_test(bagger, first_successful_response)
+        self._run_inspect_manifest(bagger)
+        # self._run_minimum_wait_test(bagger)
 
-    #     self._run_unabled_to_connect(bagger)
+        self._run_unabled_to_connect(bagger)
 
     def _run_get_successful_test(self, bagger, successful_response):
         """
