@@ -117,7 +117,7 @@ class TestBaseCarpetBag(object):
     #     run_time_2 = (end_2 - start_2).seconds
     #     assert run_time_2 >= MINIMUM_WAIT - 1
 
-    def test__get_headers(self):
+    # def test__get_headers(self):
         """
         Tests that headers can be set by the CarpetBag application, and by the end-user.
 
