@@ -29,6 +29,15 @@ podTemplate(
                 """
             }
 
+            stage('Build CarpetBag') {
+                echo "Running tests/test_carpet_tools.py"
+                checkout scm
+                sh """#!/usr/bin/env bash
+                    python3 setup.py build
+                    python3 setup.py install
+                """
+            }
+
             stage('Test CarpetTools') {
                 echo "Running tests/test_carpet_tools.py"
                 checkout scm

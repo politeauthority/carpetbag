@@ -15,7 +15,7 @@ from carpetbag import carpet_tools as ct
 
 TOR_PROXY_CONTAINER = os.environ.get("TOR_PROXY_CONTAINER", "tor")
 # UNIT_TEST_URL = os.environ.get("BAD_ACTOR_URL", "https//bas.bitgel.com")
-UNIT_TEST_URL = "https://bas.bitgel.com"
+UNIT_TEST_URL ="https://bas.bitgel.com/api"
 UNIT_TEST_URL_BROKEN = "http://0.0.0.0:90/"
 UNIT_TEST_AGENT = "CarpetBag v%s/ UnitTests" % CarpetBag.__version__
 
@@ -125,7 +125,7 @@ class TestPublic(object):
         assert isinstance(ua_1, str)
         assert ua_1 != ua_2
 
-    @vcr.use_cassette('data/vcr_cassettes/test_get_public_proxies.yaml')
+    # @vcr.use_cassette('data/vcr_cassettes/test_get_public_proxies.yaml')
     def test_get_public_proxies(self):
         """
         Tests BaseCarpetBag().get_public_proxies()
@@ -140,7 +140,6 @@ class TestPublic(object):
         assert len(bagger.proxy_bag) == 0
         proxies = bagger.get_public_proxies()
 
-        print(proxies)
         assert isinstance(proxies, list)
         assert len(proxies) > 5
         assert isinstance(bagger.proxy_bag, list)
