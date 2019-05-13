@@ -13,7 +13,7 @@ from carpetbag import errors
 from carpetbag import carpet_tools as ct
 
 TOR_PROXY_CONTAINER = os.environ.get("TOR_PROXY_CONTAINER", "tor")
-UNIT_TEST_URL = os.environ.get("BAD_ACTOR_URL", "https//bas.bitgel.com")
+UNIT_TEST_URL = "https//bas.bitgel.com"
 UNIT_TEST_URL_BROKEN = "http://0.0.0.0:90/"
 UNIT_TEST_AGENT = "CarpetBag v%s/ UnitTests" % CarpetBag.__version__
 
@@ -210,7 +210,7 @@ class TestPublic(object):
     #     with pytest.raises(errors.CannotOverwriteFile):
     #         bagger.save(
 
-                
+
     #             image_1_url,
     #             "/opt/carpetbag/tests/data/images/existing.jpg")
 
@@ -239,15 +239,15 @@ class TestPublic(object):
     #     assert not tor_1
     #     assert tor_2
 
-    def test_parse(self):
-        """
-        Tests the CarpetBag().parse() method to make sure we're returning the correct object back.
+    # def test_parse(self):
+    #     """
+    #     Tests the CarpetBag().parse() method to make sure we're returning the correct object back.
 
-        """
-        bagger = CarpetBag()
-        bagger.user_agent = UNIT_TEST_AGENT
-        bagger.use_skip_ssl_verify(force=True)
-        bagger.get(UNIT_TEST_URL)
+    #     """
+    #     bagger = CarpetBag()
+    #     bagger.user_agent = UNIT_TEST_AGENT
+    #     bagger.use_skip_ssl_verify(force=True)
+    #     bagger.get(UNIT_TEST_URL)
 
     def test_get_outbound_ip(self):
         """
