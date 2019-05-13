@@ -23,48 +23,48 @@ UNIT_TEST_AGENT = "CarpetBag v%s/ UnitTests" % CarpetBag.__version__
 
 class TestBaseCarpetBag(object):
 
-    def test___init__(self):
-        """
-        Tests that the module init has correct default values
-        This test makes no outbound requests.
+    # def test___init__(self):
+    #     """
+    #     Tests that the module init has correct default values
+    #     This test makes no outbound requests.
 
-        """
-        bagger = CarpetBag()
-        assert bagger.headers == {}
-        assert bagger.user_agent == "CarpetBag v%s" % bagger.__version__
-        assert not bagger.random_user_agent
-        assert bagger.mininum_wait_time == 0  # @todo: cover usage in unit test
-        assert bagger.wait_and_retry_on_connection_error == 0  # @todo: cover usage in unit test
-        assert bagger.retries_on_connection_failure == 5  # @todo: cover usage in unit test
-        assert bagger.max_content_length == 200000000  # @todo: cover usage in unit test
+    #     """
+    #     bagger = CarpetBag()
+    #     assert bagger.headers == {}
+    #     assert bagger.user_agent == "CarpetBag v%s" % bagger.__version__
+    #     assert not bagger.random_user_agent
+    #     assert bagger.mininum_wait_time == 0  # @todo: cover usage in unit test
+    #     assert bagger.wait_and_retry_on_connection_error == 0  # @todo: cover usage in unit test
+    #     assert bagger.retries_on_connection_failure == 5  # @todo: cover usage in unit test
+    #     assert bagger.max_content_length == 200000000  # @todo: cover usage in unit test
 
-        assert not bagger.username
-        assert not bagger.password
-        assert not bagger.auth_type
-        assert bagger.change_identity_interval == 0  # @todo: build and test this functionality
-        assert bagger.remote_service_api == UNIT_TEST_URL
-        assert not bagger.outbound_ip
-        assert bagger.request_count == 0
-        assert bagger.request_total == 0
-        assert not bagger.last_request_time
-        assert not bagger.last_response
-        assert bagger.manifest == []
-        assert bagger.proxy == {}
-        assert bagger.proxy_bag == []
-        assert not bagger.random_proxy_bag
-        assert bagger.send_user_agent == ""
-        assert bagger.ssl_verify
-        assert not bagger.send_usage_stats_val
-        assert isinstance(bagger.usage_stats_api_key, str)
-        assert not bagger.usage_stats_api_key
-        assert isinstance(bagger.one_time_headers, list)
-        assert not bagger.force_skip_ssl_verify
+    #     assert not bagger.username
+    #     assert not bagger.password
+    #     assert not bagger.auth_type
+    #     assert bagger.change_identity_interval == 0  # @todo: build and test this functionality
+    #     assert bagger.remote_service_api == UNIT_TEST_URL
+    #     assert not bagger.outbound_ip
+    #     assert bagger.request_count == 0
+    #     assert bagger.request_total == 0
+    #     assert not bagger.last_request_time
+    #     assert not bagger.last_response
+    #     assert bagger.manifest == []
+    #     assert bagger.proxy == {}
+    #     assert bagger.proxy_bag == []
+    #     assert not bagger.random_proxy_bag
+    #     assert bagger.send_user_agent == ""
+    #     assert bagger.ssl_verify
+    #     assert not bagger.send_usage_stats_val
+    #     assert isinstance(bagger.usage_stats_api_key, str)
+    #     assert not bagger.usage_stats_api_key
+    #     assert isinstance(bagger.one_time_headers, list)
+    #     assert not bagger.force_skip_ssl_verify
 
-        assert bagger.paginatation_map == {
-            "field_name_page": "page",
-            "field_name_total_pages": "total_pages",
-            "field_name_data": "objects",
-        }
+    #     assert bagger.paginatation_map == {
+    #         "field_name_page": "page",
+    #         "field_name_total_pages": "total_pages",
+    #         "field_name_data": "objects",
+    #     }
 
     def test___repr__(self):
         """
