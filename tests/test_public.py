@@ -124,36 +124,36 @@ class TestPublic(object):
         assert isinstance(ua_1, str)
         assert ua_1 != ua_2
 
-    # def test_get_public_proxies(self):
-    #     """
-    #     Tests BaseCarpetBag().get_public_proxies()
+    def test_get_public_proxies(self):
+        """
+        Tests BaseCarpetBag().get_public_proxies()
 
-    #     """
-    #     bagger = CarpetBag()
-    #     bagger.user_agent = UNIT_TEST_AGENT
+        """
+        bagger = CarpetBag()
+        bagger.user_agent = UNIT_TEST_AGENT
 
-    #     assert not bagger.proxy
-    #     assert isinstance(bagger.proxy_bag, list)
-    #     assert len(bagger.proxy_bag) == 0
-    #     proxies = bagger.get_public_proxies()
+        assert not bagger.proxy
+        assert isinstance(bagger.proxy_bag, list)
+        assert len(bagger.proxy_bag) == 0
+        proxies = bagger.get_public_proxies()
 
-    #     assert isinstance(proxies, list)
-    #     assert len(proxies) > 5
-    #     assert isinstance(bagger.proxy_bag, list)
-    #     assert len(bagger.proxy_bag) > 5
+        assert isinstance(proxies, list)
+        assert len(proxies) > 5
+        assert isinstance(bagger.proxy_bag, list)
+        assert len(bagger.proxy_bag) > 5
 
-    #     # Test the continent filtering
-    #     proxies = bagger.get_public_proxies("Asia")
-    #     for proxy in proxies:
-    #         assert proxy["continent"] == "Asia"
-    #     proxies = bagger.get_public_proxies("North America")
-    #     for proxy in proxies:
-    #         assert proxy["continent"] == "North America"
+        # Test the continent filtering
+        proxies = bagger.get_public_proxies("Asia")
+        for proxy in proxies:
+            assert proxy["continent"] == "Asia"
+        proxies = bagger.get_public_proxies("North America")
+        for proxy in proxies:
+            assert proxy["continent"] == "North America"
 
-    #     # Test that we raise a No Remote Services Connection error when we can reach Bad-Actor
-    #     bagger.remote_service_api = UNIT_TEST_URL_BROKEN
-    #     with pytest.raises(errors.NoRemoteServicesConnection):
-    #         bagger.get_public_proxies()
+        # Test that we raise a No Remote Services Connection error when we can reach Bad-Actor
+        bagger.remote_service_api = UNIT_TEST_URL_BROKEN
+        with pytest.raises(errors.NoRemoteServicesConnection):
+            bagger.get_public_proxies()
 
     # def test_use_random_public_proxy(self):
     #     """
