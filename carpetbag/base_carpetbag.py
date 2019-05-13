@@ -12,6 +12,7 @@ from urllib3.exceptions import InsecureRequestWarning
 import arrow
 import requests
 from requests.exceptions import ChunkedEncodingError
+from requests.exceptions import ConnectionError
 
 from . import carpet_tools as ct
 from . import errors
@@ -384,7 +385,6 @@ class BaseCarpetBag(object):
         except requests.exceptions.ConnectionError:
             retry += 1
             response = self._handle_connection_error(method, url, headers, payload, retry)
-            raise requests.exceptions.ConnectionError
 
         # Catch a ChunkedEncodingError, response when the expected byte size is not what was recieved, probably a
         # bad proxy
@@ -549,14 +549,14 @@ class BaseCarpetBag(object):
         """
         self.logger.error("Unable to connect to: %s" % url)
 
-        if retry >= self.retries_on_connection_failure:
-            raise requests.exceptions.ConnectionError
-
         if self.random_proxy_bag:
             self.reset_proxy_from_bag()
 
         if not self.retries_on_connection_failure:
-            raise requests.exceptions.ConnectionError
+            raise ConnectionError
+
+        if retry >= self.retries_on_connection_failure:
+            raise ConnectionError
 
         # Go to sleep and try again
         self.logger.warning(
