@@ -14,7 +14,7 @@ from carpetbag import carpet_tools as ct
 
 TOR_PROXY_CONTAINER = os.environ.get("TOR_PROXY_CONTAINER", "tor")
 # UNIT_TEST_URL = os.environ.get("BAD_ACTOR_URL", "https//bas.bitgel.com")
-UNIT_TEST_URL = "https//bas.bitgel.com"
+UNIT_TEST_URL = "https://bas.bitgel.com"
 UNIT_TEST_URL_BROKEN = "http://0.0.0.0:90/"
 UNIT_TEST_AGENT = "CarpetBag v%s/ UnitTests" % CarpetBag.__version__
 
@@ -43,7 +43,7 @@ class TestPublic(object):
 
     def _run_get_successful_test(self, bagger, successful_response):
         """
-        Tests CarpetBag.get() to make sure a successfull response sets and returns everything that it should.
+        Tests CarpetBag.get() to make sure a successful response sets and returns everything that it should.
 
         :param bagger: The current CarpetBag instance running through the test.
         :type bagger: <CarpetBag> obj
