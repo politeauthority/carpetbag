@@ -129,7 +129,7 @@ class TestBaseCarpetBag(object):
         assert set_headers["Content-Type"] == "application/html"
         assert set_headers["User-Agent"] == "Mozilla/5.0 (Windows NT 10.0)"
 
-    def test__validate_continents(self):
+    # def test__validate_continents(self):
         """
         Tests the BaseCarpetBag._validate_continents() method to make sure we only are using valid contintent names.
 
