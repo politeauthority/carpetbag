@@ -141,7 +141,7 @@ class TestBaseCarpetBag(object):
         with pytest.raises(errors.InvalidContinent):
             bagger._validate_continents(["Nortf America"])
 
-    def test__set_user_agent(self):
+    # def test__set_user_agent(self):
         """
         Tests to make sure _set_user_agent will not override a manually set user_agent.
 
