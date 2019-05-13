@@ -202,9 +202,11 @@ class CarpetBag(BaseCarpetBag):
         logging.debug("Filling proxy bag")
 
         try:
-            payload = {
-                "continent": continent,
-            }
+            payload = {}
+            if continent:
+                payload = {
+                    "continent": continent,
+                }
             response = self._make_internal("proxies", payload)
         except errors.NoRemoteServicesConnection:
             logging.error("Unable to connect to Bad-Actor.Services")

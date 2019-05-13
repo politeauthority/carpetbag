@@ -119,42 +119,42 @@ class TestBaseCarpetBag(object):
     #     assert run_time_2 >= MINIMUM_WAIT - 1
 
     # def test__get_headers(self):
-        """
-        Tests that headers can be set by the CarpetBag application, and by the end-user.
+    #     """
+    #     Tests that headers can be set by the CarpetBag application, and by the end-user.
 
-        """
-        bagger = CarpetBag()
-        bagger.headers = {"Content-Type": "application/html"}
-        bagger.user_agent = "Mozilla/5.0 (Windows NT 10.0)"
-        set_headers = bagger._get_headers()
-        assert set_headers["Content-Type"] == "application/html"
-        assert set_headers["User-Agent"] == "Mozilla/5.0 (Windows NT 10.0)"
+    #     """
+    #     bagger = CarpetBag()
+    #     bagger.headers = {"Content-Type": "application/html"}
+    #     bagger.user_agent = "Mozilla/5.0 (Windows NT 10.0)"
+    #     set_headers = bagger._get_headers()
+    #     assert set_headers["Content-Type"] == "application/html"
+    #     assert set_headers["User-Agent"] == "Mozilla/5.0 (Windows NT 10.0)"
 
     # def test__validate_continents(self):
-        """
-        Tests the BaseCarpetBag._validate_continents() method to make sure we only are using valid contintent names.
+    #     """
+    #     Tests the BaseCarpetBag._validate_continents() method to make sure we only are using valid contintent names.
 
-        """
-        bagger = CarpetBag()
-        assert bagger._validate_continents(["North America"])
-        assert bagger._validate_continents(["North America", "South America"])
+    #     """
+    #     bagger = CarpetBag()
+    #     assert bagger._validate_continents(["North America"])
+    #     assert bagger._validate_continents(["North America", "South America"])
 
-        with pytest.raises(errors.InvalidContinent):
-            bagger._validate_continents(["Nortf America"])
+    #     with pytest.raises(errors.InvalidContinent):
+    #         bagger._validate_continents(["Nortf America"])
 
     # def test__set_user_agent(self):
-        """
-        Tests to make sure _set_user_agent will not override a manually set user_agent.
+    #     """
+    #     Tests to make sure _set_user_agent will not override a manually set user_agent.
 
-        """
-        bagger = CarpetBag()
-        bagger.user_agent = "My test user agent 1"
-        bagger._set_user_agent()
-        assert bagger.send_user_agent == "My test user agent 1"
+    #     """
+    #     bagger = CarpetBag()
+    #     bagger.user_agent = "My test user agent 1"
+    #     bagger._set_user_agent()
+    #     assert bagger.send_user_agent == "My test user agent 1"
 
-        bagger.user_agent = "My test user agent 2"
-        bagger._set_user_agent()
-        assert bagger.send_user_agent == "My test user agent 2"
+    #     bagger.user_agent = "My test user agent 2"
+    #     bagger._set_user_agent()
+    #     assert bagger.send_user_agent == "My test user agent 2"
 
     # def test__fmt_request_args(self):
     #     """

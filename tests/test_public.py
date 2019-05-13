@@ -125,7 +125,7 @@ class TestPublic(object):
         assert isinstance(ua_1, str)
         assert ua_1 != ua_2
 
-    # @vcr.use_cassette('data/vcr_cassettes/test_get_public_proxies.yaml')
+    @vcr.use_cassette('data/vcr_cassettes/test_get_public_proxies.yaml')
     def test_get_public_proxies(self):
         """
         Tests BaseCarpetBag().get_public_proxies()
