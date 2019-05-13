@@ -155,7 +155,7 @@ class TestBaseCarpetBag(object):
         bagger._set_user_agent()
         assert bagger.send_user_agent == "My test user agent 2"
 
-    def test__fmt_request_args(self):
+    # def test__fmt_request_args(self):
         """
         Tests BaseCarpetBag._fmt_request_args to make sure the dict is properly built.
 
