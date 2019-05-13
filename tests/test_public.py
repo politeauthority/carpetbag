@@ -244,8 +244,8 @@ class TestPublic(object):
         """
         bagger = CarpetBag()
         bagger.user_agent = UNIT_TEST_AGENT
-        bagger.use_skip_ssl_verify()
-        bagger.get("https://www.bad-actor.services/")
+        bagger.use_skip_ssl_verify(force=True)
+        bagger.get(UNIT_TEST_URL)
 
     def test_get_outbound_ip(self):
         """
