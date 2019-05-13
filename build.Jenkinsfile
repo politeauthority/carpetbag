@@ -1,8 +1,8 @@
 //
 //
 
-label = "carpetbag-build-${env.BUILD_NUMBER}"
-// Registry = "politeauthority/tt-scrape"
+label = "bad-actor-services-web-data-${env.BUILD_NUMBER}"
+Image = "politeauthority/carpetbag"
 
 podTemplate(
     label: label,
@@ -11,12 +11,12 @@ podTemplate(
     containers:
         [
             containerTemplate(
-                image: 'frolvlad/alpine-python3',
-                name: 'python3',
+                image: 'docker',
+                name: 'docker',
                 ttyEnabled: true,
                 command: 'cat',
                 envVars: [],
-                alwaysPullImage: true
+                alwaysPullImage: false
             )
         ],
     volumes: [
@@ -26,7 +26,7 @@ podTemplate(
 
     node(label) {
         checkout scm
-        container('python3') {
+        container('docker') {
             stage('Build Image') {
                 sh """
                     docker build -t carpetbag --no-cache .
@@ -37,8 +37,11 @@ podTemplate(
                 withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'Username', passwordVariable: 'Password')]) {
                     sh """
                         docker login -u politeauthority -p $Password
-                        docker tag carpetbag politeauthority/carpetbag:latest
-                        docker push politeauthority/carpetbag:latest
+                        docker tag carpetbag ${Image}:latest
+                        docker push ${Image}:latest
+
+                        docker tag carpetbag${Image}:${env.BUILD_NUMBER}
+                        docker push ${Image}:${env.BUILD_NUMBER}
                     """
                 }
             }
