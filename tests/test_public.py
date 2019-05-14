@@ -49,7 +49,7 @@ class TestPublic(object):
         :returns: Returns True if everything works.
         :rtype: bool
         """
-        assert successful_response
+        # assert successful_response
         assert successful_response.status_code == 200
         assert isinstance(bagger.last_request_time, datetime)
         assert bagger.user_agent == UNIT_TEST_AGENT
