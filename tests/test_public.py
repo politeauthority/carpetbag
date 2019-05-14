@@ -34,13 +34,11 @@ class TestPublic(object):
         bagger.user_agent = UNIT_TEST_AGENT
         bagger.remote_service_api = UNIT_TEST_URL
 
-        first_successful_response = bagger.get(UNIT_TEST_URL)
-        bagger.get(ct.url_join(UNIT_TEST_URL, "api/proxies"))
+        first_successful_response = bagger.get(ct.url_join(UNIT_TEST_URL, 'api/proxies'))
 
         assert self._run_get_successful_test(bagger, first_successful_response)
         assert self._run_inspect_manifest(bagger)
-
-        assert self._run_unabled_to_connect(bagger)
+        assert self._run_unable_to_connect(bagger)
 
     def _run_get_successful_test(self, bagger, successful_response):
         """
@@ -77,7 +75,7 @@ class TestPublic(object):
 
         return True
 
-    def _run_unabled_to_connect(self, bagger):
+    def _run_unable_to_connect(self, bagger):
         """
         Tests Carpetbag().get() handling of ConnectionErrors
 
