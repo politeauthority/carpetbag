@@ -131,7 +131,7 @@ class TestPublic(object):
         """
         bagger = CarpetBag()
         bagger.user_agent = UNIT_TEST_AGENT
-        bagger.remote_service_api = UNIT_TEST_URL
+        # bagger.remote_service_api = UNIT_TEST_URL
 
         assert not bagger.proxy
         assert isinstance(bagger.proxy_bag, list)
