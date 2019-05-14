@@ -37,7 +37,7 @@ class TestPublic(object):
         first_successful_response = bagger.get(ct.url_join(UNIT_TEST_URL, 'api/proxies'))
 
         assert self._run_get_successful_test(bagger, first_successful_response)
-        assert self._run_inspect_manifest(bagger)
+        # assert self._run_inspect_manifest(bagger)
         assert self._run_unable_to_connect(bagger)
 
     def _run_get_successful_test(self, bagger, successful_response):
