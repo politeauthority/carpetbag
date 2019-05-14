@@ -170,17 +170,20 @@ class BaseCarpetBag(object):
 
         :param url: The url being requested.
         :type url: str
+        :returns: True if sleep runs successfully.
+        :rtype: bool
         """
         if not self.mininum_wait_time:
-            return
+            return True
 
         if not self.last_request_time:
-            return
+            return True
 
         # Checks that the next server we're making a request to is the same as the previous request.
         # tld.get_fld(self.last_response.url)
-        if self.last_response.domain != ct.url_domain(url):
-            return
+
+        if self.last_response and self.last_response.domain != ct.url_domain(url):
+            return True
 
         # Checks the time of the last request and sets the sleep timer for the difference.
         diff_time = datetime.now() - self.last_request_time

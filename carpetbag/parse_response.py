@@ -1,5 +1,5 @@
 """Parse Response
-Handles parsing various html pages. This module is pretty expiremental right now and may prove not necisarry later on.
+Handles parsing various html pages. This module is pretty experimental right now and may prove not necessary later on.
 
 """
 from bs4 import BeautifulSoup
@@ -12,7 +12,7 @@ class ParseResponse(object):
 
     def __init__(self, response=None):
         """
-        Creates a new respose parser.
+        Creates a new response parser.
 
         :param response: The response from the Requests module
         :type response: <Requests>
@@ -42,7 +42,7 @@ class ParseResponse(object):
 
     def get_links(self, content=None):
         """
-        Grabs all anchor links for the content and orgainizes it by local or remote.
+        Grabs all anchor links for the content and organizes it by local or remote.
 
         :param content: A partial piece of content, optional, otherwise scans the entire segment.
         :type content: str
