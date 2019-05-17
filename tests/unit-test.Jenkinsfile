@@ -25,6 +25,16 @@ podTemplate(
                 checkout scm
                 sh """#!/usr/bin/env bash
                     pip3 install -r requirements.txt
+                    pip3 install -r tests/requirements.txt
+                """
+            }
+
+            stage('Build CarpetBag') {
+                echo "Running tests/test_carpet_tools.py"
+                checkout scm
+                sh """#!/usr/bin/env bash
+                    python3 setup.py build
+                    python3 setup.py install
                 """
             }
 

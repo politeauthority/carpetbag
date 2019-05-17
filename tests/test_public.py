@@ -7,55 +7,62 @@ import re
 
 import requests
 import pytest
+import vcr
 
 from carpetbag import CarpetBag
 from carpetbag import errors
 from carpetbag import carpet_tools as ct
 
 TOR_PROXY_CONTAINER = os.environ.get("TOR_PROXY_CONTAINER", "tor")
-UNIT_TEST_URL = "https//bas.bitgel.com"
+# UNIT_TEST_URL = os.environ.get("BAD_ACTOR_URL", "https//bas.bitgel.com")
+UNIT_TEST_URL ="https://bas.bitgel.com/"
 UNIT_TEST_URL_BROKEN = "http://0.0.0.0:90/"
 UNIT_TEST_AGENT = "CarpetBag v%s/ UnitTests" % CarpetBag.__version__
 
 
 class TestPublic(object):
 
-    # def test_get(self):
-    #     """
-    #     Tests the CarpetBag.get() method and some of the many different ways that it can be used.
+    def test_get(self):
+        """
+        Tests the CarpetBag.get() method and some of the many different ways that it can be used.
 
-    #     """
-    #     bagger = CarpetBag()
-    #     bagger.mininum_wait_time = 50
-    #     bagger.use_skip_ssl_verify(force=True)
-    #     bagger.user_agent = UNIT_TEST_AGENT
+        """
+        bagger = CarpetBag()
+        bagger.mininum_wait_time = 50
+        bagger.retries_on_connection_failure = 0
+        bagger.use_skip_ssl_verify(force=True)
+        bagger.user_agent = UNIT_TEST_AGENT
+        bagger.remote_service_api = UNIT_TEST_URL
 
-    #     first_successful_response = bagger.get(UNIT_TEST_URL)
-    #     bagger.get(ct.url_join(UNIT_TEST_URL, "api/proxies"))
+        first_successful_response = bagger.get(ct.url_join(UNIT_TEST_URL, 'api/proxies'))
 
-    #     self._run_get_successful_test(bagger, first_successful_response)
-    #     self._run_inspect_manifest(bagger)
-    #     # self._run_minimum_wait_test(bagger)
-
-    #     self._run_unabled_to_connect(bagger)
+        assert self._run_get_successful_test(bagger, first_successful_response)
+        # assert self._run_inspect_manifest(bagger)
+        assert self._run_unable_to_connect(bagger)
 
     def _run_get_successful_test(self, bagger, successful_response):
         """
-        Tests CarpetBag.get() to make sure a successfull response sets and returns everything that it should.
+        Tests CarpetBag.get() to make sure a successful response sets and returns everything that it should.
 
         :param bagger: The current CarpetBag instance running through the test.
         :type bagger: <CarpetBag> obj
+        :returns: Returns True if everything works.
+        :rtype: bool
         """
-        assert successful_response
+        # assert successful_response
         assert successful_response.status_code == 200
         assert isinstance(bagger.last_request_time, datetime)
         assert bagger.user_agent == UNIT_TEST_AGENT
+
+        return True
 
     def _run_inspect_manifest(self, bagger):
         """
 
         :param bagger: The current CarpetBag instance running through the test.
         :type bagger: <CarpetBag> obj
+        :returns: Returns True if everything works.
+        :rtype: bool
         """
         assert isinstance(bagger.manifest, list)
         assert len(bagger.manifest) == 2
@@ -66,15 +73,21 @@ class TestPublic(object):
         assert len(bagger.manifest[0]["errors"]) == 0
         assert bagger.manifest[1]["url"] == UNIT_TEST_URL
 
-    def _run_unabled_to_connect(self, bagger):
+        return True
+
+    def _run_unable_to_connect(self, bagger):
         """
         Tests Carpetbag().get() handling of ConnectionErrors
 
         :param bagger: The current CarpetBag instance running through the test.
         :type bagger: <CarpetBag> obj
+        :returns: Returns True if everything works.
+        :rtype: bool
         """
         with pytest.raises(requests.exceptions.ConnectionError):
             bagger.get(UNIT_TEST_URL_BROKEN)
+        
+        return True
 
     def test_use_random_user_agent(self):
         """
@@ -110,36 +123,38 @@ class TestPublic(object):
         assert isinstance(ua_1, str)
         assert ua_1 != ua_2
 
-    # def test_get_public_proxies(self):
-    #     """
-    #     Tests BaseCarpetBag().get_public_proxies()
+    @vcr.use_cassette('data/vcr_cassettes/test_get_public_proxies.yaml')
+    def test_get_public_proxies(self):
+        """
+        Tests BaseCarpetBag().get_public_proxies()
 
-    #     """
-    #     bagger = CarpetBag()
-    #     bagger.user_agent = UNIT_TEST_AGENT
+        """
+        bagger = CarpetBag()
+        bagger.user_agent = UNIT_TEST_AGENT
+        # bagger.remote_service_api = UNIT_TEST_URL
 
-    #     assert not bagger.proxy
-    #     assert isinstance(bagger.proxy_bag, list)
-    #     assert len(bagger.proxy_bag) == 0
-    #     proxies = bagger.get_public_proxies()
+        assert not bagger.proxy
+        assert isinstance(bagger.proxy_bag, list)
+        assert len(bagger.proxy_bag) == 0
+        proxies = bagger.get_public_proxies()
 
-    #     assert isinstance(proxies, list)
-    #     assert len(proxies) > 5
-    #     assert isinstance(bagger.proxy_bag, list)
-    #     assert len(bagger.proxy_bag) > 5
+        assert isinstance(proxies, list)
+        assert len(proxies) > 5
+        assert isinstance(bagger.proxy_bag, list)
+        assert len(bagger.proxy_bag) > 5
 
-    #     # Test the continent filtering
-    #     proxies = bagger.get_public_proxies("Asia")
-    #     for proxy in proxies:
-    #         assert proxy["continent"] == "Asia"
-    #     proxies = bagger.get_public_proxies("North America")
-    #     for proxy in proxies:
-    #         assert proxy["continent"] == "North America"
+        # Test the continent filtering
+        proxies = bagger.get_public_proxies("Asia")
+        for proxy in proxies:
+            assert proxy["continent"] == "Asia"
+        proxies = bagger.get_public_proxies("North America")
+        for proxy in proxies:
+            assert proxy["continent"] == "North America"
 
-    #     # Test that we raise a No Remote Services Connection error when we can reach Bad-Actor
-    #     bagger.remote_service_api = UNIT_TEST_URL_BROKEN
-    #     with pytest.raises(errors.NoRemoteServicesConnection):
-    #         bagger.get_public_proxies()
+        # Test that we raise a No Remote Services Connection error when we can reach Bad-Actor
+        bagger.remote_service_api = UNIT_TEST_URL_BROKEN
+        with pytest.raises(errors.NoRemoteServicesConnection):
+            bagger.get_public_proxies()
 
     # def test_use_random_public_proxy(self):
     #     """
