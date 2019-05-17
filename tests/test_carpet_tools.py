@@ -43,7 +43,7 @@ class TestCarpetTools(object):
 
     def test_url_add_missing_protocol(self):
         """
-        Tests CarpetBag.carpet_tools.url_add_missing_protocol() to make it adds protocals when it should.
+        Tests CarpetBag.carpet_tools.url_add_missing_protocol() to make it adds protocols when it should.
 
         """
         assert ct.url_add_missing_protocol("https://www.bad-actor.services/") == "https://www.bad-actor.services/"
@@ -55,7 +55,7 @@ class TestCarpetTools(object):
 
     def test_url_disect(self):
         """
-        Tests the carpet_tools.url_disect() method to make sure it pulls urls appart correctly.
+        Tests the carpet_tools.url_disect() method to make sure it pulls urls apart correctly.
 
         """
         url_pieces = ct.url_disect("https://www.bad-actor.services/some/url-thats-long?debug=True")
@@ -85,7 +85,7 @@ class TestCarpetTools(object):
 
     def test_url_subdomain(self):
         """
-        Tests CarpetBag.carpet_tools.url_subdomain() to make sure we're find all url subdomains.
+        Tests CarpetBag.carpet_tools.url_subdomain() to make sure we're find all url sub domains.
 
         """
         subdomains = ct.url_subdomain("https://www.bad-actor.services/some/url-thats-long?debug=True")
@@ -97,7 +97,7 @@ class TestCarpetTools(object):
 
     def test_url_params(self):
         """
-        Tests CarpetBag.carpet_tools.url_params() to make sure we're getting url paramters.
+        Tests CarpetBag.carpet_tools.url_params() to make sure we're getting url parameters.
 
         """
         params = ct.url_params("https://www.bad-actor.services/some/url-thats-long?debug=True&this=that")
@@ -119,7 +119,7 @@ class TestCarpetTools(object):
 
     def test_json_to_date(self):
         """
-        Tests the CarpetBag.carpet_tools.json_to_date() method to see if we can make a propper python DateTime object
+        Tests the CarpetBag.carpet_tools.json_to_date() method to see if we can make a proper python DateTime object
         from a JSON type date string.
 
         """
@@ -151,7 +151,7 @@ class TestCarpetTools(object):
 
     def test_content_type_to_extension(self):
         """
-        Tests the CarpetBag.carpet_tools.content_type_to_extension() method to make sure we're properly translatining.
+        Tests the CarpetBag.carpet_tools.content_type_to_extension() method to make sure we're properly translating.
 
         """
         assert ct.content_type_to_extension("image/jpg") == "jpg"
@@ -166,7 +166,7 @@ class TestCarpetTools(object):
 
     def test_extension_to_content_type(self):
         """
-        Tests the CarpetBag.carpet_tools.extension_to_content_type() method to make sure we're properly translatining.
+        Tests the CarpetBag.carpet_tools.extension_to_content_type() method to make sure we're properly translating.
 
         """
         assert ct.extension_to_content_type("jpg") == "image/jpg"

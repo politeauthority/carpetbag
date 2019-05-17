@@ -1,5 +1,5 @@
 """xlate_extension_mine
-This is just a date file containing a limited extention to mime type translation table, used by carpet_tools.
+This is just a date file containing a limited extension to mime type translation table, used by carpet_tools.
 
 """
 
