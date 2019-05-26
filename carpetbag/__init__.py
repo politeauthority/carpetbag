@@ -22,23 +22,23 @@ class CarpetBag(BaseCarpetBag):
 
     def __init__(self):
         """
-        CarpetBag constructor. Here we set the default, user changable class vars.
+        CarpetBag constructor. Here we set the default, user changeable class vars.
 
-        :class param headers: Any extra headers to add to the response. This can be maniuplated at any time and applied
+        :class param headers: Any extra headers to add to the response. This can be manipulated at any time and applied
             just before each request made.
         :class type headers: dict
 
-        :class param user_agent: User setable User Agent to send on every request. This can be updated at any time.
+        :class param user_agent: User selectable User Agent to send on every request. This can be updated at any time.
         :class type user_agent: str
 
-        :class param mininum_wait_time: Minimum ammount of time to wait before allowing the next request to go out.
+        :class param mininum_wait_time: Minimum amount of time to wait before allowing the next request to go out.
         :class type mininum_wait_time: int
 
         :class param wait_and_retry_on_connection_error: Time to wait and then retry when a connection error has been
             hit.
         :class type wait_and_retry_on_connection_error: int
 
-        :class param retries_on_connection_failure: Ammount of retry attemps to make when a connection_error has been
+        :class param retries_on_connection_failure: Amount of retry attempts to make when a connection_error has been
             hit.
         :class type retries_on_connection_failure: int
 
@@ -65,10 +65,10 @@ class CarpetBag(BaseCarpetBag):
         """
         self.headers = {}
         self.user_agent = ""
-        self.mininum_wait_time = 0  # Sets the minumum wait time per domain to make a new request in seconds.
+        self.mininum_wait_time = 0  # Sets the minimum wait time per domain to make a new request in seconds.
         self.wait_and_retry_on_connection_error = 0
         self.retries_on_connection_failure = 5
-        self.max_content_length = 200000000  # Sets the maximum downloard size, default 200 MegaBytes, in bytes.
+        self.max_content_length = 200000000  # Sets the maximum download size, default 200 MegaBytes, in bytes.
         self.proxy = {}
 
         self.change_identity_interval = 10
@@ -192,7 +192,7 @@ class CarpetBag(BaseCarpetBag):
         Gets list of free public proxies and loads them into a list, currently just selecting from free-proxy-list.
 
         :param continent: Filters proxies to either  just a single continent, or if list is used, orders proxies in
-            based off of the order contients are listed within the "contenient" list.
+            based off of the order continents are listed within the "continent" list.
         :type continent: str or list
         :param ssl_only: Select only proxies fully supporting SSL.
         :type ssl_only: bool
@@ -202,9 +202,11 @@ class CarpetBag(BaseCarpetBag):
         logging.debug("Filling proxy bag")
 
         try:
-            payload = {
-                "continent": continent,
-            }
+            payload = {}
+            if continent:
+                payload = {
+                    "continent": continent,
+                }
             response = self._make_internal("proxies", payload)
         except errors.NoRemoteServicesConnection:
             logging.error("Unable to connect to Bad-Actor.Services")
@@ -213,7 +215,7 @@ class CarpetBag(BaseCarpetBag):
         try:
             self.proxy_bag = response.json()["objects"]
         except Exception:
-            logging.error("ERROR: Coud not get proxies. %s" % response.text)
+            logging.error("ERROR: Could not get proxies. %s" % response.text)
             return False
 
         logging.debug("Fetched %s proxies" % len(self.proxy_bag))
@@ -262,7 +264,7 @@ class CarpetBag(BaseCarpetBag):
         """
         if len(self.proxy_bag) == 0:
             self.logger.debug("Changing proxy")
-            self.logger.error("Proxy bag is empty! Cannot reset Proxy from Proxy Bag.")
+            self.logger.warning("Proxy bag is empty! Cannot reset Proxy from Proxy Bag.")
             raise errors.EmptyProxyBag
 
         # Remove the current proxy from the proxy bag if one is set.
@@ -298,12 +300,12 @@ class CarpetBag(BaseCarpetBag):
         Sets CarpetBag up to not force a valid certificate return from the server. This exists mostly because I was
         running into some issues with self signed certs. This can be enabled/disabled at anytime through execution.
 
-        ** WARNING ** Would not typically recommend using "force=True", unless retrying a request is extermly taxing
+        ** WARNING ** Would not typically recommend using "force=True", unless retrying a request is extremely taxing
         and you're willing to accept the risk of using a non verified data source!
 
         :param val: Whether or not to enable or disable skipping SSL Cert validation.
         :type val: bool
-        :param force: Will force CarpetBag to completely skip all verification of SSL Certs, becareful using this.
+        :param force: Will force CarpetBag to completely skip all verification of SSL Certs, be careful using this.
         :type force: bool
         :returns: The value CarpetBag is configured to use for self.ssl_verify
         :rtype: bool
@@ -326,7 +328,7 @@ class CarpetBag(BaseCarpetBag):
 
         :param url: The url to fetch.
         :type: url: str
-        :param destination: Where on the local filestem to store the image.
+        :param destination: Where on the local file system to store the image.
         :type: destination: str
         :param payload: The data to be sent over GET.
         :type payload: dict
@@ -396,7 +398,7 @@ class CarpetBag(BaseCarpetBag):
         exiting through an actual tor exit node.
 
         :returns: Whether or not your proxy is using Tor and CarpetBag is connected to it.
-        :params: bool
+        :rtype: bool
         """
         response = self.get("https://check.torproject.org")
         parsed = self.parse(response)
@@ -427,7 +429,7 @@ class CarpetBag(BaseCarpetBag):
 
     def get_outbound_ip(self):
         """
-        Gets the currentoutbound IP address for scrappy and sets the self.outbound_ip var.
+        Gets the current outbound IP address for scrappy and sets the self.outbound_ip var.
 
         :returns: The outbound ip address for the proxy.
         :rtype: str
@@ -536,5 +538,50 @@ class CarpetBag(BaseCarpetBag):
         self.non_proxy_user_ip = non_proxy_user_ip
         return val
 
+    def rest_get_pages(self, url, payload={}, total=None):
+        """
+        Paginates a REST resource and returns all data and responses stitched together.
+        Set the rest_pagination_vars for the bagger if they do not match the defaults below;
+
+        self.paginatation_map = {
+            "field_name_page": "page",                  # The name of the field containing the current page.
+            "field_name_total_pages": "total_pages",    # The name of the field containing the total pages.
+            "field_name_data": "objects",               # The name of the field containing resource objects.
+        }
+
+        :param url: The url to fetch.
+        :type: url: str
+        :returns: A Requests module instance of the response.
+        :rtype: dict
+        """
+        responses = []
+        response = self.get(url, payload)
+        response_json = response.json()
+        logging.debug("Getting page 1: %s" % (url))
+
+        pm_total_pages = self.paginatation_map.get("field_name_total_pages")
+        total_pages = response_json[pm_total_pages]
+        for page in range(2, total_pages + 1):
+            current_object_total = len(response_json[self.paginatation_map.get("field_name_data")])
+            if total and current_object_total >= total:
+                logging.debug("Got %s items of limit %s, finishing paginiation" % (current_object_total, total))
+                break
+
+            logging.debug("Getting page %s of %s: %s" % (page, total_pages, url))
+            payload[self.paginatation_map.get("field_name_page")] = page
+            response = self.get(url, payload=payload)
+            if response.status_code not in [200]:
+                logging.warning("Could not get page %s: <%s> %s" % (page, response.status_code, response.text))
+                break
+            next_page_json = response.json()
+
+            response_json[self.paginatation_map.get("field_name_data")] += \
+                next_page_json[self.paginatation_map.get("field_name_data")]
+            page += 1
+
+        return {
+            "responses": responses,
+            "data": response_json
+        }
 
 # End File: carpetbag/carpetbag/__init__.py

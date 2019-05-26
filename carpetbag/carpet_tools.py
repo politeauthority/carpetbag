@@ -2,6 +2,7 @@
 A series of tools for use in and outside of CarpetBag internally. Mostly for ease of handling urls.
 
 """
+import pytz
 import re
 
 import arrow
@@ -304,22 +305,33 @@ def date_to_json(the_date=None):
     """
     if not the_date:
         the_date = arrow.utcnow().datetime
+
+    # else:
+    #     if isinstance(the_date, datetime):
+    #         raise ValueError("%s is %s not a <datetime> object" % (the_date, type(the_date)))
+
     ret = the_date.strftime("%Y-%m-%d %H:%M:%S")
 
     return ret
 
 
-def json_to_date(the_json_date):
+def json_to_date(the_json_date, tz_info=None):
     """
     Attempts to create a python dastetime object from a JSON type data string.
 
     :param the_json_date: A string from a JSON response to attempt to create a datetime object out of.
     :type the_json_date: str
+    :param tz_info:
+    :type tz_info: str
     :returns: A datetime representation of the string argument supplied.
     :rtype: <datetime> obj
     """
-    ret = arrow.get(the_json_date)
-    return ret.datetime
+    ret = arrow.get(the_json_date).datetime
+
+    if not tz_info:
+        ret = ret.replace(tzinfo=pytz.UTC)
+
+    return ret
 
 
 def content_type_to_extension(content_type):

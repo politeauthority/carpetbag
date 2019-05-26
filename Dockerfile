@@ -1,6 +1,6 @@
 FROM frolvlad/alpine-python3
 
-ENV BAD_ACTOR_URL = "http://www.bad-actor.services/"
+ENV BAD_ACTOR_URL = "http://bas.bitgel.com/"
 COPY ./ /opt/carpetbag
 
 RUN apk add --no-cache \

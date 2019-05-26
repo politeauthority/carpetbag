@@ -1,7 +1,8 @@
 arrow==0.12.1
 bs4==0.0.1
 PySocks==1.6.8
+pytz==2018.9
 requests==2.21.0
 tld==0.9.1
-urllib3==1.24.1
+urllib3==1.24.2
 user-agent==0.1.9
