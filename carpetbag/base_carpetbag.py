@@ -307,6 +307,7 @@ class BaseCarpetBag(object):
         Just about every CarpetBag request comes through this method. It makes the request and handles different
         errors that may come about.
         @todo: rework arg list to be url, payload, method,
+        @unit-tested: carpetbag/tests/test_base_carpetbag.py.test__make
 
         self.wait_and_retry_on_connection_error can be set to add a wait and retry in seconds.
 

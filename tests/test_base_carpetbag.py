@@ -166,6 +166,7 @@ class TestBaseCarpetBag(object):
     def test__fmt_request_args(self):
         """
         Tests BaseCarpetBag._fmt_request_args to make sure the dict is properly built.
+        @unit-tested: carpetbag/carpetbag/base_carpetbag.py._fmt_request_args
 
         """
         bagger = CarpetBag()
@@ -189,14 +190,19 @@ class TestBaseCarpetBag(object):
         Tests the _make() method of CarpetBag. This is one of the primary methods of CarpetBag, and could always use
         more tests!
         @note: This test DOES make outbound web requests.
+        @unit-tested: carpetbag/carpetbag/base_carpetbag.py._make
 
         """
+        test_url = ct.url_join(UNIT_TEST_URL, 'proxies')
         bagger = CarpetBag()
         bagger.use_skip_ssl_verify()
-        bagger._start_request_manifest("GET", UNIT_TEST_URL, {})
+        bagger._start_request_manifest(
+            "GET",
+            test_url,
+            {})
         response = bagger._make(
             method="GET",
-            url=UNIT_TEST_URL,
+            url=test_url,
             headers={"Content-Type": "application/html"},
             payload={},
             retry=0)
@@ -205,7 +211,7 @@ class TestBaseCarpetBag(object):
         assert response.status_code == 200
         response = bagger._make(
             method="GET",
-            url=UNIT_TEST_URL,
+            url=test_url,
             headers={"Content-Type": "application/html"},
             payload={},
             retry=0)
@@ -219,6 +225,7 @@ class TestBaseCarpetBag(object):
         @note: This test DOES make outbound web requests.
 
         """
+        test_url = ct.url_join(UNIT_TEST_URL, 'proxies')
         bagger = CarpetBag()
         response = bagger._make_internal("ip")
         assert str(response.json()["ip"])
