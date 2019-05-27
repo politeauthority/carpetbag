@@ -142,19 +142,19 @@ class TestBaseCarpetBag(object):
         with pytest.raises(errors.InvalidContinent):
             bagger._validate_continents(["Nortf America"])
 
-    # def test__set_user_agent(self):
-    #     """
-    #     Tests to make sure _set_user_agent will not override a manually set user_agent.
+    def test__set_user_agent(self):
+        """
+        Tests to make sure _set_user_agent will not override a manually set user_agent.
 
-    #     """
-    #     bagger = CarpetBag()
-    #     bagger.user_agent = "My test user agent 1"
-    #     bagger._set_user_agent()
-    #     assert bagger.send_user_agent == "My test user agent 1"
+        """
+        bagger = CarpetBag()
+        bagger.user_agent = "My test user agent 1"
+        bagger._set_user_agent()
+        assert bagger.send_user_agent == "My test user agent 1"
 
-    #     bagger.user_agent = "My test user agent 2"
-    #     bagger._set_user_agent()
-    #     assert bagger.send_user_agent == "My test user agent 2"
+        bagger.user_agent = "My test user agent 2"
+        bagger._set_user_agent()
+        assert bagger.send_user_agent == "My test user agent 2"
 
     # def test__fmt_request_args(self):
     #     """
