@@ -130,17 +130,17 @@ class TestBaseCarpetBag(object):
         assert set_headers["Content-Type"] == "application/html"
         assert set_headers["User-Agent"] == "Mozilla/5.0 (Windows NT 10.0)"
 
-    # def test__validate_continents(self):
-    #     """
-    #     Tests the BaseCarpetBag._validate_continents() method to make sure we only are using valid contintent names.
+    def test__validate_continents(self):
+        """
+        Tests the BaseCarpetBag._validate_continents() method to make sure we only are using valid contintent names.
 
-    #     """
-    #     bagger = CarpetBag()
-    #     assert bagger._validate_continents(["North America"])
-    #     assert bagger._validate_continents(["North America", "South America"])
+        """
+        bagger = CarpetBag()
+        assert bagger._validate_continents(["North America"])
+        assert bagger._validate_continents(["North America", "South America"])
 
-    #     with pytest.raises(errors.InvalidContinent):
-    #         bagger._validate_continents(["Nortf America"])
+        with pytest.raises(errors.InvalidContinent):
+            bagger._validate_continents(["Nortf America"])
 
     # def test__set_user_agent(self):
     #     """
