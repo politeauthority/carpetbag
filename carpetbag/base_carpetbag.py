@@ -252,6 +252,7 @@ class BaseCarpetBag(object):
     def _fmt_request_args(self, method, headers, url, payload={}, retry=0, internal=False):
         """
         Formats args to be sent to the requests.request()
+        @unit-tested: carpetbag/tests/test_base_carpetbag.py.test__fmt_request_args
 
         :param method: HTTP verb to use.
         :type method: str
