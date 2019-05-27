@@ -93,30 +93,30 @@ class TestBaseCarpetBag(object):
         assert request.text
         assert request.status_code == 200
 
-    # def test__handle_sleep(self):
-    #     """
-    #     Tests the _handle_sleep() method to make sure sleep isnt used if mininum_wait_time is not set.
-    #     @note: This test DOES make outbound web requests.
+    def test__handle_sleep(self):
+        """
+        Tests the _handle_sleep() method to make sure sleep isnt used if mininum_wait_time is not set.
+        @note: This test DOES make outbound web requests.
 
-    #     """
-    #     MINIMUM_WAIT = 10
-    #     bagger = CarpetBag()
-    #     bagger.use_skip_ssl_verify(force=True)
-    #     bagger.mininum_wait_time = MINIMUM_WAIT
+        """
+        MINIMUM_WAIT = 10
+        bagger = CarpetBag()
+        bagger.use_skip_ssl_verify(force=True)
+        bagger.mininum_wait_time = MINIMUM_WAIT
 
-    #     # Make the first request
-    #     start_1 = datetime.now()
-    #     bagger.get(UNIT_TEST_URL)
-    #     end_1 = datetime.now()
-    #     run_time_1 = (end_1 - start_1).seconds
-    #     assert run_time_1 < 5
+        # Make the first request
+        start_1 = datetime.now()
+        bagger.get(UNIT_TEST_URL)
+        end_1 = datetime.now()
+        run_time_1 = (end_1 - start_1).seconds
+        assert run_time_1 < 5
 
-    #     # Make the second request, to the same domain and check for a pause.
-    #     start_2 = datetime.now()
-    #     bagger._handle_sleep(UNIT_TEST_URL)
-    #     end_2 = datetime.now()
-    #     run_time_2 = (end_2 - start_2).seconds
-    #     assert run_time_2 >= MINIMUM_WAIT - 1
+        # Make the second request, to the same domain and check for a pause.
+        start_2 = datetime.now()
+        bagger._handle_sleep(UNIT_TEST_URL)
+        end_2 = datetime.now()
+        run_time_2 = (end_2 - start_2).seconds
+        assert run_time_2 >= MINIMUM_WAIT - 1
 
     # def test__get_headers(self):
     #     """
