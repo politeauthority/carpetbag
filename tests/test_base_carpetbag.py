@@ -163,26 +163,26 @@ class TestBaseCarpetBag(object):
         bagger._set_user_agent()
         assert bagger.send_user_agent == "My test user agent 2"
 
-    # def test__fmt_request_args(self):
-    #     """
-    #     Tests BaseCarpetBag._fmt_request_args to make sure the dict is properly built.
+    def test__fmt_request_args(self):
+        """
+        Tests BaseCarpetBag._fmt_request_args to make sure the dict is properly built.
 
-    #     """
-    #     bagger = CarpetBag()
-    #     bagger.use_skip_ssl_verify()  # Test that "verify" is added to the args.
-    #     bagger.use_random_public_proxy()  # Test that "proxy" is added to the args.
+        """
+        bagger = CarpetBag()
+        bagger.use_skip_ssl_verify()  # Test that "verify" is added to the args.
+        bagger.use_random_public_proxy()  # Test that "proxy" is added to the args.
 
-    #     request_args = bagger._fmt_request_args(
-    #         "GET",
-    #         {"Content-Type": "application/json"},
-    #         UNIT_TEST_URL)
+        request_args = bagger._fmt_request_args(
+            "GET",
+            {"Content-Type": "application/json"},
+            UNIT_TEST_URL)
 
-    #     assert isinstance(request_args, dict)
-    #     assert request_args["method"] == "GET"
-    #     assert request_args["url"] == UNIT_TEST_URL
-    #     assert request_args["headers"] == {"Content-Type": "application/json"}
-    #     assert request_args["verify"]
-    #     assert (request_args["proxies"].get("http") or request_args["proxies"].get("https"))
+        assert isinstance(request_args, dict)
+        assert request_args["method"] == "GET"
+        assert request_args["url"] == UNIT_TEST_URL
+        assert request_args["headers"] == {"Content-Type": "application/json"}
+        assert request_args["verify"]
+        assert (request_args["proxies"].get("http") or request_args["proxies"].get("https"))
 
     # def test__make(self):
     #     """
