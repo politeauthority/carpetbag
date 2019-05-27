@@ -20,12 +20,12 @@ from . import errors
 
 class BaseCarpetBag(object):
 
-    __version__ = "0.0.5a03"
+    __version__ = "0.0.5a05"
 
     def __init__(self):
         """
         CarpetBag constructor. Here we set the default, user changeable class vars.
-        @unit-tested: carpetbag/tests/test_base_carpetbag.py - test__init__
+        @unit-tested: carpetbag/tests/test_base_carpetbag.py.test__init__
 
         :class param headers: Any extra headers to add to the response. This can be manipulated at any time and applied
             just before each request made.
@@ -117,7 +117,8 @@ class BaseCarpetBag(object):
         CarpetBag's representation.
         Normally like, <CarpetBag>
         With a selected proxy in use, <CarpetBag Proxy:https://66.98.56.237:8080>
-        @unit-tested: carpetbag/tests/test_base_carpetbag.py - test__repr__
+        @unit-tested: carpetbag/tests/test_base_carpetbag.py.test__repr__
+
         """
         proxy = ""
         if self.proxy.get("http"):
@@ -130,6 +131,7 @@ class BaseCarpetBag(object):
     def _make_request(self, method, url, payload={}):
         """
         Makes the URL request, over your chosen HTTP verb.
+        @unit-tested: carpetbag/tests/test_base_carpetbag.py.est__make_request
 
         :param method: The method for the request action to use. "GET", "POST", "PUT", "DELETE"
         :type method: string
