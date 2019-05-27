@@ -88,7 +88,7 @@ class TestBaseCarpetBag(object):
         """
         bagger = CarpetBag()
         bagger.use_skip_ssl_verify()
-        request = bagger._make_request("GET", UNIT_TEST_URL)
+        request = bagger._make_request("GET", ct.url_join(UNIT_TEST_URL, 'proxies'))
         assert request
         assert request.text
         assert request.status_code == 200
