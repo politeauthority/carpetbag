@@ -28,6 +28,7 @@ class TestBaseCarpetBag(object):
         """
         Tests that the module init has correct default values
         This test makes no outbound requests.
+        @unit-tested: carpetbag/carpetbag/base_carpetbag.py.__init__
 
         """
         bagger = CarpetBag()
@@ -70,6 +71,7 @@ class TestBaseCarpetBag(object):
     def test___repr__(self):
         """
         Test CarpetBag's object representation.
+        @unit-tested: carpetbag/carpetbag/base_carpetbag.py.__repr__
 
         """
         bagger = CarpetBag()
@@ -84,6 +86,7 @@ class TestBaseCarpetBag(object):
         """
         Tests the BaseCarpetBag._make_request() method.
         @note: This test DOES make outbound web requests.
+        @unit-tested: carpetbag/carpetbag/base_carpetbag.py._make_request
 
         """
         bagger = CarpetBag()
@@ -97,6 +100,7 @@ class TestBaseCarpetBag(object):
         """
         Tests the _handle_sleep() method to make sure sleep isnt used if mininum_wait_time is not set.
         @note: This test DOES make outbound web requests.
+        @unit-tested: carpetbag/carpetbag/base_carpetbag.py._handle_sleep
 
         """
         MINIMUM_WAIT = 10
@@ -121,6 +125,7 @@ class TestBaseCarpetBag(object):
     def test__get_headers(self):
         """
         Tests that headers can be set by the CarpetBag application, and by the end-user.
+        @unit-tested: carpetbag/carpetbag/base_carpetbag.py._get_headers
 
         """
         bagger = CarpetBag()
@@ -133,6 +138,7 @@ class TestBaseCarpetBag(object):
     def test__validate_continents(self):
         """
         Tests the BaseCarpetBag._validate_continents() method to make sure we only are using valid contintent names.
+        @unit-tested: carpetbag/carpetbag/base_carpetbag.py._validate_continents
 
         """
         bagger = CarpetBag()
@@ -145,6 +151,7 @@ class TestBaseCarpetBag(object):
     def test__set_user_agent(self):
         """
         Tests to make sure _set_user_agent will not override a manually set user_agent.
+        @unit-tested: carpetbag/carpetbag/base_carpetbag.py._set_user_agent
 
         """
         bagger = CarpetBag()
