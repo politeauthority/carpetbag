@@ -225,7 +225,6 @@ class TestPublic(object):
     #     with pytest.raises(errors.CannotOverwriteFile):
     #         bagger.save(
 
-
     #             image_1_url,
     #             "/opt/carpetbag/tests/data/images/existing.jpg")
 
