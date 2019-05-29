@@ -36,6 +36,22 @@ class TestPublic(object):
         assert bagger.change_identity_interval == 0
         assert bagger.remote_service_api == "https://bas.bitgel.com/api"
 
+        assert bagger.public_proxies_max_last_test_weeks == 5
+        assert bagger.paginatation_map == {
+            "field_name_page": "page",
+            "field_name_total_pages": "total_pages",
+            "field_name_data": "objects",
+        }
+        assert not bagger.outbound_ip
+        assert bagger.request_count == 0
+        assert bagger.request_total == 0
+        assert not bagger.last_request_time
+        assert not bagger.last_response
+        assert bagger.manifest == []
+        assert bagger.proxy == {}
+        assert bagger.proxy_bag == []
+        assert bagger.proxy_current == {}
+
     def test_get(self):
         """
         Tests the CarpetBag.get() method and some of the many different ways that it can be used.
