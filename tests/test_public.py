@@ -362,5 +362,4 @@ class TestPublic(object):
         bagger.get(UNIT_TEST_URL)
         assert not bagger.headers.get("Test-Header")
 
-
 # End File carpetbag/tests/test_public.py
