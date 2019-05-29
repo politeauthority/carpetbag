@@ -20,11 +20,12 @@ from . import errors
 
 class BaseCarpetBag(object):
 
-    __version__ = "0.0.4d00"
+    __version__ = "0.0.5d00"
 
     def __init__(self):
         """
         CarpetBag constructor. Here we set the default, user changeable class vars.
+        @unit-tested: carpetbag/tests/test_base_carpetbag.py.test__init__
 
         :class param headers: Any extra headers to add to the response. This can be manipulated at any time and applied
             just before each request made.
@@ -116,6 +117,7 @@ class BaseCarpetBag(object):
         CarpetBag's representation.
         Normally like, <CarpetBag>
         With a selected proxy in use, <CarpetBag Proxy:https://66.98.56.237:8080>
+        @unit-tested: carpetbag/tests/test_base_carpetbag.py.test__repr__
 
         """
         proxy = ""
@@ -129,6 +131,7 @@ class BaseCarpetBag(object):
     def _make_request(self, method, url, payload={}):
         """
         Makes the URL request, over your chosen HTTP verb.
+        @unit-tested: carpetbag/tests/test_base_carpetbag.py.test__make_request
 
         :param method: The method for the request action to use. "GET", "POST", "PUT", "DELETE"
         :type method: string
@@ -167,6 +170,7 @@ class BaseCarpetBag(object):
         """
         Sets CarpetBag to sleep if we are making a request to the same server in less time then the value of
         self.mininum_wait_time allows for.
+        @unit-tested: carpetbag/tests/test_base_carpetbag.py.test__handle_sleep
 
         :param url: The url being requested.
         :type url: str
@@ -197,6 +201,7 @@ class BaseCarpetBag(object):
     def _get_headers(self):
         """
         Gets headers for the request, checks for user values in self.headers and then creates the rest.
+        @unit-tested: carpetbag/tests/test_base_carpetbag.py.test__get_headers
 
         :returns: The headers to be sent in the request.
         :rtype: dict
@@ -214,6 +219,7 @@ class BaseCarpetBag(object):
     def _validate_continents(self, requested_continents):
         """
         Checks that the user selected continents are usable strings, not just some garbage.
+        @unit-tested: carpetbag/tests/test_base_carpetbag.py.test__validate_continents
 
         :param requested_continents: User selected list of continents.
         :type requested_continents: list
@@ -233,6 +239,7 @@ class BaseCarpetBag(object):
         """
         Sets a user agent to the class var if it is being used, otherwise if it"s the 1st or 10th request, fetches a new
         random user agent string.
+        @unit-tested: carpetbag/tests/test_base_carpetbag.py.test__set_user_agent
 
         :returns: The user agent string to be used in the request.
         :rtype: str
@@ -245,6 +252,7 @@ class BaseCarpetBag(object):
     def _fmt_request_args(self, method, headers, url, payload={}, retry=0, internal=False):
         """
         Formats args to be sent to the requests.request()
+        @unit-tested: carpetbag/tests/test_base_carpetbag.py.test__fmt_request_args
 
         :param method: HTTP verb to use.
         :type method: str
@@ -299,6 +307,7 @@ class BaseCarpetBag(object):
         Just about every CarpetBag request comes through this method. It makes the request and handles different
         errors that may come about.
         @todo: rework arg list to be url, payload, method,
+        @unit-tested: carpetbag/tests/test_base_carpetbag.py.test__make
 
         self.wait_and_retry_on_connection_error can be set to add a wait and retry in seconds.
 
@@ -404,6 +413,7 @@ class BaseCarpetBag(object):
         """
         Makes requests to bad-actor.services. For getting data like current_ip, proxies and sending usage data if
         enabled and you have an API key.
+        @unit-tested: carpetbag/tests/test_base_carpetbag.py.test__make_internal
 
         :param uri_segment: The url to fetch/ post to.
         :type: uri_segment: str
@@ -454,7 +464,8 @@ class BaseCarpetBag(object):
     def _internal_proxies_params(self, payload):
         """
         Creates the params to query bad-actor.services for ranked proxies.
-        @todo: Create unit test!
+        @unit-tested: carpetbag/tests/test_base_carpetbag.py.test__make_internal_proxies_params
+        @todo: Create unit test coverage!
 
         :param payload: The data to be sent over the POST request.
         :type payload: dict

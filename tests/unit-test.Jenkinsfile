@@ -70,6 +70,14 @@ podTemplate(
                 """
             }
 
+            stage('Test Parse') {
+                echo "Running tests/test_parse_response.py"
+                checkout scm
+                sh """#!/usr/bin/env bash
+                    pytest tests/test_parse_response.py
+                """
+            }
+
         }
     }
 }
