@@ -163,56 +163,62 @@ class TestBaseCarpetBag(object):
         bagger._set_user_agent()
         assert bagger.send_user_agent == "My test user agent 2"
 
-    # def test__fmt_request_args(self):
-    #     """
-    #     Tests BaseCarpetBag._fmt_request_args to make sure the dict is properly built.
+    def test__fmt_request_args(self):
+        """
+        Tests BaseCarpetBag._fmt_request_args to make sure the dict is properly built.
+        @unit-tested: carpetbag/carpetbag/base_carpetbag.py._fmt_request_args
 
-    #     """
-    #     bagger = CarpetBag()
-    #     bagger.use_skip_ssl_verify()  # Test that "verify" is added to the args.
-    #     bagger.use_random_public_proxy()  # Test that "proxy" is added to the args.
+        """
+        bagger = CarpetBag()
+        bagger.use_skip_ssl_verify()  # Test that "verify" is added to the args.
+        bagger.use_random_public_proxy()  # Test that "proxy" is added to the args.
 
-    #     request_args = bagger._fmt_request_args(
-    #         "GET",
-    #         {"Content-Type": "application/json"},
-    #         UNIT_TEST_URL)
+        request_args = bagger._fmt_request_args(
+            "GET",
+            {"Content-Type": "application/json"},
+            UNIT_TEST_URL)
 
-    #     assert isinstance(request_args, dict)
-    #     assert request_args["method"] == "GET"
-    #     assert request_args["url"] == UNIT_TEST_URL
-    #     assert request_args["headers"] == {"Content-Type": "application/json"}
-    #     assert request_args["verify"]
-    #     assert (request_args["proxies"].get("http") or request_args["proxies"].get("https"))
+        assert isinstance(request_args, dict)
+        assert request_args["method"] == "GET"
+        assert request_args["url"] == UNIT_TEST_URL
+        assert request_args["headers"] == {"Content-Type": "application/json"}
+        assert request_args["verify"]
+        assert (request_args["proxies"].get("http") or request_args["proxies"].get("https"))
 
-    # def test__make(self):
-    #     """
-    #     Tests the _make() method of CarpetBag. This is one of the primary methods of CarpetBag, and could always use
-    #     more tests!
-    #     @note: This test DOES make outbound web requests.
+    def test__make(self):
+        """
+        Tests the _make() method of CarpetBag. This is one of the primary methods of CarpetBag, and could always use
+        more tests!
+        @note: This test DOES make outbound web requests.
+        @unit-tested: carpetbag/carpetbag/base_carpetbag.py._make
 
-    #     """
-    #     bagger = CarpetBag()
-    #     bagger.use_skip_ssl_verify()
-    #     bagger._start_request_manifest("GET", UNIT_TEST_URL, {})
-    #     response = bagger._make(
-    #         method="GET",
-    #         url=UNIT_TEST_URL,
-    #         headers={"Content-Type": "application/html"},
-    #         payload={},
-    #         retry=0)
-    #     bagger.manifest.append({})
-    #     assert response
-    #     assert response.status_code == 200
-    #     response = bagger._make(
-    #         method="GET",
-    #         url=UNIT_TEST_URL,
-    #         headers={"Content-Type": "application/html"},
-    #         payload={},
-    #         retry=0)
-    #     assert response
-    #     assert response.status_code == 200
+        """
+        test_url = ct.url_join(UNIT_TEST_URL, 'proxies')
+        bagger = CarpetBag()
+        bagger.use_skip_ssl_verify()
+        bagger._start_request_manifest(
+            "GET",
+            test_url,
+            {})
+        response = bagger._make(
+            method="GET",
+            url=test_url,
+            headers={"Content-Type": "application/html"},
+            payload={},
+            retry=0)
+        bagger.manifest.append({})
+        assert response
+        assert response.status_code == 200
+        response = bagger._make(
+            method="GET",
+            url=test_url,
+            headers={"Content-Type": "application/html"},
+            payload={},
+            retry=0)
+        assert response
+        assert response.status_code == 200
 
-    def test_make_internal(self):
+    def test__make_internal(self):
         """
         Tests the BaseCarpetBagger()._make_internal() method to make sure we're communicating with the
         Bad-Actor.Services API correctly.
@@ -226,6 +232,24 @@ class TestBaseCarpetBag(object):
         bagger.remote_service_api = UNIT_TEST_URL_BROKEN
         with pytest.raises(errors.NoRemoteServicesConnection):
             response = bagger._make_internal("ip")
+
+    def test__internal_proxies_params(self):
+        """
+        Tests BaseCarpetBagger()._internal_proxies_params() method to make sure we convert the payload to the correct
+        API values.
+        @todo: This should test other filters, order_by amd limit query params.
+
+        """
+        bagger = CarpetBag()
+
+        test_payload = {
+            "continent": "North America",
+        }
+
+        request_params = bagger._internal_proxies_params(test_payload)
+        assert "q" in request_params
+        assert "filters" in request_params["q"]
+        assert isinstance(request_params["q"]["filters"], list)
 
     def test__internal_proxies_filter_continent_param(self):
         """

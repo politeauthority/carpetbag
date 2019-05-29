@@ -20,7 +20,7 @@ from . import errors
 
 class BaseCarpetBag(object):
 
-    __version__ = "0.0.5b00"
+    __version__ = "0.0.5c02"
 
     def __init__(self):
         """
@@ -252,6 +252,7 @@ class BaseCarpetBag(object):
     def _fmt_request_args(self, method, headers, url, payload={}, retry=0, internal=False):
         """
         Formats args to be sent to the requests.request()
+        @unit-tested: carpetbag/tests/test_base_carpetbag.py.test__fmt_request_args
 
         :param method: HTTP verb to use.
         :type method: str
@@ -306,6 +307,7 @@ class BaseCarpetBag(object):
         Just about every CarpetBag request comes through this method. It makes the request and handles different
         errors that may come about.
         @todo: rework arg list to be url, payload, method,
+        @unit-tested: carpetbag/tests/test_base_carpetbag.py.test__make
 
         self.wait_and_retry_on_connection_error can be set to add a wait and retry in seconds.
 
@@ -411,6 +413,7 @@ class BaseCarpetBag(object):
         """
         Makes requests to bad-actor.services. For getting data like current_ip, proxies and sending usage data if
         enabled and you have an API key.
+        @unit-tested: carpetbag/tests/test_base_carpetbag.py.test__make_internal
 
         :param uri_segment: The url to fetch/ post to.
         :type: uri_segment: str
@@ -461,7 +464,8 @@ class BaseCarpetBag(object):
     def _internal_proxies_params(self, payload):
         """
         Creates the params to query bad-actor.services for ranked proxies.
-        @todo: Create unit test!
+        @unit-tested: carpetbag/tests/test_base_carpetbag.py.test__make_internal_proxies_params
+        @todo: Create unit test coverage!
 
         :param payload: The data to be sent over the POST request.
         :type payload: dict
