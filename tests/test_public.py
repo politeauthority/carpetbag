@@ -259,7 +259,7 @@ class TestPublic(object):
             image_1_url,
             "/opt/carpetbag/tests/data/images/")
         assert saved_phile_name
-        assert saved_phile_name == "/opt/carpetbag/tests/data/images/hacker-man.gif.jpg"
+        assert saved_phile_name == "/opt/carpetbag/tests/data/images/hacker-man.gif"
         os.remove(saved_phile_name)
 
         # Test that we respect the overwrite argument
