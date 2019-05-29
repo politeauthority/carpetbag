@@ -235,38 +235,37 @@ class TestPublic(object):
         assert not bagger.use_skip_ssl_verify(False)
         assert bagger.ssl_verify
 
-    # def test_save(self):
-    #     """
-    #     Tests the CarpetBag.save() method to make sure it can download files.
-    #     """
-    #     bagger = CarpetBag()
-    #     bagger.use_skip_ssl_verify()
+    def test_save(self):
+        """
+        Tests the CarpetBag.save() method to make sure it can download files.
+        """
+        bagger = CarpetBag()
+        bagger.use_skip_ssl_verify()
 
-    #     image_1_url = ct.url_join(bagger.remote_service_api.replace("api", ""), "test/troll.jpg")
+        image_1_url = "https://f001.backblazeb2.com/file/polite-pub/hacker-man.gif"
 
-    #     # Test the file being named after the full path given in the destination.
-    #     saved_phile_name = bagger.save(
-    #         image_1_url,
-    #         "/opt/carpetbag/tests/data/images/test_download.jpg")
+        # Test the file being named after the full path given in the destination.
+        saved_phile_name = bagger.save(
+            image_1_url,
+            "/opt/carpetbag/tests/data/images/test_download.jpg")
 
-    #     assert saved_phile_name
-    #     assert saved_phile_name == "/opt/carpetbag/tests/data/images/test_download.jpg"
-    #     os.remove(saved_phile_name)
+        assert saved_phile_name
+        assert saved_phile_name == "/opt/carpetbag/tests/data/images/test_download.jpg"
+        os.remove(saved_phile_name)
 
-    #     # Test the name of the file being the last url segment
-    #     saved_phile_name = bagger.save(
-    #         image_1_url,
-    #         "/opt/carpetbag/tests/data/images/")
-    #     assert saved_phile_name
-    #     assert saved_phile_name == "/opt/carpetbag/tests/data/images/troll.jpg"
-    #     os.remove(saved_phile_name)
+        # Test the name of the file being the last url segment
+        saved_phile_name = bagger.save(
+            image_1_url,
+            "/opt/carpetbag/tests/data/images/")
+        assert saved_phile_name
+        assert saved_phile_name == "/opt/carpetbag/tests/data/images/troll.jpg"
+        os.remove(saved_phile_name)
 
-    #     # Test that we respect the overwrite argument
-    #     with pytest.raises(errors.CannotOverwriteFile):
-    #         bagger.save(
-
-    #             image_1_url,
-    #             "/opt/carpetbag/tests/data/images/existing.jpg")
+        # Test that we respect the overwrite argument
+        with pytest.raises(errors.CannotOverwriteFile):
+            bagger.save(
+                image_1_url,
+                "/opt/carpetbag/tests/data/images/existing.jpg")
 
     # def test_search(self):
     #     """
