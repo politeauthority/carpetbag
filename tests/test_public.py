@@ -238,6 +238,7 @@ class TestPublic(object):
     def test_save(self):
         """
         Tests the CarpetBag.save() method to make sure it can download files.
+
         """
         bagger = CarpetBag()
         bagger.use_skip_ssl_verify()
@@ -258,7 +259,7 @@ class TestPublic(object):
             image_1_url,
             "/opt/carpetbag/tests/data/images/")
         assert saved_phile_name
-        assert saved_phile_name == "/opt/carpetbag/tests/data/images/troll.jpg"
+        assert saved_phile_name == "/opt/carpetbag/tests/data/images/hacker-man.gif.jpg"
         os.remove(saved_phile_name)
 
         # Test that we respect the overwrite argument
