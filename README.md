@@ -56,6 +56,24 @@ sudo python setup.py install
     ##### Returns (`bool`)
     Returns `True` if we successfully made the bagger use random user agent, or `False` to stop using random user agents.
 
+
+- #### **`use_random_public_proxy`(val=True, test_proxy=False)**
+    **Note** This method is still _beta_.
+    Gets proxies from bad actor services and loads them into the `self.proxy_bag`.
+    This loads tested proxies from Bad Actor Services and stores them in the `self.proxy_bag` var,
+    The first element in the `self.proxy_bag` is the currently used proxy.
+    ##### Example Usage
+    ```python
+    from carpetbag import CarpetBag
+    bagger = CarpetBag()
+    bagger.use_random_public_proxy()
+    ```
+    ##### Params
+    - **val:** (`bool`) Whether or not to enable random user agents.
+    - **test_proxy:** (`bool`) Tests the proxy to see if it's up and working.
+    ##### Returns (`bool`)
+    Returns `True` if we successfully set CarpetBag to use random public proxies or `False` if we failed.
+
 ## Public HTTP verb Methods
 - #### **get(url, payload)**
     The primary method of scraper, grabs a url over a specified proxy, set by the self.poxies class var. If none specified will grab over the current servers internet connection.
