@@ -51,6 +51,13 @@ class TestPublic(object):
         assert bagger.proxy == {}
         assert bagger.proxy_bag == []
         assert bagger.proxy_current == {}
+        assert not bagger.random_proxy_bag
+        assert bagger.send_user_agent == ""
+        assert bagger.ssl_verify
+        assert not bagger.force_skip_ssl_verify
+        assert not bagger.send_usage_stats_val
+        assert bagger.usage_stats_api_key == ""
+        assert bagger.retry_on_proxy_failure
 
     def test_get(self):
         """
