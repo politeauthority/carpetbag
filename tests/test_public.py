@@ -26,6 +26,16 @@ class TestPublic(object):
         bagger = CarpetBag()
         assert bagger.headers == {}
         assert bagger.user_agent == "CarpetBag v%s" % bagger.__version__
+        assert not bagger.random_user_agent
+        assert bagger.mininum_wait_time == 0
+        assert bagger.wait_and_retry_on_connection_error == 0
+        assert bagger.retries_on_connection_failure == 5
+        assert not bagger.username
+        assert not bagger.password
+        assert not bagger.auth_type
+        assert bagger.change_identity_interval == 0
+        assert bagger.remote_service_api == "https://bas.bitgel.com/api"
+
 
     def test_get(self):
         """
