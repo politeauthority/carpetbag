@@ -43,13 +43,19 @@ sudo python setup.py install
     Sets a random, common browser's User Agent string as the bagger's User Agent string.
     This sets the class `self.random_user_agent` to `True`, the class defaults this var to `False`.
     This sets the `self.user_agent` var with the return of `CarpetBagger.get_new_user_agent()`
-
+    ##### Example Usage
+    ```python
+    from carpetbag import CarpetBag
+    bagger = CarpetBag()
+    bagger.use_random_user_agent()
+    print(bagger.user_agent)
+    >>> 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:49.0) Gecko/20100101 Firefox/49.0'
+    ```
     ##### Params
     - **val:** (`bool`) Whether or not to enable random user agents.
     ##### Returns (`bool`)
     Returns a `bool` of `True` if we successfully made the bagger use random user agent, or `False` to stop using random user agents.
-    **Example:** `Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:49.0) Gecko/20100101 Firefox/49.0`
-    :rtype: bool
+
 ## Public HTTP verb Methods
 - #### **get(url, payload)**
     The primary method of scraper, grabs a url over a specified proxy, set by the self.poxies class var. If none specified will grab over the current servers internet connection.
