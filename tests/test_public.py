@@ -23,6 +23,10 @@ UNIT_TEST_AGENT = "CarpetBag v%s/ UnitTests" % CarpetBag.__version__
 class TestPublic(object):
 
     def test___init__(self):
+        """
+        Tests the CarpetBag.__init__() method to make sure class defaults are preserved.
+
+        """
         bagger = CarpetBag()
         assert bagger.headers == {}
         assert bagger.user_agent == "CarpetBag v%s" % bagger.__version__
@@ -35,7 +39,6 @@ class TestPublic(object):
         assert not bagger.auth_type
         assert bagger.change_identity_interval == 0
         assert bagger.remote_service_api == "https://bas.bitgel.com/api"
-
         assert bagger.public_proxies_max_last_test_weeks == 5
         assert bagger.paginatation_map == {
             "field_name_page": "page",
