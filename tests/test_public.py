@@ -22,6 +22,11 @@ UNIT_TEST_AGENT = "CarpetBag v%s/ UnitTests" % CarpetBag.__version__
 
 class TestPublic(object):
 
+    def test___init__(self):
+        bagger = CarpetBag()
+        assert bagger.headers == {}
+        assert bagger.user_agent == "CarpetBag v%s" % bagger.__version__
+
     def test_get(self):
         """
         Tests the CarpetBag.get() method and some of the many different ways that it can be used.
