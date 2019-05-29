@@ -218,14 +218,13 @@ class TestBaseCarpetBag(object):
         assert response
         assert response.status_code == 200
 
-    def test_make_internal(self):
+    def test__make_internal(self):
         """
         Tests the BaseCarpetBagger()._make_internal() method to make sure we're communicating with the
         Bad-Actor.Services API correctly.
         @note: This test DOES make outbound web requests.
 
         """
-        test_url = ct.url_join(UNIT_TEST_URL, 'proxies')
         bagger = CarpetBag()
         response = bagger._make_internal("ip")
         assert str(response.json()["ip"])
@@ -233,6 +232,24 @@ class TestBaseCarpetBag(object):
         bagger.remote_service_api = UNIT_TEST_URL_BROKEN
         with pytest.raises(errors.NoRemoteServicesConnection):
             response = bagger._make_internal("ip")
+
+    def test__internal_proxies_params(self):
+        """
+        Tests BaseCarpetBagger()._internal_proxies_params() method to make sure we convert the payload to the correct
+        API values.
+        @todo: This should test other filters, order_by amd limit query params.
+
+        """
+        bagger = CarpetBag()
+
+        test_payload = {
+            "continent": "North America",
+        }
+
+        request_params = bagger._internal_proxies_params(test_payload)
+        assert "q" in request_params
+        assert "filters" in request_params["q"]
+        assert isinstance(request_params["q"]["filters"], list)
 
     def test__internal_proxies_filter_continent_param(self):
         """
