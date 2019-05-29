@@ -249,7 +249,6 @@ class TestBaseCarpetBag(object):
         request_params = bagger._internal_proxies_params(test_payload)
         assert "q" in request_params
         assert "filters" in request_params["q"]
-        assert isinstance(request_params["q"]["filters"], list)
 
     def test__internal_proxies_filter_continent_param(self):
         """
