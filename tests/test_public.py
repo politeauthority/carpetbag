@@ -36,7 +36,6 @@ class TestPublic(object):
         assert bagger.change_identity_interval == 0
         assert bagger.remote_service_api == "https://bas.bitgel.com/api"
 
-
     def test_get(self):
         """
         Tests the CarpetBag.get() method and some of the many different ways that it can be used.
