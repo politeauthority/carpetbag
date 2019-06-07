@@ -11,7 +11,7 @@ podTemplate(
                 ttyEnabled: true,
                 command: 'tail -f /dev/null',
                 envVars: [],
-                alwaysPullImage: true
+                alwaysPullImage: false
             )
         ],
 
