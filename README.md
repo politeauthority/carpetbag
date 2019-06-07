@@ -38,6 +38,42 @@ python setup.py build
 sudo python setup.py install
 ```
 
+## Common Usage
+- #### **`use_random_user_agent`(val=True)**
+    Sets a random, common browser's User Agent string as the bagger's User Agent string.
+    This sets the class `self.random_user_agent` to `True`, the class defaults this var to `False`.
+    This sets the `self.user_agent` var with the return of `CarpetBagger.get_new_user_agent()`
+    ##### Example Usage
+    ```python
+    from carpetbag import CarpetBag
+    bagger = CarpetBag()
+    bagger.use_random_user_agent()
+    print(bagger.user_agent)
+    >>> 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10.12; rv:49.0) Gecko/20100101 Firefox/49.0'
+    ```
+    ##### Params
+    - **val:** (`bool`) Whether or not to enable random user agents.
+    ##### Returns (`bool`)
+    Returns `True` if we successfully made the bagger use random user agent, or `False` to stop using random user agents.
+
+
+- #### **`use_random_public_proxy`(val=True, test_proxy=False)**
+    **Note** This method is still _beta_.
+    Gets proxies from bad actor services and loads them into the `self.proxy_bag`.
+    This loads tested proxies from Bad Actor Services and stores them in the `self.proxy_bag` var,
+    The first element in the `self.proxy_bag` is the currently used proxy.
+    ##### Example Usage
+    ```python
+    from carpetbag import CarpetBag
+    bagger = CarpetBag()
+    bagger.use_random_public_proxy()
+    ```
+    ##### Params
+    - **val:** (`bool`) Whether or not to enable random user agents.
+    - **test_proxy:** (`bool`) Tests the proxy to see if it's up and working.
+    ##### Returns (`bool`)
+    Returns `True` if we successfully set CarpetBag to use random public proxies or `False` if we failed.
+
 ## Public HTTP verb Methods
 - #### **get(url, payload)**
     The primary method of scraper, grabs a url over a specified proxy, set by the self.poxies class var. If none specified will grab over the current servers internet connection.
@@ -55,6 +91,10 @@ sudo python setup.py install
     ##### Returns
     - **desc:** Provides a Requests request back from the url specified.
     - **type:** `<Request>` obj
+- #### **put(url, payload)**
+  Completly identical to .get, except for the post http verb. CarpetBag does this for all HTTP verbs.
+- #### **delete(url, payload)**
+  Completly identical to .get, except for the post http verb. CarpetBag does this for all HTTP verbs.
 ## Tor Usage
 For best results, use Privoxy to connect to tor, using a docker container is a really easy way to accomplish this. I'm using [zeta0/alpine-tor](https://github.com/zuazo/alpine-tor-docker) to launch a docker container running tor with privoxy support already enabled, and another container for CarpetBag, all ready to go. This is all happening in the docker-compose.yml, just run ```docker-compose up```. Then insdie the scrape container you would run something like...
 
