@@ -81,7 +81,7 @@ class BaseCarpetBag(object):
         self.username = None
         self.password = None
         self.auth_type = None
-        self.change_identity_interval = 0
+        self.change_identity_interval = 10
         # self.remote_service_api = "https://www.bad-actor.services/api"
         self.remote_service_api = "https://bas.bitgel.com/api"
         self.public_proxies_max_last_test_weeks = 5
