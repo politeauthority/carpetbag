@@ -101,6 +101,8 @@ class CarpetBag(BaseCarpetBag):
         Wrapper for the Requests python module's get method, adds in extras such as headers and proxies where
         applicable.
 
+        @unit-tested: carpetbag/tests/test_public_carpetbag.py.test_get
+
         :param url: The url to fetch.
         :type: url: str
         :returns: A Requests module instance of the response.

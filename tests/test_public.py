@@ -26,7 +26,6 @@ class TestPublic(object):
         """
         Tests the CarpetBag.__init__() class instantiation method.
 
-
         """
         bagger = CarpetBag()
         assert bagger.headers == {}
@@ -40,6 +39,36 @@ class TestPublic(object):
         assert not bagger.username
         assert not bagger.password
         assert not bagger.auth_type
+
+    def test_request(self):
+        """
+        Tests the CarpetBag.reqiest() method.
+        Right now this test only covers the most basic expectations from an API which is most likely NOT expecting these
+        types of requests. It's primarily checking that the HTTP verbs are properly routed via CarpetBag.
+        @todo: This could be broken out SIGNIFICANTLY!
+
+        """
+        bagger = CarpetBag()
+
+        test_url = ct.url_join(UNIT_TEST_URL, 'api/proxies')
+        response_get = bagger.request("GET", test_url)
+        assert response_get.status_code == 200
+
+        # This URL will not like a POST thrown at it, but a 500 is a solid return that we pushed a POST
+        response_post = bagger.request('POST', test_url)
+        assert response_post.status_code == 500
+
+        # This URL will not like a PUT thrown at it, but a 405 is a solid return that we pushed a POST
+        response_post = bagger.request('PUT', test_url)
+        assert response_post.status_code == 405
+
+        # This URL will not like a PATCH thrown at it, but a 405 is a solid return that we pushed a POST
+        response_post = bagger.request('PATCH', test_url)
+        assert response_post.status_code == 405
+
+        # This URL will not like a DELETE thrown at it, but a 405 is a solid return that we pushed a POST
+        response_post = bagger.request('DELETE', test_url)
+        assert response_post.status_code == 405
 
     def test_get(self):
         """
@@ -149,6 +178,7 @@ class TestPublic(object):
 
         """
         bagger = CarpetBag()
+        bagger.use_skip_ssl_verify(force=True)
         bagger.user_agent = UNIT_TEST_AGENT
         # bagger.remote_service_api = UNIT_TEST_URL
 
