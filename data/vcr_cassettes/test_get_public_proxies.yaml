@@ -1,0 +1,181 @@
+interactions:
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      User-Agent:
+      - CarpetBag v0.0.5f01
+    method: GET
+    uri: https://bas.bitgel.com/api/proxies?q=%7B%22order_by%22%3A+%5B%7B%22field%22%3A+%22quality%22%2C+%22direction%22%3A+%22desc%22%7D%5D%7D
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAwAAAP//zJdLb9swDMfv/RRGzqsq6mXJtw7Yo9h122UYAjXRsmyunNkyhqLodx/l
+        eovyrGskwC4KTILCnz/TJPNwkWUT395Na9e0ZWgmRQYUhHyVRUd1+8PNOuMXfMyyh+5Eh53PMSA6
+        Jt9DWDXF1ZVQBCMJi7+cFhyYnnS3dAGzyoeldz7EkDdtXa3chrf1ob6PvneuvrP+PnE6b29LN0fn
+        N1s2bu1YRpvIpUxMq3jHppTkqtI2YRpcE7rrJoyCuaTqEuRHqgrOCyFJzpgBlcZUMxuWlV8Lzy6z
+        XZWrqo65xbTXxl+tLZch5sXWxqYp0RDq1nWWx95zjC0DRrghmhOQqhCGaxjD9nVbLmy9tHvhRkFb
+        bJkGmQh/gruhZTBbLAhkSwVT/Dm2e1T2cLvET09XYqlISQDLxbBCU03HwH1bWz9zg9FiKnwb7YaQ
+        wWixbCnRea70s2h3NPZgY86n5wpgCMPXzoQmoMRRstfNxgtPuN74eeVdc6Bq97UEJrjYYbsl5gV0
+        OdLlHKg4QDdKR7b7dJ4Xr8kJA0UYATjK9pP/6avffj/ea7+oyuFspVA77TYV8hKumhilNZgDXHvZ
+        iHZH41m5KkkkppILImgxpmLfV36RfcBjMFVsi2abaipjMFVss9iaBZXymWrdp/Ef1dMzFTkxlOQ4
+        M0AfXQ1OSZVxSGZxvxokQoZRlQWDghmiqFRmPNXzLAaQ9yPDsA7tuBb7eemCt3eDweLgT2qkbwKb
+        SoaxfeoDknBtBDs0vXq2uyLP2gUwB9xXSG4IsONLwem4Sg7JevN3biU6XkBVCNwjjOL/F1UNxAAK
+        E0TykX3gBneYwUSFZvk20VTDUKAgcesmVOaM58eBbskb//Xj+bXzTlZ24eJX9/QUqmDLabT1f9bk
+        xePFHwAAAP//AwDIW3FAxw0AAA==
+    headers:
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Sat, 15 Jun 2019 06:35:47 GMT
+      Link:
+      - <https://bas.bitgel.com/api/proxies?page=2&results_per_page=10>; rel="next",
+        <https://bas.bitgel.com/api/proxies?page=1015&results_per_page=10>; rel="last"
+      - <https://bas.bitgel.com/api/proxies?page=2&results_per_page=10>; rel="next",
+        <https://bas.bitgel.com/api/proxies?page=1015&results_per_page=10>; rel="last"
+      Server:
+      - nginx/1.15.8
+      Set-Cookie:
+      - session=5795c7f2-8c2a-4a31-883a-f92f930e11c6; Expires=Tue, 16-Jul-2019 06:35:47
+        GMT; HttpOnly; Path=/
+      Strict-Transport-Security:
+      - max-age=15724800; includeSubDomains
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      - Accept
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      User-Agent:
+      - CarpetBag v0.0.5f01
+    method: GET
+    uri: https://bas.bitgel.com/api/proxies?q=%7B%22filters%22%3A+%5B%7B%22name%22%3A+%22continent%22%2C+%22op%22%3A+%22eq%22%2C+%22val%22%3A+%22Asia%22%7D%2C+%7B%22name%22%3A+%22last_tested%22%2C+%22op%22%3A+%22%3E%22%2C+%22val%22%3A+%222019-05-11+06%3A35%3A47%22%7D%2C+%7B%22name%22%3A+%22quality%22%2C+%22op%22%3A+%22%3E%22%2C+%22val%22%3A+0%7D%5D%2C+%22order_by%22%3A+%5B%7B%22field%22%3A+%22quality%22%2C+%22direction%22%3A+%22desc%22%7D%5D%7D
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA8yXPW/bMBCG9/4KwXN9ueM3uXVr0DXo0iFQYqVRoVCuRQ9F0P/ek+o29AccSYiL
+        ehDge0XivYcfd3p+VxSLuH263VTdtkndIhRK2fdFH27vvlX3Q+gL/y2K5+HJQrla8eu9sHhMad2F
+        qyuyBEJrIC+AyAWHDhfDNMOI+zamOlYx9WM+dHW5p21j2vzolc91lWL5lIlVLO+aasXiQ9l01YtQ
+        9zHSBrPQup/jwEk2V1N26TZVXRrmWwgkv0SzJH2DJkgZpAbpvBIyH9Pel6lu4x/fxbI4NrluN31i
+        fc4vwe/bsqlTn5Z4CXZdw4G02VZD5OdOOUuWHFgE64GE+EdctSQ64pr7mEBVKSDljfzfqHoQvOBC
+        OSCjZnK9jqs2VvvyebJCSSWP0e6ZmQBXIjgpCdV5uKd8XhSv0aD5+FkFCsMcsh/b+LX4xI/RZJUw
+        /hBsbmM0VQzSg1Oo9StUT3n8S/XtmToCT3yWFGheeBJuOtXrTRnHA3XCHgLNPYwFSjooD6itkPaV
+        bbpvb8eyT/XtafbXGVnJ504CSRWUsVpPJ3rzWNZNGVejqWr+HVI98DICrLxBGQQF6cBp9OTPgz3h
+        cgd3SPsCdEEgEPJWEXyclBczroDJaJWXmesd2szIKK7EUCkggvEaDc7lOuR8Aa7Iu4QMOAEag5bC
+        0XSwXA0mVCyNdNxj5TbGYWW3yDuW14ILzuvl6lSpGtK9DFPL/aIhbv/YorXm4kytOO6vchujmKIP
+        Sgf0YLinUG4W0yHdt2eqLHjuFeXwLTCvVk3vAISkrFD8ppobGQGVC5bu71XBUFEbP78DmFq1fgEA
+        AP//AoYrkIwFyyoVJKanAqUgaUSpJL8kMSceJAbunply1XIBAAAA//8DALGKlHG3DQAA
+    headers:
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Sat, 15 Jun 2019 06:35:47 GMT
+      Link:
+      - <https://bas.bitgel.com/api/proxies?page=2&results_per_page=10>; rel="next",
+        <https://bas.bitgel.com/api/proxies?page=45&results_per_page=10>; rel="last"
+      - <https://bas.bitgel.com/api/proxies?page=2&results_per_page=10>; rel="next",
+        <https://bas.bitgel.com/api/proxies?page=45&results_per_page=10>; rel="last"
+      Server:
+      - nginx/1.15.8
+      Set-Cookie:
+      - session=cf20e422-c6e2-4feb-b6b4-2dee9dbd566d; Expires=Tue, 16-Jul-2019 06:35:47
+        GMT; HttpOnly; Path=/
+      Strict-Transport-Security:
+      - max-age=15724800; includeSubDomains
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      - Accept
+    status:
+      code: 200
+      message: OK
+- request:
+    body: null
+    headers:
+      Accept:
+      - '*/*'
+      Accept-Encoding:
+      - gzip, deflate
+      Connection:
+      - keep-alive
+      Content-Type:
+      - application/json
+      User-Agent:
+      - CarpetBag v0.0.5f01
+    method: GET
+    uri: https://bas.bitgel.com/api/proxies?q=%7B%22filters%22%3A+%5B%7B%22name%22%3A+%22continent%22%2C+%22op%22%3A+%22eq%22%2C+%22val%22%3A+%22North+America%22%7D%2C+%7B%22name%22%3A+%22last_tested%22%2C+%22op%22%3A+%22%3E%22%2C+%22val%22%3A+%222019-05-11+06%3A35%3A47%22%7D%2C+%7B%22name%22%3A+%22quality%22%2C+%22op%22%3A+%22%3E%22%2C+%22val%22%3A+0%7D%5D%2C+%22order_by%22%3A+%5B%7B%22field%22%3A+%22quality%22%2C+%22direction%22%3A+%22desc%22%7D%5D%7D
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAA8SWwW7UMBCG7zxFtGfqemZsx/YNwRWESjlxQGk2qEFpsmwcCVTx7ozTVnUbqFx2
+        A5dImbGt35/G/8z1i6LY9NPV530zTl0YN75AUi+LGB4uvjb1HPrEv0VxPX85UW23vDwmNpch7EZ/
+        egq2FKhIoCYBFj1R6cxmPmfeUg99aPumD3HTu2EfLotXV82+rasHi6Y+7H/EJW+b7209JLmmry66
+        Zsu5L1U3NveJNsa0VC4J7eIRjyQlZ3XVGD6HZgzzeRuU4E6kOQE6l9pL8qCEc6QR0j1DXYV26Bf6
+        i5NiIXbHC3jhDOE++m2qujbE6+F9cBw7DoT91MyRn7eZJ1nzhRwKzbcy3korD+D8sW+ZQvEhVMwj
+        H7cxdoE7UZXFGsCT9KSFcspqk8n6T4JvkUccxyfOIhHhppIUywa0qzKP4h4hxxKXzB/qyqCO59J4
+        MJ5QGA2W1HGoRyDHpw5SCaRyLinw/6HMAawuF3WeqspCjtJL8JKRSygNHQf5GmWulSAnUDpBeGiR
+        v676alvlo1YOE6u8QZ3qySDN9k0+OrgR1hKAzCS9kLpuVWsnrBPA71bLQ+37+ZQhqZs7404EZWDm
+        gkavtFfAHsIH6gMxr2PZipu/ji9VGDq0lv/SPUgTPIadyspiPTuHV1aUDhUcqUuuVNmsEiRPASL2
+        yFJbdQDzN8NV23O2L86a3XTRtXU+eCC7HE8ScRngaW6U1kspSIKVuY3ySdl39COaFfDz9OX4HSst
+        yK5oLL8dThzqBfFUTx5yNpXSzwONkjK3Uf5bXwHuSEYKbuTCoNeED4aA52J+PzX7MBRnbf0LAAD/
+        /yK+rwNse2M2SpBdRURYG4UYApvehsCmoJ65kamhuRGRYY3dvdAABwcGiSEOJGPBskoFiempoMwL
+        4ZXklyTmxIPEwF1SE65aLgAAAAD//wMA6XCBtasOAAA=
+    headers:
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Sat, 15 Jun 2019 06:35:47 GMT
+      Link:
+      - <https://bas.bitgel.com/api/proxies?page=2&results_per_page=10>; rel="next",
+        <https://bas.bitgel.com/api/proxies?page=24&results_per_page=10>; rel="last"
+      - <https://bas.bitgel.com/api/proxies?page=2&results_per_page=10>; rel="next",
+        <https://bas.bitgel.com/api/proxies?page=24&results_per_page=10>; rel="last"
+      Server:
+      - nginx/1.15.8
+      Set-Cookie:
+      - session=a7d814dd-d843-4617-a4d4-bcc3cfe39f7d; Expires=Tue, 16-Jul-2019 06:35:47
+        GMT; HttpOnly; Path=/
+      Strict-Transport-Security:
+      - max-age=15724800; includeSubDomains
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      - Accept
+    status:
+      code: 200
+      message: OK
+version: 1
