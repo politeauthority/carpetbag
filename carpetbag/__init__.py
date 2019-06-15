@@ -64,6 +64,7 @@ class CarpetBag(BaseCarpetBag):
             Authentication needs to be implemented.
 
         @unit-tested: carpetbag/tests/test_public_carpetbag.py.test__init__
+
         """
         self.headers = {}
         self.user_agent = ""
