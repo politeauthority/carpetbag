@@ -24,43 +24,22 @@ class TestPublic(object):
 
     def test___init__(self):
         """
-        Tests the CarpetBag.__init__() method to make sure class defaults are preserved.
+        Tests the CarpetBag.__init__() class instantiation method.
+
 
         """
         bagger = CarpetBag()
         assert bagger.headers == {}
-        assert bagger.user_agent == "CarpetBag v%s" % bagger.__version__
-        assert not bagger.random_user_agent
+        assert bagger.user_agent == ""
         assert bagger.mininum_wait_time == 0
         assert bagger.wait_and_retry_on_connection_error == 0
         assert bagger.retries_on_connection_failure == 5
+        assert bagger.max_content_length == 200000000
+        assert bagger.proxy == {}
+        assert bagger.change_identity_interval == 10
         assert not bagger.username
         assert not bagger.password
         assert not bagger.auth_type
-        assert bagger.change_identity_interval == 0
-        assert bagger.remote_service_api == "https://bas.bitgel.com/api"
-        assert bagger.public_proxies_max_last_test_weeks == 5
-        assert bagger.paginatation_map == {
-            "field_name_page": "page",
-            "field_name_total_pages": "total_pages",
-            "field_name_data": "objects",
-        }
-        assert not bagger.outbound_ip
-        assert bagger.request_count == 0
-        assert bagger.request_total == 0
-        assert not bagger.last_request_time
-        assert not bagger.last_response
-        assert bagger.manifest == []
-        assert bagger.proxy == {}
-        assert bagger.proxy_bag == []
-        assert bagger.proxy_current == {}
-        assert not bagger.random_proxy_bag
-        assert bagger.send_user_agent == ""
-        assert bagger.ssl_verify
-        assert not bagger.force_skip_ssl_verify
-        assert not bagger.send_usage_stats_val
-        assert bagger.usage_stats_api_key == ""
-        assert bagger.retry_on_proxy_failure
 
     def test_get(self):
         """

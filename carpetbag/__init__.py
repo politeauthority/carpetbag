@@ -227,7 +227,7 @@ class CarpetBag(BaseCarpetBag):
 
     def use_random_public_proxy(self, val=True, test_proxy=False):
         """
-        Gets proxies from free-proxy-list.net and loads them into the self.proxy_bag. The first element in the
+        Gets proxies from bad actor services and loads them into the self.proxy_bag. The first element in the
         proxy_bag is the currently used proxy.
 
         :param val: Whether or not to enable random public proxies.
