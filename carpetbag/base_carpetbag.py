@@ -20,7 +20,7 @@ from . import errors
 
 class BaseCarpetBag(object):
 
-    __version__ = "0.0.5a01"
+    __version__ = "0.0.5g01"
 
     def __init__(self):
         """
@@ -714,7 +714,11 @@ class BaseCarpetBag(object):
         proxy_score = 0
         if success:
             proxy_score = proxy_quality + 1
-            usage_payload["response_time"] = (self.manifest[0]["date_end"] - self.manifest[0]["date_start"]).seconds
+            # Get the start and end in microseconds, then send as a float of seconds back to BAS.
+            response_time = (self.manifest[0]["date_end"] - self.manifest[0]["date_start"]).microseconds / 1000000
+
+            usage_payload["response_time"] = response_time
+            logging.debug('Proxy returned in: %s seconds' % response_time)
 
         usage_payload["score"] = proxy_score
 
