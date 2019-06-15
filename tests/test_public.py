@@ -30,7 +30,7 @@ class TestPublic(object):
         """
         bagger = CarpetBag()
         assert bagger.headers == {}
-        assert bagger.user_agent == "CarpetBag v%s" % self.__version__
+        assert bagger.user_agent == "CarpetBag v%s" % bagger.__version__
         assert bagger.mininum_wait_time == 0
         assert bagger.wait_and_retry_on_connection_error == 0
         assert bagger.retries_on_connection_failure == 5
