@@ -457,6 +457,8 @@ class BaseCarpetBag(object):
             urllib3.disable_warnings(InsecureRequestWarning)
             response = requests.request(**request_args)
         except requests.exceptions.ConnectionError:
+            bas_server = ct.url_disect(uri_segment)
+            logging.error("Cannot connected to BAS server: %s" % bas_server['domain'])
             raise errors.NoRemoteServicesConnection("Cannot connect to bad-actor.services API")
 
         return response
