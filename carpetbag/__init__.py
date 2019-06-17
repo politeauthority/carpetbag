@@ -284,7 +284,7 @@ class CarpetBag(BaseCarpetBag):
             self.proxy.pop("http")
         if "https" in self.proxy:
             self.proxy.pop("https")
-
+        self.proxy = self.proxy_current
         self.logger.debug("New Proxy: %s (%s - %s)" % (
             self.proxy_current["address"],
             self.proxy_current["continent"],
