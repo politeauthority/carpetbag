@@ -59,6 +59,8 @@ class TestBaseCarpetBag(object):
         assert not bagger.send_usage_stats_val
         assert isinstance(bagger.usage_stats_api_key, str)
         assert not bagger.usage_stats_api_key
+        assert isinstance(bagger.usage_stats_machine_id, str)
+        assert not bagger.usage_stats_machine_id
         assert isinstance(bagger.one_time_headers, list)
         assert not bagger.force_skip_ssl_verify
 
