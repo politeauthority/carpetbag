@@ -20,7 +20,7 @@ from . import errors
 
 class BaseCarpetBag(object):
 
-    __version__ = "0.0.5i01"
+    __version__ = "0.0.5j01"
 
     def __init__(self):
         """
@@ -107,6 +107,7 @@ class BaseCarpetBag(object):
         self.force_skip_ssl_verify = False
         self.send_usage_stats_val = False
         self.usage_stats_api_key = ""
+        self.usage_stats_machine_id = ""
         self.retry_on_proxy_failure = True
 
         self.one_time_headers = []
@@ -706,7 +707,8 @@ class BaseCarpetBag(object):
             "response_success": success,
             # "response_ip": "",
             "user_ip": self.non_proxy_user_ip,
-            "score": 0
+            "score": 0,
+            "machine_id": self.usage_stats_machine_id,
         }
 
         proxy_quality = self.proxy_bag[0]["quality"]
