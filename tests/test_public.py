@@ -22,6 +22,54 @@ UNIT_TEST_AGENT = "CarpetBag v%s/ UnitTests" % CarpetBag.__version__
 
 class TestPublic(object):
 
+    def test___init__(self):
+        """
+        Tests the CarpetBag.__init__() class instantiation method.
+
+        """
+        bagger = CarpetBag()
+        assert bagger.headers == {}
+        assert bagger.user_agent == "CarpetBag v%s" % bagger.__version__
+        assert bagger.mininum_wait_time == 0
+        assert bagger.wait_and_retry_on_connection_error == 0
+        assert bagger.retries_on_connection_failure == 5
+        assert bagger.max_content_length == 200000000
+        assert bagger.proxy == {}
+        assert bagger.change_identity_interval == 10
+        assert not bagger.username
+        assert not bagger.password
+        assert not bagger.auth_type
+
+    def test_request(self):
+        """
+        Tests the CarpetBag.reqiest() method.
+        Right now this test only covers the most basic expectations from an API which is most likely NOT expecting these
+        types of requests. It's primarily checking that the HTTP verbs are properly routed via CarpetBag.
+        @todo: This could be broken out SIGNIFICANTLY!
+
+        """
+        bagger = CarpetBag()
+
+        test_url = ct.url_join(UNIT_TEST_URL, 'api/proxies')
+        response_get = bagger.request("GET", test_url)
+        assert response_get.status_code == 200
+
+        # This URL will not like a POST thrown at it, but a 500 is a solid return that we pushed a POST
+        response_post = bagger.request('POST', test_url)
+        assert response_post.status_code == 500
+
+        # This URL will not like a PUT thrown at it, but a 405 is a solid return that we pushed a POST
+        response_post = bagger.request('PUT', test_url)
+        assert response_post.status_code == 405
+
+        # This URL will not like a PATCH thrown at it, but a 405 is a solid return that we pushed a POST
+        response_post = bagger.request('PATCH', test_url)
+        assert response_post.status_code == 405
+
+        # This URL will not like a DELETE thrown at it, but a 405 is a solid return that we pushed a POST
+        response_post = bagger.request('DELETE', test_url)
+        assert response_post.status_code == 405
+
     def test_get(self):
         """
         Tests the CarpetBag.get() method and some of the many different ways that it can be used.
@@ -130,6 +178,7 @@ class TestPublic(object):
 
         """
         bagger = CarpetBag()
+        bagger.use_skip_ssl_verify(force=True)
         bagger.user_agent = UNIT_TEST_AGENT
         # bagger.remote_service_api = UNIT_TEST_URL
 
@@ -195,38 +244,38 @@ class TestPublic(object):
         assert not bagger.use_skip_ssl_verify(False)
         assert bagger.ssl_verify
 
-    # def test_save(self):
-    #     """
-    #     Tests the CarpetBag.save() method to make sure it can download files.
-    #     """
-    #     bagger = CarpetBag()
-    #     bagger.use_skip_ssl_verify()
+    def test_save(self):
+        """
+        Tests the CarpetBag.save() method to make sure it can download files.
 
-    #     image_1_url = ct.url_join(bagger.remote_service_api.replace("api", ""), "test/troll.jpg")
+        """
+        bagger = CarpetBag()
+        bagger.use_skip_ssl_verify()
 
-    #     # Test the file being named after the full path given in the destination.
-    #     saved_phile_name = bagger.save(
-    #         image_1_url,
-    #         "/opt/carpetbag/tests/data/images/test_download.jpg")
+        image_1_url = "https://f001.backblazeb2.com/file/polite-pub/hacker-man.gif"
 
-    #     assert saved_phile_name
-    #     assert saved_phile_name == "/opt/carpetbag/tests/data/images/test_download.jpg"
-    #     os.remove(saved_phile_name)
+        # Test the file being named after the full path given in the destination.
+        saved_phile_name = bagger.save(
+            image_1_url,
+            "/opt/carpetbag/tests/data/images/test_download.jpg")
 
-    #     # Test the name of the file being the last url segment
-    #     saved_phile_name = bagger.save(
-    #         image_1_url,
-    #         "/opt/carpetbag/tests/data/images/")
-    #     assert saved_phile_name
-    #     assert saved_phile_name == "/opt/carpetbag/tests/data/images/troll.jpg"
-    #     os.remove(saved_phile_name)
+        assert saved_phile_name
+        assert saved_phile_name == "/opt/carpetbag/tests/data/images/test_download.jpg"
+        os.remove(saved_phile_name)
 
-    #     # Test that we respect the overwrite argument
-    #     with pytest.raises(errors.CannotOverwriteFile):
-    #         bagger.save(
+        # Test the name of the file being the last url segment
+        saved_phile_name = bagger.save(
+            image_1_url,
+            "/opt/carpetbag/tests/data/images/")
+        assert saved_phile_name
+        assert saved_phile_name == "/opt/carpetbag/tests/data/images/hacker-man.gif"
+        os.remove(saved_phile_name)
 
-    #             image_1_url,
-    #             "/opt/carpetbag/tests/data/images/existing.jpg")
+        # Test that we respect the overwrite argument
+        with pytest.raises(errors.CannotOverwriteFile):
+            bagger.save(
+                image_1_url,
+                "/opt/carpetbag/tests/data/images/existing.jpg")
 
     # def test_search(self):
     #     """
@@ -306,21 +355,20 @@ class TestPublic(object):
         assert isinstance(bagger.set_header("Test-Header", "Test Header Value"), dict)
         assert bagger.headers.get("Test-Header") == "Test Header Value"
 
-    # def test_set_header_once(self):
-    #     """
-    #     Tests the CarpetBag().test_set_header_once() method to make sure it adds the headers to the CarpetBag.header
-    #     class var and then removes it after a request has been made.
+    def test_set_header_once(self):
+        """
+        Tests the CarpetBag().test_set_header_once() method to make sure it adds the headers to the CarpetBag.header
+        class var and then removes it after a request has been made.
 
-    #     """
-    #     bagger = CarpetBag()
-    #     bagger.use_skip_ssl_verify(force=True)
+        """
+        bagger = CarpetBag()
+        bagger.use_skip_ssl_verify(force=True)
 
-    #     bagger.set_header_once("Test-Header", "Test Header Value")
-    #     assert "Test-Header" in bagger.one_time_headers
-    #     assert bagger.headers.get("Test-Header") == "Test Header Value"
+        bagger.set_header_once("Test-Header", "Test Header Value")
+        assert "Test-Header" in bagger.one_time_headers
+        assert bagger.headers.get("Test-Header") == "Test Header Value"
 
-    #     bagger.get(UNIT_TEST_URL)
-    #     assert not bagger.headers.get("Test-Header")
-
+        bagger.get(UNIT_TEST_URL)
+        assert not bagger.headers.get("Test-Header")
 
 # End File carpetbag/tests/test_public.py
