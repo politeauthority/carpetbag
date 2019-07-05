@@ -20,7 +20,7 @@ from . import errors
 
 class BaseCarpetBag(object):
 
-    __version__ = "0.0.4d01"
+    __version__ = "0.0.5i01"
 
     def __init__(self):
         """
@@ -81,7 +81,7 @@ class BaseCarpetBag(object):
         self.username = None
         self.password = None
         self.auth_type = None
-        self.change_identity_interval = 0
+        self.change_identity_interval = 10
         # self.remote_service_api = "https://www.bad-actor.services/api"
         self.remote_service_api = "https://bas.bitgel.com/api"
         self.public_proxies_max_last_test_weeks = 5
@@ -457,6 +457,8 @@ class BaseCarpetBag(object):
             urllib3.disable_warnings(InsecureRequestWarning)
             response = requests.request(**request_args)
         except requests.exceptions.ConnectionError:
+            bas_server = ct.url_disect(uri_segment)
+            logging.error("Cannot connected to BAS server: %s" % bas_server['domain'])
             raise errors.NoRemoteServicesConnection("Cannot connect to bad-actor.services API")
 
         return response
@@ -714,7 +716,11 @@ class BaseCarpetBag(object):
         proxy_score = 0
         if success:
             proxy_score = proxy_quality + 1
-            usage_payload["response_time"] = (self.manifest[0]["date_end"] - self.manifest[0]["date_start"]).seconds
+            # Get the start and end in microseconds, then send as a float of seconds back to BAS.
+            response_time = (self.manifest[0]["date_end"] - self.manifest[0]["date_start"]).microseconds / 1000000
+
+            usage_payload["response_time"] = response_time
+            logging.debug('Proxy returned in: %s seconds' % response_time)
 
         usage_payload["score"] = proxy_score
 

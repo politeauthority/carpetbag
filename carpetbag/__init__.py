@@ -62,6 +62,9 @@ class CarpetBag(BaseCarpetBag):
 
         :class param auth_type: Authentication class to use when needing to authenticate a request. @todo
             Authentication needs to be implemented.
+
+        @unit-tested: carpetbag/tests/test_public_carpetbag.py.test__init__
+
         """
         self.headers = {}
         self.user_agent = ""
@@ -97,6 +100,8 @@ class CarpetBag(BaseCarpetBag):
         """
         Wrapper for the Requests python module's get method, adds in extras such as headers and proxies where
         applicable.
+
+        @unit-tested: carpetbag/tests/test_public_carpetbag.py.test_get
 
         :param url: The url to fetch.
         :type: url: str
@@ -227,7 +232,7 @@ class CarpetBag(BaseCarpetBag):
 
     def use_random_public_proxy(self, val=True, test_proxy=False):
         """
-        Gets proxies from free-proxy-list.net and loads them into the self.proxy_bag. The first element in the
+        Gets proxies from bad actor services and loads them into the self.proxy_bag. The first element in the
         proxy_bag is the currently used proxy.
 
         :param val: Whether or not to enable random public proxies.
@@ -284,7 +289,7 @@ class CarpetBag(BaseCarpetBag):
             self.proxy.pop("http")
         if "https" in self.proxy:
             self.proxy.pop("https")
-
+        self.proxy = self.proxy_current
         self.logger.debug("New Proxy: %s (%s - %s)" % (
             self.proxy_current["address"],
             self.proxy_current["continent"],
